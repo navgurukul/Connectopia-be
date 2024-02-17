@@ -1,6 +1,6 @@
 // services/userService.js
 const bcrypt = require('bcrypt');
-const User = require('../models/cmsUserr');
+const CMSUser = require('../models/cmsUserr');
 const CampaignUser = require('../models/CampaignUser');
 const Campaign = require('../models/Campaign');
 
@@ -9,7 +9,7 @@ module.exports = {
   async createUser(emailid, password, organisation, name, usertype) {
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await User.create({
+      const user = await CMSUser.create({
         emailid,
         password: hashedPassword,
         organisation,
@@ -29,7 +29,7 @@ module.exports = {
       }
 
       const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-      const [rowsAffected] = await User.update(
+      const [rowsAffected] = await CMSUser.update(
         { password: hashedNewPassword },
         { where: { emailid } }
       );
@@ -51,7 +51,7 @@ module.exports = {
       }
 
       // Delete the user from the cmsusers table
-      await User.destroy({ where: { emailid } });
+      await CMSUser.destroy({ where: { emailid } });
 
       // Delete related campaign entries from the campaign_users table
       await CampaignUser.destroy({ where: { emailid } });
@@ -79,7 +79,7 @@ module.exports = {
         updateFields.emailid = newemailid;
       }
 
-      const [rowsAffected] = await User.update(updateFields, { where: { emailid: oldemailid } });
+      const [rowsAffected] = await CMSUser.update(updateFields, { where: { emailid: oldemailid } });
 
       if (rowsAffected === 0) {
         throw new Error('No user found with the provided email ID');
@@ -91,9 +91,9 @@ module.exports = {
     }
   },
 
-  async function getUsersByOrganisation(organisation) {
+  async getUsersByOrganisation(organisation) {
   try {
-    const users = await User.findAll({
+    const users = await CMSUser.findAll({
       include: [
         {
           model: CampaignUser,
