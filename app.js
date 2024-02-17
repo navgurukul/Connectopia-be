@@ -10,7 +10,7 @@ const app = express();
 app.use(bodyParser.json());
 
 // Routes
-app.use('/api/user', userRoutes);
+app.use('/api/cmsUser', userRoutes);
 
 // Database Connection
 sequelize
