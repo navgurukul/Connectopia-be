@@ -122,8 +122,41 @@ module.exports = {
   } catch (error) {
     throw new Error('Error fetching users by organisation: ' + error.message);
   }
-}
+},
   
+async getUsersByOrganisationWithCampaign(organisation) {
+  try {
+    const users = await CMSUser.findAll({
+      where: { organisation },
+      include: [
+        {
+          model: CampaignUser,
+          include: [
+            {
+              model: Campaign,
+              attributes: ['campaignid', 'campaign_name'],
+              where: { organisation }
+            }
+          ]
+        }
+      ]
+    });
+
+    const formattedUsers = users.map(user => {
+      const { name, emailid, usertype } = user;
+      const campaigns = user.CampaignUsers.map(campaignUser => {
+        const { campaignid, Campaign: { campaign_name } } = campaignUser.Campaign;
+        return { campaignid, campaign_name };
+      });
+
+      return { name, emailid, usertype, campaigns };
+    });
+
+    return formattedUsers;
+  } catch (error) {
+    throw new Error('Error fetching users by organisation: ' + error.message);
+  }
+}
 
 
 };

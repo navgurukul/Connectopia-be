@@ -78,32 +78,32 @@ module.exports = {
         }
     },
 
-    async deleteOrganizationData(organizationName) {
+    async deleteorganisationData(organisationName) {
     const transaction = await sequelize.transaction();
 
     try {
         // Delete organisation
-        await Organisation.destroy({ where: { organisation: organizationName }, transaction });
+        await Organisation.destroy({ where: { organisation: organisationName }, transaction });
 
         // Fetch campaign IDs
-        const campaignIds = await Campaign.findAll({ where: { organisation: organizationName }, attributes: ['campaignid'], transaction });
+        const campaignIds = await Campaign.findAll({ where: { organisation: organisationName }, attributes: ['campaignid'], transaction });
         const campaignIdsArray = campaignIds.map(campaign => campaign.campaignid);
 
         // Delete campaigns and related data
-        await Campaign.destroy({ where: { organisation: organizationName }, transaction });
+        await Campaign.destroy({ where: { organisation: organisationName }, transaction });
         await CampaignConfig.destroy({ where: { campaignid: campaignIdsArray }, transaction });
         await CustData.destroy({ where: { campaignid: campaignIdsArray }, transaction });
         await CampaignUser.destroy({ where: { campaignid: campaignIdsArray }, transaction });
 
         // Delete users
-        await cmsUser.destroy({ where: { organisation: organizationName }, transaction });
+        await cmsUser.destroy({ where: { organisation: organisationName }, transaction });
 
         // Commit the transaction
         await transaction.commit();
 
         // Delete files from S3
         const s3 = new AWS.S3();
-        const bucketName = 'your-bucket-name'; // Replace with your bucket name
+        const bucketName = process.env.BUCKET_NAME; // Replace with your bucket name
         const deleteFromS3Promises = campaignIdsArray.map(campaignId => {
             const s3DeleteParams = {
                 Bucket: bucketName,
@@ -118,7 +118,7 @@ module.exports = {
     } catch (error) {
         // Rollback the transaction in case of any error
         await transaction.rollback();
-        throw new Error('Error deleting organization data: ' + error.message);
+        throw new Error('Error deleting organisation data: ' + error.message);
     }
 }
 

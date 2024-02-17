@@ -72,4 +72,16 @@ router.get('/users_by_organisation/:organisation', async (req, res) => {
   }
 });
 
+router.get('/api/users_by_organisation/:organisation', async (req, res) => {
+  const organisation = req.params.organisation;
+
+  try {
+    const users = await cmsUserService.getUsersByOrganisationWithCampaign(organisation);
+    res.status(200).json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
