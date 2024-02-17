@@ -2,6 +2,8 @@
 const bcrypt = require('bcrypt');
 const User = require('../models/cmsUserr');
 const CampaignUser = require('../models/CampaignUser');
+const Campaign = require('../models/Campaign');
+
 
 module.exports = {
   async createUser(emailid, password, organisation, name, usertype) {
@@ -87,7 +89,41 @@ module.exports = {
     } catch (error) {
       throw new Error('Error updating user details: ' + error.message);
     }
+  },
+
+  async function getUsersByOrganisation(organisation) {
+  try {
+    const users = await User.findAll({
+      include: [
+        {
+          model: CampaignUser,
+          include: {
+            model: Campaign,
+            where: { organisation },
+          },
+        },
+      ],
+    });
+
+    const formattedUsers = users.map((user) => {
+      const formattedUser = {
+        name: user.name,
+        emailid: user.emailid,
+        usertype: user.usertype,
+        campaigns: user.CampaignUsers.map((campaignUser) => ({
+          campaignid: campaignUser.Campaign.campaignid,
+          campaign_name: campaignUser.Campaign.campaign_name,
+        })),
+      };
+      return formattedUser;
+    });
+
+    return formattedUsers;
+  } catch (error) {
+    throw new Error('Error fetching users by organisation: ' + error.message);
   }
+}
+  
 
 
 };
