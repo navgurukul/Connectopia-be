@@ -92,71 +92,79 @@ module.exports = {
   },
 
   async getUsersByOrganisation(organisation) {
-  try {
-    const users = await CMSUser.findAll({
-      include: [
-        {
-          model: CampaignUser,
-          include: {
-            model: Campaign,
-            where: { organisation },
-          },
-        },
-      ],
-    });
-
-    const formattedUsers = users.map((user) => {
-      const formattedUser = {
-        name: user.name,
-        emailid: user.emailid,
-        usertype: user.usertype,
-        campaigns: user.CampaignUsers.map((campaignUser) => ({
-          campaignid: campaignUser.Campaign.campaignid,
-          campaign_name: campaignUser.Campaign.campaign_name,
-        })),
-      };
-      return formattedUser;
-    });
-
-    return formattedUsers;
-  } catch (error) {
-    throw new Error('Error fetching users by organisation: ' + error.message);
-  }
-},
-  
-async getUsersByOrganisationWithCampaign(organisation) {
-  try {
-    const users = await CMSUser.findAll({
-      where: { organisation },
-      include: [
-        {
-          model: CampaignUser,
-          include: [
-            {
+    try {
+      const users = await CMSUser.findAll({
+        include: [
+          {
+            model: CampaignUser,
+            include: {
               model: Campaign,
-              attributes: ['campaignid', 'campaign_name'],
-              where: { organisation }
-            }
-          ]
-        }
-      ]
-    });
-
-    const formattedUsers = users.map(user => {
-      const { name, emailid, usertype } = user;
-      const campaigns = user.CampaignUsers.map(campaignUser => {
-        const { campaignid, Campaign: { campaign_name } } = campaignUser.Campaign;
-        return { campaignid, campaign_name };
+              where: { organisation },
+            },
+          },
+        ],
       });
 
-      return { name, emailid, usertype, campaigns };
-    });
+      const formattedUsers = users.map((user) => {
+        const formattedUser = {
+          name: user.name,
+          emailid: user.emailid,
+          usertype: user.usertype,
+          campaigns: user.CampaignUsers.map((campaignUser) => ({
+            campaignid: campaignUser.Campaign.campaignid,
+            campaign_name: campaignUser.Campaign.campaign_name,
+          })),
+        };
+        return formattedUser;
+      });
 
-    return formattedUsers;
-  } catch (error) {
-    throw new Error('Error fetching users by organisation: ' + error.message);
+      return formattedUsers;
+    } catch (error) {
+      throw new Error('Error fetching users by organisation: ' + error.message);
+    }
+  },
+
+  async getUsersByOrganisationWithCampaign(organisation) {
+    try {
+      const users = await CMSUser.findAll({
+        where: { organisation },
+        include: [
+          {
+            model: CampaignUser,
+            include: [
+              {
+                model: Campaign,
+                attributes: ['campaignid', 'campaign_name'],
+                where: { organisation }
+              }
+            ]
+          }
+        ]
+      });
+
+      const formattedUsers = users.map(user => {
+        const { name, emailid, usertype } = user;
+        const campaigns = user.CampaignUsers.map(campaignUser => {
+          const { campaignid, Campaign: { campaign_name } } = campaignUser.Campaign;
+          return { campaignid, campaign_name };
+        });
+
+        return { name, emailid, usertype, campaigns };
+      });
+
+      return formattedUsers;
+    } catch (error) {
+      throw new Error('Error fetching users by organisation: ' + error.message);
+    }
+  },
+
+  async getUserOrganisation(emailid) {
+    const user = await CMSUser.findOne({ where: { emailid } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user.organisation;
   }
-}
 
 
 };

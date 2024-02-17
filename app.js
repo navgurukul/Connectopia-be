@@ -11,6 +11,7 @@ app.use(bodyParser.json());
 
 // Routes
 app.use('/api/cmsUser', userRoutes);
+app.use('/auth', authService);
 
 // Database Connection
 sequelize

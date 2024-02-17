@@ -1,7 +1,7 @@
 // routes/organisationRoutes.js
 const express = require('express');
 const router = express.Router();
-const organisationService = require('../services/organisationService');
+const organisationService = require('../services/organisation');
 
 router.post('/organisation', async (req, res) => {
     const { organisation, desc } = req.body;
@@ -55,6 +55,16 @@ router.delete('/deleteOrganizationData/:organization_name', async (req, res) => 
     }
 });
 
+router.get('/:emailid/:usertype', async (req, res) => {
+    const { emailid, usertype } = req.params;
+    try {
+        const organisations = await organisationService.getOrganisations(emailid, usertype);
+        res.status(200).json(organisations);
+    } catch (error) {
+        console.error('Error fetching organisations:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 
 module.exports = router;
