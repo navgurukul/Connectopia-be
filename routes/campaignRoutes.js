@@ -35,6 +35,16 @@ router.post('/api/createNewCampaign', async (req, res) => {
   }
 });
 
+router.get('/nextCampaignId', async (req, res) => {
+  try {
+      const campaignId = await campaignService.getNextCampaignId();
+      res.status(200).json({ CampaignId: campaignId });
+  } catch (error) {
+      console.error('Error:', error);
+      res.status(500).send('Server error');
+  }
+});
+
 // router.post("/updateimage/:campaignid/:pageno/:key/:scantype", image.upload('image').single('image'), async (req, res) => {
 //   const { campaignid, pageno, key, scantype } = req.params;
 

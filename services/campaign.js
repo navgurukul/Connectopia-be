@@ -188,7 +188,7 @@ module.exports = {
         try {
             const maxCampaignId = await Campaign.max('campaignid');
             const nextCampaignId = maxCampaignId ? maxCampaignId + 1 : 1;
-            return { CampaignId: nextCampaignId };
+            return nextCampaignId
         } catch (error) {
             console.error('Error:', error);
             throw new Error('Failed to fetch next campaign id');
@@ -268,7 +268,7 @@ module.exports = {
             throw new Error('Failed to fetch campaign details');
         }
     },
-    
+
 
     async checkCampaignStatus(campaignid) {
         try {
