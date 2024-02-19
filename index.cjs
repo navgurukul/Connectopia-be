@@ -6,7 +6,7 @@ const authService = require('./routes/authService');
 const cmsUser = require('./routes/cmsUser');
 const organisation = require('./routes/organisationRoutes');
 const campaign = require('./routes/campaignRoutes');
-
+const otpVerification = require('./routes/otpVerification');
 const app = express();
 
 // Middleware
@@ -17,7 +17,7 @@ app.use('/api/auth', authService);
 app.use('/api/cmsUser', cmsUser);
 app.use('/api/organisation', organisation);
 app.use('/api/campaign', campaign);
-
+app.use('/api/otp', otpVerification);
 
 // Database Connection
 sequelize
