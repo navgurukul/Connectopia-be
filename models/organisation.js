@@ -2,7 +2,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Organisation = sequelize.define('Organisation', {
+const Organisation = sequelize.define('organisation', {
   organisation: {
     type: DataTypes.STRING,
     allowNull: false,

@@ -1,8 +1,8 @@
 // models/campaignUser.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../database/connection');
+const sequelize = require('../config/database');
 
-const CampaignUser = sequelize.define('CampaignUser', {
+const CampaignUser = sequelize.define('campaign_users', {
   emailid: {
     type: DataTypes.STRING,
     primaryKey: true,

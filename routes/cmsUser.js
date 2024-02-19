@@ -2,12 +2,12 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { sequelize } = require('../models'); // Assuming Sequelize is initialized in models/index.js
-const { CMSUser, Organisation } = require('../models'); // Sequelize models
-
+const { sequelize } = require('sequelize'); // Assuming Sequelize is initialized in models/index.js
+const CMSUser = require('../models/cmsUser'); // Sequelize models
+const Organisation = require('../models/organisation');
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
-const cmsUserService = require('../services/cmsUserService');
+const cmsUserService = require('../services/cmsUser');
 
 router.post('/createNewUser', async (req, res) => {
   const { emailid, password, organisation, name, usertype } = req.body;

@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const CMSUser = sequelize.define('User', {
+const CMSUser = sequelize.define('cmsusers', {
   emailid: {
     type: DataTypes.STRING,
     allowNull: false,

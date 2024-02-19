@@ -2,15 +2,14 @@
   "name": "bata_apis",
   "version": "1.0.0",
   "description": "",
-  "main": "app.cjs",
+  "main": "index.cjs",
   "scripts": {
-    "start": "nodemon app.cjs",
+    "start": "nodemon index.cjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "@msgpack/msgpack": "^3.0.0-beta2",
     "@tensorflow/tfjs": "^4.11.0",

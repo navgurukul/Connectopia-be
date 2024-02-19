@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('./sequelize'); // Import your Sequelize instance
+const sequelize = require('../config/database'); // Import your Sequelize instance
 
-const CampaignConfig = sequelize.define('CampaignConfig', {
+const CampaignConfig = sequelize.define('campaign_config', {
     campaignid: {
         type: DataTypes.INTEGER,
         allowNull: false,

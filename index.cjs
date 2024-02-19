@@ -2,7 +2,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const sequelize = require('./config/database');
-const userRoutes = require('./routes/userRoutes');
+const authService = require('./routes/authService');
+const cmsUser = require('./routes/cmsUser');
+const organisation = require('./routes/organisationRoutes');
+const campaign = require('./routes/campaignRoutes');
 
 const app = express();
 
@@ -10,8 +13,11 @@ const app = express();
 app.use(bodyParser.json());
 
 // Routes
-app.use('/api/cmsUser', userRoutes);
-app.use('/auth', authService);
+app.use('/api/auth', authService);
+app.use('/api/cmsUser', cmsUser);
+app.use('/api/organisation', organisation);
+app.use('/api/campaign', campaign);
+
 
 // Database Connection
 sequelize

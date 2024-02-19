@@ -2,7 +2,7 @@
 const AWS = require('aws-sdk');
 const { loadImage } = require('canvas');
 
-const sequelize = require('../database/connection');
+const sequelize = require('../config/database');
 const Campaign = require('../models/campaign');
 const CampaignUser = require('../models/campaignUser');
 const CampaignConfig = require('../models/campaignConfig')

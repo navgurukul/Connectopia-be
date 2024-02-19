@@ -1,11 +1,11 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { sequelize } = require('../models'); // Assuming Sequelize is initialized in models/index.js
+const { sequelize } = require('sequelize'); // Assuming Sequelize is initialized in models/index.js
 const CMSUser = require('../models/cmsUser'); // Sequelize models
 const Organisation = require('../models/Organisation');
 const router = express.Router();
-const JWT_SECRET = 'your_secret_key'; // Make sure to keep this secret
+const JWT_SECRET = process.env.JWT_SECRET; // Make sure to keep this secret
 
 // POST /auth/login
 router.post('/login', async (req, res) => {

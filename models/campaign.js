@@ -1,8 +1,8 @@
 // models/campaign.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../database/connection');
+const sequelize = require('../config/database');
 
-const Campaign = sequelize.define('Campaign', {
+const Campaign = sequelize.define('campaign_table', {
   campaignid: {
     type: DataTypes.STRING,
     primaryKey: true,

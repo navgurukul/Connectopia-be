@@ -4,7 +4,6 @@ const AWS = require('aws-sdk');
 const Organisation = require('../models/organisation');
 const Campaign = require('../models/Campaign');
 const CampaignUser = require('../models/CampaignUser');
-const CMSUser = require('../models/User');
 const CampaignConfig = require('../models/campaignConfig');
 const CustData = require('../models/CustData');
 const cmsUser = require('../models/CMSUser');
