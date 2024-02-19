@@ -1,8 +1,9 @@
-// models/campaignUser.js
-const { DataTypes } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 
-const CampaignUser = sequelize.define('campaign_users', {
+class CampaignUser extends Model {}
+
+CampaignUser.init({
   emailid: {
     type: DataTypes.STRING,
     primaryKey: true,
@@ -13,6 +14,10 @@ const CampaignUser = sequelize.define('campaign_users', {
     primaryKey: true,
     allowNull: false,
   },
+}, {
+  sequelize,
+  modelName: 'CampaignUser',
+  tableName: 'campaign_users',
 });
 
 module.exports = CampaignUser;
