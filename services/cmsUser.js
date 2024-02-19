@@ -4,7 +4,6 @@ const CMSUser = require('../models/cmsUser');
 const CampaignUser = require('../models/CampaignUser');
 const Campaign = require('../models/Campaign');
 
-
 module.exports = {
   async createUser(emailid, password, organisation, name, usertype) {
     try {
@@ -159,7 +158,10 @@ module.exports = {
   },
 
   async getUserOrganisation(emailid) {
-    const user = await CMSUser.findOne({ where: { emailid } });
+    const user = await CMSUser.findOne({
+      attributes: ['organisation'],
+      where: { emailid }
+    });
     if (!user) {
       throw new Error('User not found');
     }

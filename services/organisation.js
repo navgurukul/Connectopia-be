@@ -8,7 +8,7 @@ const CampaignUser = require('../models/CampaignUser');
 const CampaignConfig = require('../models/campaignConfig');
 const CustData = require('../models/CustData');
 const cmsUser = require('../models/CMSUser');
-const getUserOrganisation = require('./cmsUser');
+const CMSUserService = require('./cmsUser');
 
 
 module.exports = {
@@ -126,10 +126,15 @@ module.exports = {
 
     async getOrganisations(emailid, usertype) {
         if (usertype === 'superadmin') {
-            return await Organisation.findAll();
+            return await Organisation.findAll({
+                attributes: ['organisation', 'desc', 'createddate'],
+            });;
         } else if (usertype === 'admin' || usertype === 'user') {
-            const userOrganisation = await getUserOrganisation.getUserOrganisation(emailid);
-            return await Organisation.findAll({ where: { organisation: userOrganisation } });
+            const userOrganisation = await CMSUserService.getUserOrganisation(emailid);
+            return await Organisation.findAll({
+                attributes: ['organisation', 'desc', 'createddate'],
+                where: { organisation: userOrganisation }
+            });
         } else {
             throw new Error('Invalid user type');
         }

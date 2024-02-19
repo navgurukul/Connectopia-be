@@ -55,7 +55,7 @@ router.delete('/deleteOrganizationData/:organization_name', async (req, res) => 
     }
 });
 
-router.get('/:emailid/:usertype', async (req, res) => {
+router.get('/organisationlist/:emailid/:usertype', async (req, res) => {
     const { emailid, usertype } = req.params;
     try {
         const organisations = await organisationService.getOrganisations(emailid, usertype);

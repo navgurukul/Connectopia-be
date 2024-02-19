@@ -1,21 +1,26 @@
-// models/Organisation.js
-const { DataTypes } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Organisation = sequelize.define('organisation', {
+class Organisation extends Model {}
+
+Organisation.init({
   organisation: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255), // Define the length for varchar columns
     allowNull: false,
-    unique: true,
   },
   desc: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: false,
   },
   createddate: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
+    allowNull: false,
   },
+}, {
+  sequelize,
+  modelName: 'Organisation',
+  tableName: 'organisation',
+  timestamps: false, // If you don't want Sequelize to automatically manage createdAt and updatedAt fields
 });
 
 module.exports = Organisation;
