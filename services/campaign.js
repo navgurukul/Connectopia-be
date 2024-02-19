@@ -6,6 +6,7 @@ const sequelize = require('../config/database');
 const Campaign = require('../models/campaign');
 const CampaignUser = require('../models/campaignUser');
 const CampaignConfig = require('../models/campaignConfig')
+const CmsUser = require('../models/cmsUser');
 const image = require('./image');
 
 const bucketName = process.env.BUCKET_NAME;
@@ -238,11 +239,19 @@ module.exports = {
             if (usertype === 'superadmin') {
                 // Fetch all campaigns for superadmin
                 campaigns = await Campaign.findAll({
-                    attributes: ['campaignid', 'organisation', 'scantype', 'campaign_name', 'emailid']
+                    attributes: ['campaignid', 'scantype', 'campaign_name', 'emailid']
                 });
             } else if (usertype === 'admin' || usertype === 'user') {
                 // Fetch organisation for admin or user
-                const { organisation } = await CampaignUser.findOne({ where: { emailid: emailid } });
+                const organisationResult = await CmsUser.findOne({
+                    attributes: ['organisation'],
+                    where: { emailid: emailid }
+                });
+                const organisation = organisationResult ? organisationResult.organisation : null;
+
+                if (!organisation) {
+                    throw new Error('Organisation not found for user');
+                }
 
                 // Fetch campaigns for the organisation
                 campaigns = await Campaign.findAll({
@@ -259,6 +268,7 @@ module.exports = {
             throw new Error('Failed to fetch campaign details');
         }
     },
+    
 
     async checkCampaignStatus(campaignid) {
         try {
