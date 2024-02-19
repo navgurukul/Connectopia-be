@@ -1,6 +1,7 @@
 // services/organisationService.js
 const sequelize = require('sequelize')
 const AWS = require('aws-sdk');
+require('dotenv').config();
 const Organisation = require('../models/organisation');
 const Campaign = require('../models/Campaign');
 const CampaignUser = require('../models/CampaignUser');

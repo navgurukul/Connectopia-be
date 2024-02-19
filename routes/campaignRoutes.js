@@ -35,50 +35,50 @@ router.post('/api/createNewCampaign', async (req, res) => {
   }
 });
 
-router.post("/updateimage/:campaignid/:pageno/:key/:scantype", image.upload('image').single('image'), async (req, res) => {
-  const { campaignid, pageno, key, scantype } = req.params;
+// router.post("/updateimage/:campaignid/:pageno/:key/:scantype", image.upload('image').single('image'), async (req, res) => {
+//   const { campaignid, pageno, key, scantype } = req.params;
 
-  try {
-    if (!req.file) {
-      return res.status(400).send({ msg: "No file provided for upload." });
-    }
+//   try {
+//     if (!req.file) {
+//       return res.status(400).send({ msg: "No file provided for upload." });
+//     }
 
-    // Determine the file extension from mimetype
-    let fileExtension;
-    switch (req.file.mimetype) {
-      case "image/jpeg":
-        fileExtension = "jpeg";
-        break;
-      case "image/jpg":
-        fileExtension = "jpg";
-        break;
-      case "image/png":
-        fileExtension = "png";
-        break;
-      default:
-        return res.status(400).send('Unsupported image type.');
-    }
+//     // Determine the file extension from mimetype
+//     let fileExtension;
+//     switch (req.file.mimetype) {
+//       case "image/jpeg":
+//         fileExtension = "jpeg";
+//         break;
+//       case "image/jpg":
+//         fileExtension = "jpg";
+//         break;
+//       case "image/png":
+//         fileExtension = "png";
+//         break;
+//       default:
+//         return res.status(400).send('Unsupported image type.');
+//     }
 
-    const compositeKey = `${key}.${fileExtension}`;
+//     const compositeKey = `${key}.${fileExtension}`;
 
-    // Check if the key exists in the database (without considering the file extension)
-    const keyExists = await image.checkKeyInDB(campaignid, pageno, key);
-    if (keyExists) {
-      // If key exists, replace the image in S3 and update the database record with the new file extension
-      await image.uploadToS3(req.file.buffer, campaignid, pageno, compositeKey);
-      await image.updateExistingKeyInDB(campaignid, pageno, key, scantype, fileExtension);
-      res.status(200).send('Existing image replaced and database updated with new file extension.');
-    } else {
-      // If key does not exist, upload the image to S3 and insert a new entry into the database
-      await image.uploadToS3(req.file.buffer, campaignid, pageno, compositeKey);
-      await image.insertNewKeyInDB(campaignid, pageno, compositeKey, scantype);
-      res.status(200).send('Image uploaded and new key stored in database with file extension.');
-    }
-  } catch (error) {
-    console.error("Error while uploading:", error);
-    res.status(500).send({ msg: "Failed to upload the image. Please try again later." });
-  }
-});
+//     // Check if the key exists in the database (without considering the file extension)
+//     const keyExists = await image.checkKeyInDB(campaignid, pageno, key);
+//     if (keyExists) {
+//       // If key exists, replace the image in S3 and update the database record with the new file extension
+//       await image.uploadToS3(req.file.buffer, campaignid, pageno, compositeKey);
+//       await image.updateExistingKeyInDB(campaignid, pageno, key, scantype, fileExtension);
+//       res.status(200).send('Existing image replaced and database updated with new file extension.');
+//     } else {
+//       // If key does not exist, upload the image to S3 and insert a new entry into the database
+//       await image.uploadToS3(req.file.buffer, campaignid, pageno, compositeKey);
+//       await image.insertNewKeyInDB(campaignid, pageno, compositeKey, scantype);
+//       res.status(200).send('Image uploaded and new key stored in database with file extension.');
+//     }
+//   } catch (error) {
+//     console.error("Error while uploading:", error);
+//     res.status(500).send({ msg: "Failed to upload the image. Please try again later." });
+//   }
+// });
 
 router.get('/withoutStatus/allsignedurls/:campaignid/:scantype', async (req, res) => {
   try {
@@ -181,24 +181,24 @@ router.get('/campaignsByEmailid/:emailid', async (req, res) => {
   }
 });
 
-router.post('/compile-upload/:campaignid/:pageno/:Key/:scantype', image.upload('mind').single('image'), async (req, res) => {
-  const campaignId = req.params.campaignid;
-  const pageNo = req.params.pageno;
-  const key = req.params.Key;
-  const scantype = req.params.scantype;
+// router.post('/compile-upload/:campaignid/:pageno/:Key/:scantype', image.upload('mind').single('image'), async (req, res) => {
+//   const campaignId = req.params.campaignid;
+//   const pageNo = req.params.pageno;
+//   const key = req.params.Key;
+//   const scantype = req.params.scantype;
 
-  try {
-    if (!req.file) {
-      return res.status(400).send('No file uploaded');
-    }
+//   try {
+//     if (!req.file) {
+//       return res.status(400).send('No file uploaded');
+//     }
 
-    const result = await campaignService.compileAndUpload(campaignId, pageNo, key, scantype, req.file);
-    res.status(200).send(result);
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
+//     const result = await campaignService.compileAndUpload(campaignId, pageNo, key, scantype, req.file);
+//     res.status(200).send(result);
+//   } catch (error) {
+//     console.error('Error:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
 
 router.get('/campaigndetails/:emailid/:usertype', async (req, res) => {
   const { emailid, usertype } = req.params;
@@ -213,45 +213,45 @@ router.get('/campaigndetails/:emailid/:usertype', async (req, res) => {
   }
 });
 
-router.post("/updategif/:campaignid/:pageno/:Key/:scantype", image.upload('gif').single('image'), async (req, res) => {
-  const campaignid = req.params.campaignid;
-  const pageno = req.params.pageno;
-  const Key = req.params.Key;
-  const scantype = req.params.scantype;
+// router.post("/updategif/:campaignid/:pageno/:Key/:scantype", image.upload('gif').single('image'), async (req, res) => {
+//   const campaignid = req.params.campaignid;
+//   const pageno = req.params.pageno;
+//   const Key = req.params.Key;
+//   const scantype = req.params.scantype;
 
-  try {
-    console.log(req.file);
-    if (!req.file) {
-      return res.status(400).send({
-        msg: "No file provided for upload.",
-      });
-    }
+//   try {
+//     console.log(req.file);
+//     if (!req.file) {
+//       return res.status(400).send({
+//         msg: "No file provided for upload.",
+//       });
+//     }
 
-    let fileExtension;
-    switch (req.file.mimetype) {
-      case "image/gif":
-        fileExtension = "gif";
-        break;
-      default:
-        return res.status(400).send('Unsupported file type.');
-    }
+//     let fileExtension;
+//     switch (req.file.mimetype) {
+//       case "image/gif":
+//         fileExtension = "gif";
+//         break;
+//       default:
+//         return res.status(400).send('Unsupported file type.');
+//     }
 
-    const compositeKey = `${Key}.${fileExtension}`; // Now it will just form as 'key.gif'
-    const keyExists = await image.checkKeyInDB(campaignid, pageno, compositeKey);
+//     const compositeKey = `${Key}.${fileExtension}`; // Now it will just form as 'key.gif'
+//     const keyExists = await image.checkKeyInDB(campaignid, pageno, compositeKey);
 
-    if (!keyExists) {
-      await image.loadGifToS3(req.file.buffer, campaignid, pageno, compositeKey, scantype);
-      res.status(200).send('GIF uploaded and key stored in database');
-    } else {
-      res.status(200).send({ message: 'New GIF uploaded' });
-    }
-  } catch (error) {
-    console.error("Error while uploading:", error);
-    res.status(500).send({
-      msg: "Failed to upload the GIF. Please try again later.",
-    });
-  }
-});
+//     if (!keyExists) {
+//       await image.loadGifToS3(req.file.buffer, campaignid, pageno, compositeKey, scantype);
+//       res.status(200).send('GIF uploaded and key stored in database');
+//     } else {
+//       res.status(200).send({ message: 'New GIF uploaded' });
+//     }
+//   } catch (error) {
+//     console.error("Error while uploading:", error);
+//     res.status(500).send({
+//       msg: "Failed to upload the GIF. Please try again later.",
+//     });
+//   }
+// });
 
 router.get('/allsignedurls/:campaignid/:scantype', async (req, res) => {
   try {
@@ -296,90 +296,90 @@ router.get('/allsignedurls/:campaignid/:scantype', async (req, res) => {
   }
 });
 
-router.post("/uploadimage/:campaignid/:pageno/:key/:scantype", image.upload('image').single('image'), async (req, res) => {
-  const campaignid = req.params.campaignid;
-  const pageno = req.params.pageno;
-  const key = req.params.key;
-  const scantype = req.params.scantype;
+// router.post("/uploadimage/:campaignid/:pageno/:key/:scantype", image.upload('image').single('image'), async (req, res) => {
+//   const campaignid = req.params.campaignid;
+//   const pageno = req.params.pageno;
+//   const key = req.params.key;
+//   const scantype = req.params.scantype;
 
-  try {
-    console.log(req.file);
-    if (!req.file) {
-      return res.status(400).send({
-        msg: "No file provided for upload.",
-      });
-    }
+//   try {
+//     console.log(req.file);
+//     if (!req.file) {
+//       return res.status(400).send({
+//         msg: "No file provided for upload.",
+//       });
+//     }
 
-    // Determine the file extension from mimetype
-    let fileExtension;
-    switch (req.file.mimetype) {
-      case "image/jpeg": fileExtension = "jpeg"; break;
-      case "image/jpg": fileExtension = "jpg"; break;
-      case "image/png": fileExtension = "png"; break;
-      case "image/svg+xml": fileExtension = "svg"; break;
-      default: return res.status(400).send('Unsupported image type.');
-    }
+//     // Determine the file extension from mimetype
+//     let fileExtension;
+//     switch (req.file.mimetype) {
+//       case "image/jpeg": fileExtension = "jpeg"; break;
+//       case "image/jpg": fileExtension = "jpg"; break;
+//       case "image/png": fileExtension = "png"; break;
+//       case "image/svg+xml": fileExtension = "svg"; break;
+//       default: return res.status(400).send('Unsupported image type.');
+//     }
 
-    const compositeKey = `${key}.${fileExtension}`;
+//     const compositeKey = `${key}.${fileExtension}`;
 
-    await image.uploadToS3(req.file.buffer, campaignid, pageno, compositeKey);
+//     await image.uploadToS3(req.file.buffer, campaignid, pageno, compositeKey);
 
-    // Insert into database using Sequelize
-    await CampaignConfig.create({
-      campaignid: campaignid,
-      pageno: pageno,
-      key: compositeKey,
-      scantype: scantype
-    });
+//     // Insert into database using Sequelize
+//     await CampaignConfig.create({
+//       campaignid: campaignid,
+//       pageno: pageno,
+//       key: compositeKey,
+//       scantype: scantype
+//     });
 
-    res.send('Image uploaded and key stored in database');
-  } catch (error) {
-    console.error("Error while uploading:", error);
-    res.status(500).send({
-      msg: "Failed to upload the image. Please try again later.",
-    });
-  }
-});
+//     res.send('Image uploaded and key stored in database');
+//   } catch (error) {
+//     console.error("Error while uploading:", error);
+//     res.status(500).send({
+//       msg: "Failed to upload the image. Please try again later.",
+//     });
+//   }
+// });
 
-router.post("/uploadgif/:campaignid/:pageno/:Key/:scantype", image.upload('gif').single('image'), async (req, res) => {
-  const campaignid = req.params.campaignid;
-  const pageno = req.params.pageno;
-  const Key = req.params.Key;
-  const scantype = req.params.scantype;
+// router.post("/uploadgif/:campaignid/:pageno/:Key/:scantype", image.upload('gif').single('image'), async (req, res) => {
+//   const campaignid = req.params.campaignid;
+//   const pageno = req.params.pageno;
+//   const Key = req.params.Key;
+//   const scantype = req.params.scantype;
 
-  try {
-    console.log(req.file);
-    if (!req.file) {
-      return res.status(400).send({
-        msg: "No file provided for upload.",
-      });
-    }
+//   try {
+//     console.log(req.file);
+//     if (!req.file) {
+//       return res.status(400).send({
+//         msg: "No file provided for upload.",
+//       });
+//     }
 
-    let fileExtension;
-    switch (req.file.mimetype) {
-      case "image/gif": fileExtension = "gif"; break;
-      default: return res.status(400).send('Unsupported file type.');
-    }
+//     let fileExtension;
+//     switch (req.file.mimetype) {
+//       case "image/gif": fileExtension = "gif"; break;
+//       default: return res.status(400).send('Unsupported file type.');
+//     }
 
-    const compositeKey = `${Key}.${fileExtension}`;   // Now it will just form as 'key.gif'
+//     const compositeKey = `${Key}.${fileExtension}`;   // Now it will just form as 'key.gif'
 
-    await image.uploadS3(req.file.buffer, campaignid, pageno, compositeKey);
+//     await image.uploadS3(req.file.buffer, campaignid, pageno, compositeKey);
 
-    // Insert into database using Sequelize
-    await CampaignConfig.create({
-      campaignid: campaignid,
-      pageno: pageno,
-      key: compositeKey,
-      scantype: scantype
-    });
+//     // Insert into database using Sequelize
+//     await CampaignConfig.create({
+//       campaignid: campaignid,
+//       pageno: pageno,
+//       key: compositeKey,
+//       scantype: scantype
+//     });
 
-    res.send('gif uploaded and key stored in database');
-  } catch (error) {
-    console.error("Error while uploading:", error);
-    res.status(500).send({
-      msg: "Failed to upload the gif. Please try again later.",
-    });
-  }
-});
+//     res.send('gif uploaded and key stored in database');
+//   } catch (error) {
+//     console.error("Error while uploading:", error);
+//     res.status(500).send({
+//       msg: "Failed to upload the gif. Please try again later.",
+//     });
+//   }
+// });
 
 module.exports = router;

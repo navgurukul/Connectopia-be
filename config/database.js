@@ -1,5 +1,7 @@
 // config/database.js
 const { Sequelize } = require('sequelize');
+require('dotenv').config();
+
 
 const sequelize = new Sequelize({
   dialect: 'mysql',

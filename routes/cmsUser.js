@@ -6,6 +6,8 @@ const { sequelize } = require('sequelize'); // Assuming Sequelize is initialized
 const CMSUser = require('../models/cmsUser'); // Sequelize models
 const Organisation = require('../models/organisation');
 const router = express.Router();
+require('dotenv').config();
+
 const JWT_SECRET = process.env.JWT_SECRET;
 const cmsUserService = require('../services/cmsUser');
 

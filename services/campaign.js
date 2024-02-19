@@ -1,6 +1,6 @@
 // services/campaignService.js
 const AWS = require('aws-sdk');
-const { loadImage } = require('canvas');
+require('dotenv').config();
 
 const sequelize = require('../config/database');
 const Campaign = require('../models/campaign');

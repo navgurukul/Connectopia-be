@@ -5,6 +5,7 @@ const Sequelize = require('sequelize');
 const storage = multer.memoryStorage();
 const CampaignConfig = require('../models/campaignConfig'); // Assuming you have a model for CampaignConfig
 const Campaign = require('../models/campaign');
+require('dotenv').config();
 
 //--------------AWS S3 bucket configuration--------
 const bucketName = process.env.BUCKET_NAME;
