@@ -31,25 +31,15 @@ module.exports = {
 
     async getOrganisationDetails(name) {
         try {
-            const organisation = await Organisation.findOne({
-                where: { organisation: name },
-                include: [
-                    {
-                        model: Campaign,
-                        include: [
-                            {
-                                model: CampaignUser,
-                                include: [CMSUser],
-                            },
-                        ],
-                    },
-                ],
+            const organisation = await Campaign.findAll({
+                attributes: ['campaignid', 'campaign_name', 'scantype', 'desc',
+                    [sequelize.literal('DATE_FORMAT(startdate, "%Y-%m-%d")'), 'startdate'],
+                    [sequelize.literal('DATE_FORMAT(enddate, "%Y-%m-%d")'), 'enddate'], 'status'],
+                where: { organisation: name }
             });
-
             if (!organisation) {
                 throw new Error('Organisation not found');
             }
-
             return organisation;
         } catch (error) {
             throw new Error('Error fetching organisation details: ' + error.message);
