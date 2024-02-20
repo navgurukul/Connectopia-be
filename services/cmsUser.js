@@ -133,38 +133,47 @@ module.exports = {
     } catch (error) {
       throw new Error('Error fetching users by organisation: ' + error.message);
     }
-  }
-  ,
-
-
+  },
 
 
   async getUsersByOrganisationWithCampaign(organisation) {
     try {
+      // Find users based on the provided organisation
       const users = await CMSUser.findAll({
-        where: { organisation },
-        include: [
-          {
-            model: CampaignUser,
-            include: [
-              {
-                model: Campaign,
-                attributes: ['campaignid', 'campaign_name'],
-                where: { organisation }
-              }
-            ]
-          }
-        ]
+        attributes: ['name', 'emailid', 'usertype'],
+        where: { organisation: organisation }
       });
 
-      const formattedUsers = users.map(user => {
-        const { name, emailid, usertype } = user;
-        const campaigns = user.CampaignUsers.map(campaignUser => {
-          const { campaignid, Campaign: { campaign_name } } = campaignUser.Campaign;
-          return { campaignid, campaign_name };
-        });
+      // Find campaigns associated with the provided organisation
+      const campaigns = await Campaign.findAll({
+        attributes: ['campaignid', 'campaign_name'],
+        where: { organisation: organisation }
+      });
 
-        return { name, emailid, usertype, campaigns };
+      // Find campaign users associated with the campaigns
+      const campaignUsers = await CampaignUser.findAll({
+        attributes: ['campaignid', 'emailid'],
+        where: { campaignid: campaigns.map(campaign => campaign.campaignid) }
+      });
+
+      // Map campaigns to each user
+      const formattedUsers = users.map(user => {
+        const userCampaigns = campaignUsers
+          .filter(cu => cu.emailid === user.emailid)
+          .map(cu => {
+            const campaign = campaigns.find(campaign => campaign.campaignid === cu.campaignid);
+            return {
+              campaignid: campaign.campaignid,
+              campaign_name: campaign.campaign_name
+            };
+          });
+
+        return {
+          name: user.name,
+          emailid: user.emailid,
+          usertype: user.usertype,
+          campaigns: userCampaigns
+        };
       });
 
       return formattedUsers;
