@@ -92,6 +92,21 @@ module.exports = {
         }
     },
 
+    async updateCampaignStatus(campaignName, statusValue) {
+        try {
+            const [updatedRowsCount, updatedRows] = await Campaign.update(
+                { status: statusValue },
+                { where: { campaign_name: campaignName } }
+            );
+            if (updatedRowsCount === 0) {
+                throw new Error(`Campaign with name ${campaignName} not found.`);
+            }
+        } catch (error) {
+            console.error('Error updating campaign status:', error);
+            throw error;
+        }
+    },
+
     async deleteCampaign(campaignName) {
         try {
             if (!campaignName) {

@@ -45,6 +45,17 @@ router.get('/nextCampaignId', async (req, res) => {
   }
 });
 
+router.post('/setStatus', async (req, res) => {
+  const { status_value, campaignname } = req.body;
+  try {
+      await campaignService.updateCampaignStatus(campaignname, status_value);
+      res.status(200).send('Data updated successfully');
+  } catch (error) {
+      console.error('Error updating data: ', error);
+      res.status(500).send('Error updating data');
+  }
+});
+
 // router.post("/updateimage/:campaignid/:pageno/:key/:scantype", image.upload('image').single('image'), async (req, res) => {
 //   const { campaignid, pageno, key, scantype } = req.params;
 
