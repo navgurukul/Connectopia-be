@@ -168,29 +168,46 @@ module.exports = {
     async getCampaignsByEmailId(emailId) {
         try {
             // First, fetch all campaignid values associated with the provided emailid
-            const campaignIds = await CampaignUser.findAll({
+            const campaignUsers = await CampaignUser.findAll({
+                attributes: ['campaignid'],
                 where: { emailid: emailId },
-                attributes: ['campaignid']
-            }).map(campaignUser => campaignUser.campaignid);
+            });
+            const campaignIds = campaignUsers.map(campaignUser => campaignUser.campaignid);
 
             // For each campaignid, fetch campaign details and associated users
             const promises = campaignIds.map(async (campaignId) => {
-                const campaign = await Campaign.findOne({
-                    where: { campaignid: campaignId },
-                    attributes: ['campaign_name', 'campaignid', 'scantype', 'status', 'desc', 'startdate', 'enddate'],
-                    raw: true
-                });
+                try {
+                    // Find campaign details
+                    const campaign = await Campaign.findOne({
+                        attributes: ['campaign_name', 'campaignid', 'scantype', 'status', 'desc', 'startdate', 'enddate'],
+                        where: { campaignid: campaignId },
+                        attributes: ['campaign_name', 'campaignid', 'scantype', 'status', 'desc', 'startdate', 'enddate'],
+                        raw: true
+                    });
 
-                const users = await CampaignUser.findAll({
-                    where: { campaignid: campaignId },
-                    include: { model: CmsUser, attributes: ['emailid', 'usertype', 'name'] },
-                    raw: true
-                });
+                    const campaignUsers = await CampaignUser.findAll({
+                        attributes: ['emailid'],
+                        where: { campaignid: campaignId },
+                    });
 
-                campaign.users = users;
-                return campaign;
+                    // Extract email ids from campaign users
+                    const emailIds = campaignUsers.map(cu => cu.emailid);
+
+                    // Find users associated with the extracted email ids
+                    const users = await CmsUser.findAll({
+                        attributes: ['emailid', 'usertype', 'name'],
+                        where: { emailid: emailIds },
+                    });
+                    const userList = users.map(user => user.toJSON());
+
+                    // Add users to the campaign object
+                    campaign.users = userList;
+                    return campaign;
+                } catch (error) {
+                    console.error('Error fetching campaign and users:', error);
+                    throw new Error('Failed to fetch campaign and users');
+                }
             });
-
             const results = await Promise.all(promises);
             return results;
         } catch (error) {
@@ -303,6 +320,6 @@ module.exports = {
         }
     },
 
-    
+
 
 };
