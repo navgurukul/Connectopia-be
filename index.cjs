@@ -23,8 +23,8 @@ app.use('/api/custData', custData);
 
 // Database Connection
 sequelize
-  .sync()
-  .then(() => {
+.authenticate()
+.then(() => {
     console.log('Database synced');
   })
   .catch((error) => {

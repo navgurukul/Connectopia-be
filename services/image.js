@@ -168,7 +168,9 @@ module.exports = {
 
   async fetchKeysFromDB2(campaignid) {
     try {
-      const keysData = await Campaign.findAll({
+      const keysData = await CampaignConfig.findAll({
+        attributes: ['key', 'pageno'],
+
         where: { campaignid }
       });
 
