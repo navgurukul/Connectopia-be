@@ -1,9 +1,10 @@
 // models/Campaign.js
 
-const { DataTypes } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database'); // Import your Sequelize instance
+class CustData extends Model {}
 
-const CustData = sequelize.define('custdata', {
+CustData.init({
   phonenumber: {
     type: DataTypes.STRING(155),
     allowNull: false
@@ -34,7 +35,9 @@ const CustData = sequelize.define('custdata', {
     allowNull: false
   }
 }, {
-  tableName: 'campaign', // Assuming your table name is 'campaign'
+  sequelize,
+  modelName: 'CustData',
+  tableName: 'custdata', // Assuming your table name is 'custdata'
   timestamps: false // If you don't want timestamps
 });
 

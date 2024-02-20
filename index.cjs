@@ -2,13 +2,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const sequelize = require('./config/database');
-const authService = require('./routes/authService');
+const authService = require('./routes/authRoutes');
 const cmsUser = require('./routes/cmsUser');
 const organisation = require('./routes/organisationRoutes');
 const campaign = require('./routes/campaignRoutes');
 const otpVerification = require('./routes/otpVerification');
-const app = express();
+const custData = require('./routes/custRoutes');
 
+const app = express();
 // Middleware
 app.use(bodyParser.json());
 
@@ -18,6 +19,7 @@ app.use('/api/cmsUser', cmsUser);
 app.use('/api/organisation', organisation);
 app.use('/api/campaign', campaign);
 app.use('/api/otp', otpVerification);
+app.use('/api/custData', custData);
 
 // Database Connection
 sequelize
