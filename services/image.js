@@ -156,6 +156,7 @@ module.exports = {
   async fetchKeysFromDB1(campaignid, scantype) {
     try {
       const keysData = await CampaignConfig.findAll({
+        attributes: ['key', 'pageno'],
         where: { campaignid, scantype }
       });
 

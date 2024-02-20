@@ -1,7 +1,8 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database'); // Import your Sequelize instance
+class CampaignConfig extends Model { }
 
-const CampaignConfig = sequelize.define('campaign_config', {
+CampaignConfig.init({
     campaignid: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -18,6 +19,12 @@ const CampaignConfig = sequelize.define('campaign_config', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+}, {
+    sequelize,
+    modelName: 'CampaignConfig',
+    tableName: 'campaign_config', // Assuming your table name is 'campaign_config'
+    timestamps: false // If you don't want timestamps
 });
+
 
 module.exports = CampaignConfig;

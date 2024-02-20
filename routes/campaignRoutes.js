@@ -115,7 +115,7 @@ router.get('/withoutStatus/allsignedurls/:campaignid/:scantype', async (req, res
       return res.status(400).send('Invalid scantype provided.');
     }
 
-    const signedURLs = await Promise.all(keysData.map(data => getPresignedUrl(campaignid, data.pageno, data.key)));
+    const signedURLs = await Promise.all(keysData.map(data => image.getPresignedUrl(campaignid, data.pageno, data.key)));
     const response = keysData.map((data, index) => ({ pageno: data.pageno, key: data.key, value: signedURLs[index] }));
 
     // Group by page number
