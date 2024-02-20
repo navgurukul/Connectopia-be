@@ -1,7 +1,11 @@
-const { DataTypes } = require('sequelize');
+// models/cmsUser.js
+const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
+const CampaignUser = require('./campaignUser'); // Import CampaignUser model
 
-const CMSUser = sequelize.define('cmsusers', {
+class CMSUser extends Model { }
+
+CMSUser.init({
   emailid: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -27,6 +31,13 @@ const CMSUser = sequelize.define('cmsusers', {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
   },
+}, {
+  sequelize,
+  modelName: 'CMSUser',
+  tableName: 'cmsusers',
 });
+
+// Define the association with CampaignUser model
+CMSUser.hasMany(CampaignUser, { foreignKey: 'emailid', sourceKey: 'emailid' });
 
 module.exports = CMSUser;

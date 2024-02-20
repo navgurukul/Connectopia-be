@@ -1,7 +1,8 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
+const Campaign = require('./campaign'); // Import Campaign model
 
-class CampaignUser extends Model {}
+class CampaignUser extends Model { }
 
 CampaignUser.init({
   emailid: {
@@ -19,5 +20,9 @@ CampaignUser.init({
   modelName: 'CampaignUser',
   tableName: 'campaign_users',
 });
+
+// Define the association with Campaign model
+CampaignUser.belongsTo(Campaign, { foreignKey: 'campaignid' });
+
 
 module.exports = CampaignUser;

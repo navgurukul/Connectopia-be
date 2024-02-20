@@ -93,35 +93,51 @@ module.exports = {
   async getUsersByOrganisation(organisation) {
     try {
       const users = await CMSUser.findAll({
-        include: [
-          {
-            model: CampaignUser,
-            include: {
-              model: Campaign,
-              where: { organisation },
-            },
-          },
-        ],
+        attributes: ['name', 'emailid', 'usertype'], // Specify the correct attributes here
+        where: { organisation: organisation }
       });
 
-      const formattedUsers = users.map((user) => {
-        const formattedUser = {
+      const campaigns = await Campaign.findAll({
+        attributes: ['campaignid', 'campaign_name'],
+        where: { organisation: organisation },
+      });
+
+      const campaignUser = await CampaignUser.findAll({
+        attributes: ['campaignid', 'emailid'],
+        where: { campaignid: campaigns.map(campaign => campaign.campaignid) }
+      });
+
+      const userCampaignsMap = {};
+      campaignUser.forEach((cu) => {
+        if (!userCampaignsMap[cu.emailid]) {
+          userCampaignsMap[cu.emailid] = [];
+        }
+        userCampaignsMap[cu.emailid].push(cu.campaignid);
+      });
+
+      const formattedUsers = users
+        .filter(user => userCampaignsMap[user.emailid]) // Filter out users with no campaigns
+        .map((user) => ({
           name: user.name,
           emailid: user.emailid,
           usertype: user.usertype,
-          campaigns: user.CampaignUsers.map((campaignUser) => ({
-            campaignid: campaignUser.Campaign.campaignid,
-            campaign_name: campaignUser.Campaign.campaign_name,
-          })),
-        };
-        return formattedUser;
-      });
+          campaigns: campaigns
+            .filter(campaign => userCampaignsMap[user.emailid].includes(campaign.campaignid))
+            .map((campaign) => ({
+              campaignid: campaign.campaignid,
+              campaign_name: campaign.campaign_name,
+            })),
+        }));
 
       return formattedUsers;
     } catch (error) {
       throw new Error('Error fetching users by organisation: ' + error.message);
     }
-  },
+  }
+  ,
+
+
+
 
   async getUsersByOrganisationWithCampaign(organisation) {
     try {
