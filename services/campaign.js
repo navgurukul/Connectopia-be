@@ -284,7 +284,6 @@ module.exports = {
         }
     },
 
-
     async checkCampaignStatus(campaignid) {
         try {
             const result = await Campaign.findByPk(campaignid, {
@@ -302,9 +301,8 @@ module.exports = {
             console.error('Error checking campaign status:', error);
             throw error;
         }
-    }
+    },
 
-
-
+    
 
 };

@@ -171,7 +171,7 @@ module.exports = {
       const keysData = await CampaignConfig.findAll({
         attributes: ['key', 'pageno'],
 
-        where: { campaignid }
+        where: { campaignid: campaignid }
       });
 
       return keysData.map(row => ({ key: row.key, pageno: row.pageno }));

@@ -37,22 +37,22 @@ router.post('/api/createNewCampaign', async (req, res) => {
 
 router.get('/nextCampaignId', async (req, res) => {
   try {
-      const campaignId = await campaignService.getNextCampaignId();
-      res.status(200).json({ CampaignId: campaignId });
+    const campaignId = await campaignService.getNextCampaignId();
+    res.status(200).json({ CampaignId: campaignId });
   } catch (error) {
-      console.error('Error:', error);
-      res.status(500).send('Server error');
+    console.error('Error:', error);
+    res.status(500).send('Server error');
   }
 });
 
 router.post('/setStatus', async (req, res) => {
   const { status_value, campaignname } = req.body;
   try {
-      await campaignService.updateCampaignStatus(campaignname, status_value);
-      res.status(200).send('Data updated successfully');
+    await campaignService.updateCampaignStatus(campaignname, status_value);
+    res.status(200).send('Data updated successfully');
   } catch (error) {
-      console.error('Error updating data: ', error);
-      res.status(500).send('Error updating data');
+    console.error('Error updating data: ', error);
+    res.status(500).send('Error updating data');
   }
 });
 
@@ -281,7 +281,7 @@ router.get('/allsignedurls/:campaignid/:scantype', async (req, res) => {
     const currentDate = currentMoment.format('YYYY-MM-DD');
 
     // Query campaign details from the database
-    const campaign = await campaignService.findByPk(campaignid);
+    const campaign = await campaignService.checkCampaignStatus(campaignid);
 
     if (!campaign || campaign.status === 'inactive' || currentDate < campaign.startdate || currentDate > campaign.enddate) {
       return res.status(400).send('Cannot launch campaign');
@@ -299,16 +299,21 @@ router.get('/allsignedurls/:campaignid/:scantype', async (req, res) => {
     const groupedResponse = {}; // Grouped response object
 
     // Loop through keysData to generate signed URLs and group by page number
-    keysData.forEach((data) => {
-      // Generate signed URL for each key
-      const signedURL = image.generateSignedURL(data.key);
+    for (const data of keysData) {
+      try {
+        // Generate signed URL for each key
+        const signedURL = await image.getPresignedUrl(data.key);
 
-      // Group by page number
-      if (!groupedResponse[data.pageno]) {
-        groupedResponse[data.pageno] = [];
+        // Group by page number
+        if (!groupedResponse[data.pageno]) {
+          groupedResponse[data.pageno] = [];
+        }
+        groupedResponse[data.pageno].push({ key: data.key, value: signedURL });
+      } catch (error) {
+        console.error('Error generating presigned URL:', error);
+        // Handle error if necessary
       }
-      groupedResponse[data.pageno].push({ key: data.key, value: signedURL });
-    });
+    }
 
     res.status(200).send(groupedResponse);
   } catch (error) {
