@@ -80,7 +80,7 @@ router.get('/users_by_organisation/:organisation', async (req, res) => {
   }
 });
 
-router.get('/users_by_organisation/associated/:organisation', async (req, res) => {
+router.get('/api/users_by_organisation/:organisation', async (req, res) => {
   const organisation = req.params.organisation;
 
   try {

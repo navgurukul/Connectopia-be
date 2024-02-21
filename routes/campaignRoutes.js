@@ -408,4 +408,17 @@ router.get('/allsignedurls/:campaignid/:scantype', async (req, res) => {
 //   }
 // });
 
+router.delete('/delete-image/:campaignid/:pageno/:key', async (req, res) => {
+  const { campaignid, pageno, key } = req.params;
+
+  try {
+    await image.deleteImage(campaignid, pageno, key);
+    await image.deleteImageData(campaignid, pageno, key);
+    res.status(200).send('Successfully deleted the image from S3 and its data from the database.');
+  } catch (error) {
+    console.error('Error deleting the image:', error);
+    res.status(500).send('Failed to delete the image and its data.');
+  }
+});
+
 module.exports = router;

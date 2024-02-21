@@ -1,6 +1,4 @@
 const express = require('express');
-const moment = require('moment-timezone');
-
 const router = express.Router();
 const custServices = require('../services/custServices');
 
@@ -16,6 +14,22 @@ router.get('/getPlayersList/:campaignid', async (req, res) => {
     } catch (error) {
         console.error('Error fetching data:', error);
         res.status(500).json({ message: 'Error fetching data: ' + error });
+    }
+});
+
+router.post('/addPlayerDetails', async (req, res) => {
+    const { name, phonenumber, emailid, campaignid } = req.body;
+
+    try {
+        if (!name || !phonenumber || !campaignid) {
+            return res.status(400).json({ message: 'Incomplete details' });
+        }
+
+        const result = await custServices.addPlayerDetails(name, phonenumber, campaignid, emailid);
+        res.status(200).send(result);
+    } catch (error) {
+        console.error('Error adding player details:', error);
+        res.status(500).send('Failed to add player details.');
     }
 });
 module.exports = router;

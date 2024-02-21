@@ -14,17 +14,17 @@ const app = express();
 app.use(bodyParser.json());
 
 // Routes
-app.use('/api/auth', authService);
-app.use('/api/cmsUser', cmsUser);
-app.use('/api/organisation', organisation);
-app.use('/api/campaign', campaign);
-app.use('/api/otp', otpVerification);
-app.use('/api/custData', custData);
+app.use('/', authService);
+app.use('/', cmsUser);
+app.use('/', organisation);
+app.use('/', campaign);
+app.use('/', otpVerification);
+app.use('/', custData);
 
 // Database Connection
 sequelize
-.authenticate()
-.then(() => {
+  .authenticate()
+  .then(() => {
     console.log('Database synced');
   })
   .catch((error) => {

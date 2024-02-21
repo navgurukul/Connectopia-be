@@ -10,7 +10,7 @@ require('dotenv').config();
 const JWT_SECRET = process.env.JWT_SECRET; // Make sure to keep this secret
 
 // user login api to authenticate user and get a token
-router.post('/login', async (req, res) => {
+router.post('/newLogin', async (req, res) => {
     const { emailid, password } = req.body;
 
     try {
