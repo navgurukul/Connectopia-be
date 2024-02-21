@@ -1,6 +1,7 @@
-// app.js
 const express = require('express');
 const bodyParser = require('body-parser');
+const https = require('https');
+const fs = require('fs');
 const sequelize = require('./config/database');
 const authService = require('./routes/authRoutes');
 const cmsUser = require('./routes/cmsUser');
@@ -31,8 +32,21 @@ sequelize
     console.error('Error syncing database:', error);
   });
 
-// Start Server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// HTTPS Options
+const httpsOptions = {
+  key: fs.readFileSync('D:\\Skillmuni.in SSL Certificate file\\skillmuni_key.pem'), 
+  cert: fs.readFileSync('D:\\Skillmuni.in SSL Certificate file\\skillmuni_certificate.crt'),
+  passphrase: 'Tgc@0987'
+};
+
+// Start HTTPS Server
+const PORT_HTTPS = process.env.PORT || 8080;
+const server = https.createServer(httpsOptions, app).listen(PORT_HTTPS, () => {
+  console.log(`Server running on https://localhost:${PORT_HTTPS}/`);
+});
+
+// Start HTTP Server (optional, you may remove this if you only want HTTPS)
+const PORT_HTTP = process.env.PORT || 3000;
+app.listen(PORT_HTTP, () => {
+  console.log(`Server is running on port ${PORT_HTTP}`);
 });
