@@ -4,7 +4,7 @@ const AWS = require('aws-sdk');
 const multer = require("multer");
 const Sequelize = require('sequelize');
 const storage = multer.memoryStorage();
-const CampaignConfig = require('../models/campaignConfig'); // Assuming you have a model for CampaignConfig
+// const CampaignConfig = require('../models/campaignConfig'); // Assuming you have a model for CampaignConfig
 const Campaign = require('../models/campaign');
 require('dotenv').config();
 

@@ -10,7 +10,6 @@ Scan.init({
         primaryKey: true,
         autoIncrement: true
     },
-
     page_number: {
         type: DataTypes.INTEGER,
         allowNull: false
@@ -31,10 +30,21 @@ Scan.init({
             key: 'id'
         }
     },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
+      }
 }, {
     sequelize,
     modelName: 'Scan',
     tableName: 'stage_config', // Set table name to 'stage_config'
+    timestamps:false
 });
 
 

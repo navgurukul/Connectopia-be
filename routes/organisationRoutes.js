@@ -13,6 +13,25 @@ router.post('/organisations', async (req, res) => {
     }
   });
 
+  router.get('/organisations/:id', async (req, res) => {
+    try {
+      const organisationId = req.params.id;
+  
+      // Call the service function to get the organization with campaigns
+      const organisationWithCampaigns = await organisationService.getOrganisationWithCampaignsById(organisationId);
+  
+      if (!organisationWithCampaigns) {
+        return res.status(404).json({ error: 'Organisation not found' });
+      }
+  
+      // Return the organization with its campaigns as a response
+      res.json(organisationWithCampaigns);
+    } catch (error) {
+      console.error('Error in organisation route:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
 // router.get('/organisation/:name', async (req, res) => {
 //     const { name } = req.params;
 

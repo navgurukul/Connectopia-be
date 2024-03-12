@@ -38,11 +38,23 @@ Customer.init({
             model: Quest, // Name of the table
             key: 'id'
         }
-    }
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
+      }
 }, {
     sequelize,
     modelName: 'Customer',
     tableName: 'customer_data', // Set table name to 'customer_data'
+    timestamps:false
+
 });
 
 

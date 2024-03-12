@@ -3,7 +3,7 @@ const sequelize = require('sequelize')
 const AWS = require('aws-sdk');
 require('dotenv').config();
 const Organisation = require('../models/organisation');
-// const Campaign = require('../models/Campaign');
+const Campaign = require('../models/Campaign');
 // const CampaignUser = require('../models/CampaignUser');
 // const CampaignConfig = require('../models/campaignConfig');
 // const CustData = require('../models/CustData');
@@ -20,8 +20,23 @@ module.exports = {
         } catch (error) {
             throw new Error(`Error creating organisation: ${error.message}`);
         }
-    }
+    },
 
+    async getOrganisationWithCampaignsById(organisationId) {
+        try {
+            // Find the organization by ID and include its associated campaigns
+            const organisationWithCampaigns = await Organisation.findByPk(organisationId, {
+                include: [{
+                    model: Campaign
+                }]
+            });
+            return organisationWithCampaigns;
+        } catch (error) {
+            throw new Error('Error fetching organisation with campaigns:-->', error.message);
+
+        }
+
+    }
     // async getOrganisationDetails(name) {
     //     try {
     //         const organisation = await Campaign.findAll({

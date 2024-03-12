@@ -19,6 +19,8 @@ router.post('/campaigns', async (req, res) => {
   }
 });
 
+
+
 // router.get('/nextCampaignId', async (req, res) => {
 //   try {
 //     const campaignId = await campaignService.getNextCampaignId();

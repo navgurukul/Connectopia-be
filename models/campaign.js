@@ -14,7 +14,8 @@ Campaign.init({
     },
     name: {
         type: DataTypes.STRING(255),
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
     description: {
         type: DataTypes.STRING(255),
@@ -48,11 +49,22 @@ Campaign.init({
             key: 'id'
         }
     },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
+      }
 }, {
     sequelize,
     modelName: 'Campaign',
     tableName: 'campaign', // Assuming table name is 'campaigns'
     timestamps: false // Disable timestamps (createdAt, updatedAt)
+
 });
 
 // Export the Campaign model

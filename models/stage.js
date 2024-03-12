@@ -63,11 +63,23 @@ Stage.init({
             model: Quest, // Reference the Quest model
             key: 'id' // Referencing the primary key of the Quest model
         }
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
     }
 }, {
     sequelize,
     modelName: 'Stage',
     tableName: 'stages',
+    timestamps: false
+
 });
 
 

@@ -4,8 +4,7 @@ require('dotenv').config();
 
 const sequelize = require('../config/database');
 const Campaign = require('../models/campaign');
-const CampaignUser = require('../models/campaignUser');
-const CampaignConfig = require('../models/campaignConfig')
+
 const CmsUser = require('../models/cmsUser');
 const image = require('./image');
 const { Log } = require('@tensorflow/tfjs');
@@ -20,7 +19,6 @@ const S3 = new AWS.S3(awsConfig);
 module.exports = {
 
     async createCampaign(data) {
-        console.log('data', data);
         try {
             const campaign = await Campaign.create(data);
             return campaign;
