@@ -1,43 +1,46 @@
-// models/cmsUser.js
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
-const CampaignUser = require('./campaignUser'); // Import CampaignUser model
+const Quest = require('./quest'); // Import the Quest model
+const Organisation = require('./organisation');
 
-class CMSUser extends Model { }
+class CMS extends Model { }
 
-CMSUser.init({
-  emailid: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  organisation: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  usertype: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  date: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-  },
+CMS.init({
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    usertype: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    organisation_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: Organisation, // Reference to the Quest model
+            key: 'id'
+        }
+    },
 }, {
-  sequelize,
-  modelName: 'CMSUser',
-  tableName: 'cmsusers',
+    sequelize,
+    modelName: 'CMS',
+    tableName: 'cms_users',
+    timestamps: false
 });
 
-// Define the association with CampaignUser model
-CMSUser.hasMany(CampaignUser, { foreignKey: 'emailid', sourceKey: 'emailid' });
-
-module.exports = CMSUser;
+module.exports = CMS;

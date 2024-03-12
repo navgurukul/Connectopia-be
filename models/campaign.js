@@ -1,30 +1,30 @@
 // Import Sequelize and the database connection
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
-
+const Organisation = require('./organisation')
 // Define the Campaign model
-class Campaign extends Model {}
+class Campaign extends Model { }
 
 // Define the Campaign schema
 Campaign.init({
-    campaignid: {
+    id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    organisation: {
+    name: {
         type: DataTypes.STRING(255),
         allowNull: false
+    },
+    description: {
+        type: DataTypes.STRING(255),
+        allowNull: true
     },
     scantype: {
         type: DataTypes.STRING(255),
         allowNull: false
     },
-    emailid: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-    },
-    campaign_name: {
+    email: {
         type: DataTypes.STRING(255),
         allowNull: false
     },
@@ -36,18 +36,22 @@ Campaign.init({
         type: DataTypes.DATEONLY,
         allowNull: false
     },
-    desc: {
-        type: DataTypes.STRING(255),
-        allowNull: true // Assuming description can be optional
-    },
     status: {
         type: DataTypes.STRING(255),
         allowNull: false
-    }
+    },
+    organisation_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Organisation, // Name of the table
+            key: 'id'
+        }
+    },
 }, {
     sequelize,
     modelName: 'Campaign',
-    tableName: 'campaign_table', // Assuming table name is 'campaigns'
+    tableName: 'campaign', // Assuming table name is 'campaigns'
     timestamps: false // Disable timestamps (createdAt, updatedAt)
 });
 

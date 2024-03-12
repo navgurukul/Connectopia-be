@@ -3,7 +3,7 @@ const AWS = require('aws-sdk');
 const multer = require("multer");
 const Sequelize = require('sequelize');
 const storage = multer.memoryStorage();
-const CampaignConfig = require('../models/campaignConfig'); // Assuming you have a model for CampaignConfig
+// const CampaignConfig = require('../models/campaignConfig'); // Assuming you have a model for CampaignConfig
 const Campaign = require('../models/campaign');
 require('dotenv').config();
 
@@ -39,7 +39,7 @@ module.exports = {
         return multer({
           storage: storage,
           limits: { fileSize: 10 * 1024 * 1024 }, // 30MB for .mind files
-        });
+        }).single('image'); // Assuming 'file' as the field name for .mind files
       case 'image':
         return multer({
           storage: storage,
@@ -52,7 +52,7 @@ module.exports = {
               cb(new Error("Only jpeg, jpg, png, and svg files are allowed"), false);
             }
           }
-        });
+        }).single('image'); // Assuming 'image' as the field name for images
       case 'gif':
         return multer({
           storage: storage,
@@ -64,11 +64,12 @@ module.exports = {
               cb(new Error("Only gif files are allowed"), false);
             }
           }
-        });
+        }).single('image'); // Assuming 'gif' as the field name for gifs
       default:
         throw new Error("Invalid type");
     }
   },
+  
 
   async deleteImage(campaignid, pageno, key) {
     try {

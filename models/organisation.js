@@ -1,19 +1,41 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 
-class Organisation extends Model {}
+class Organisation extends Model { }
 
 Organisation.init({
-  organisation: {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  name: {
+    type: DataTypes.STRING(255), // Define the length for varchar columns
+    allowNull: false,
+    unique: true, // Define the column as unique
+  },
+  logo: {
     type: DataTypes.STRING(255), // Define the length for varchar columns
     allowNull: false,
   },
-  desc: {
-    type: DataTypes.STRING(255),
+  contact_name: {
+    type: DataTypes.STRING(255), // Define the length for varchar columns
     allowNull: false,
   },
-  createddate: {
-    type: DataTypes.DATE,
+  contact_email: {
+    type: DataTypes.STRING(255), // Define the length for varchar columns
+    allowNull: false,
+  },
+  contact_number: {
+    type: DataTypes.BIGINT(10), // Change the data type to BIGINT with limit 10
+    allowNull: false,
+    validate: {
+      isNumeric: true,
+      len: [10, 10], // Validate that the number has exactly 10 digits
+    },
+  },
+  description: {
+    type: DataTypes.STRING(255),
     allowNull: false,
   },
 }, {

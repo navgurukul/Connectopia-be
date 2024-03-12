@@ -73,6 +73,7 @@ app.listen(port, () => {
 
 
 //-------------api for adding cms users with (emailid,password,organisation,name,usertype)------------------
+//done
 app.post('/createNewUser', (req, res) => {
     const emailid = req.body.emailid;
     const password = req.body.password;
@@ -228,6 +229,7 @@ function upload(type) {
 
 
 //--------- api for deleting object from AWS s3 and data from AWS RDS-----------
+//done
 app.delete('/delete-image/:campaignid/:pageno/:key', async (req, res) => {
     const { campaignid, pageno, key } = req.params;
 
@@ -281,6 +283,7 @@ function deleteImage(campaignid, pageno, key) {
 // --------------------------api end--------------------------------------------
 
 //----------------api for login and sending JWT token once verified successfully-----------------
+//done
 const jwt = require('jsonwebtoken');
 const { connect } = require('http2');
 const JWT_SECRET = 'your_secret_key'; // Make sure to keep this secret
@@ -391,6 +394,7 @@ app.post('/newLogin', (req, res) => {
 
 
 //------- api for deleting cms user account with emailid-------
+//done
 app.delete('/deletecmsuser', (req, res) => {
     const emailid = req.body.emailid;
 
@@ -430,6 +434,7 @@ app.delete('/deletecmsuser', (req, res) => {
 
 
 //-----------------------api for uploading gifs only--------------------------
+//done
 app.post("/uploadgif/:campaignid/:pageno/:Key/:scantype", upload('gif').single('image'), async (req, res) => {
     const campaignid = req.params.campaignid;
     const pageno = req.params.pageno;
@@ -499,12 +504,13 @@ const uploadS3 = (fileData, campaignid, pageno, compositeKey) => {
 
 
 //--------------code for uploading image(.png/.jpeg/.jpg) with campaignid,pageno,key & scantype------------
+//done
 app.post("/uploadimage/:campaignid/:pageno/:key/:scantype", upload('image').single('image'), async (req, res) => {
     const campaignid = req.params.campaignid;
     const pageno = req.params.pageno;
     const key = req.params.key;
     const scantype = req.params.scantype;
-
+    console.log("truurr");
     try {
         console.log(req.file);
         if (!req.file) {
@@ -524,7 +530,7 @@ app.post("/uploadimage/:campaignid/:pageno/:key/:scantype", upload('image').sing
         }
 
         const compositeKey = `${key}.${fileExtension}`;
-
+        console.log(compositeKey);
         await uploadToS3(req.file.buffer, campaignid, pageno, compositeKey);
 
         pool.getConnection((err, connection) => {
@@ -573,8 +579,8 @@ const uploadToS3 = (fileData, campaignid, pageno, compositeKey) => {
 //------------------------end of code------------------------
 
 //-----------------api for getting all the signedurls orderby pageno after checking the status,enddate,startdate---------------------- 
+//done ++++
 app.get('/allsignedurls/:campaignid/:scantype', async (req, res) => {
-    console.log("logg");
     try {
         const { campaignid, scantype } = req.params;
         const currentMoment = moment().tz('Asia/Kolkata');
@@ -699,6 +705,7 @@ function getPresignedUrl(campaignid, pageno, key) {
 //---------------------end of code------------------
 
 //-------------------update gifs---------------------------
+//done
 app.post("/updategif/:campaignid/:pageno/:Key/:scantype", upload('gif').single('image'), async (req, res) => {
     const campaignid = req.params.campaignid;
     const pageno = req.params.pageno;
@@ -798,6 +805,7 @@ const checkkeyinDB = (campaignid, pageno, compositeKey) => {
 
 
 //-----------reset password by superadmin-------------------
+//done
 app.post('/updatepassword', async (req, res) => {
     const { emailid, newpassword } = req.body;
 
@@ -840,6 +848,7 @@ app.post('/updatepassword', async (req, res) => {
 
 
 //------------api for sending otp------------
+//done
 app.post('/sendotp/:mobilenumber', (req, res) => {
     const { mobilenumber } = req.params;
 
@@ -871,6 +880,7 @@ app.post('/sendotp/:mobilenumber', (req, res) => {
 //--------------end of code--------------------
 
 //-------------code for verifying otp----------------
+//done
 app.get('/verifyOtp/:mobilenumber/:otp', (req, res) => {
     const mobilenumber = req.params.mobilenumber;
     const otp = req.params.otp;
@@ -904,6 +914,7 @@ app.get('/verifyOtp/:mobilenumber/:otp', (req, res) => {
 //--------------end of code--------------------
 
 // -------api for getting the campaign details as asked in slack (bikram)----------
+//done ++++
 app.get('/campaigndetails/:emailid/:usertype', (req, res) => {
     const { emailid, usertype } = req.params;
 console.log(emailid,usertype);
@@ -956,6 +967,7 @@ console.log(emailid,usertype);
 
 
 //----------api for getting the list of organisation table -------------
+//done ++++
 app.get('/organisationlist/:emailid/:usertype', (req, res) => {
     const { emailid, usertype } = req.params;
     if (usertype === 'superadmin') {
@@ -1007,6 +1019,7 @@ app.get('/organisationlist/:emailid/:usertype', (req, res) => {
 
 
 //---------unique organisation-----------------
+//done
 app.post('/organisation', (req, res) => {
     const { organisation, desc } = req.body;
     const currentMoment = moment().tz('Asia/Kolkata');
@@ -1051,6 +1064,7 @@ app.post('/organisation', (req, res) => {
 
 
 //-code for converting (.png/.jpg/.jpeg) file to .mind image and storing in database and overriding if the same key is present in database----
+//done
 app.post('/compile-upload/:campaignid/:pageno/:Key/:scantype', upload('mind').single('image'), async (req, res) => {
 
     const campaignid = req.params.campaignid;
@@ -1183,6 +1197,7 @@ app.post('/compile-upload/:campaignid/:pageno/:Key/:scantype', upload('mind').si
 //-------------------------end of code-------------------------------------
 
 //-----------api for gatting the list of customers(players) based on campaignid---------------- 
+//done ++++
 app.get('/getPlayersList/:campaignid', async (req, res) => {
     const campaignid = req.params.campaignid;
     if (!campaignid) {
@@ -1208,6 +1223,7 @@ app.get('/getPlayersList/:campaignid', async (req, res) => {
 //----------end of code---------------------
 
 //---------api for setting status of campaign active/inactive----------
+//done
 app.post('/setStatus', (req, res) => {
     const { status_value, campaignname } = req.body;
     pool.getConnection((err, connection) => {
@@ -1230,6 +1246,7 @@ app.post('/setStatus', (req, res) => {
 //--------end of code---------------------------
 
 //---------api for getting the campaignlist based on organisation + all the users emailid with campaignid+usertype---------
+//done ++++
 app.get('/organisation/:name', (req, res) => {
     const { name } = req.params;
 
@@ -1270,6 +1287,7 @@ app.get('/organisation/:name', (req, res) => {
 //----------------end of code---------------
 
 //-----api for getting all the campaign details under a specific admin including the emailid sent in request
+//done
 app.get('/campaignsByEmailid/:emailid', (req, res) => {
     const { emailid } = req.params;
 
@@ -1316,6 +1334,7 @@ app.get('/campaignsByEmailid/:emailid', (req, res) => {
 
 
 //-----new api for creating campaignid and sending in response---------------------- 
+//done ++++
 app.get('/nextCampaignId', (req, res) => {
 
     pool.getConnection((err, connection) => {
@@ -1340,8 +1359,8 @@ app.get('/nextCampaignId', (req, res) => {
 //------------end of code--------------------
 
 //--api for getting the users list(name,emailid,usertype,and the campaigns they are associated with) based on organisation name----
+//done ++++
 app.get('/users_by_organisation/:organisation', (req, res) => {
-    console.log("logggs");
     const organisation = req.params.organisation;
 
     const query = `
@@ -1400,6 +1419,7 @@ app.get('/users_by_organisation/:organisation', (req, res) => {
 
 
 //--------api for editing created campaigns(startdate/enddate/user&admins)----------------
+//done
 app.post('/editCampaign', (req, res) => {
     const { startdate, enddate, desc, campaign_name, newcampaign_name } = req.body;
 
@@ -1459,6 +1479,7 @@ app.post('/editCampaign', (req, res) => {
 
 
 //---------api for deleting the campaigns by campaign_name---------------
+//done
 app.delete('/deleteCampaign/:campaign_name', (req, res) => {
     const { campaign_name } = req.params;
 
@@ -1575,6 +1596,7 @@ app.delete('/deleteCampaign/:campaign_name', (req, res) => {
 
 
 //-----------api for editing user/admin---------
+//done
 app.post('/editUserDetails', async (req, res) => {
     const { name, password, usertype, oldemailid, newemailid } = req.body;
 
@@ -1651,6 +1673,7 @@ app.post('/editUserDetails', async (req, res) => {
 
 
 //----api for editing organisation------
+//done
 app.post('/editOrganisation', (req, res) => {
     const { organisation, neworganisation, desc } = req.body;
 
@@ -1759,6 +1782,7 @@ app.post('/editOrganisation', (req, res) => {
 
 
 //-----assign multiple campaigns to user/admin-----------
+//done
 app.post('/assignCampaignToUser', (req, res) => {
     const { emailid, campaign_name } = req.body;
 
@@ -1798,6 +1822,7 @@ app.post('/assignCampaignToUser', (req, res) => {
 
 
 //-----api for removing campaign from user/admin--------
+//done
 app.delete('/removeCampaignFromUser', (req, res) => {
     const { emailid, campaign_name } = req.body;
 
@@ -1849,6 +1874,7 @@ app.delete('/removeCampaignFromUser', (req, res) => {
 
 
 //------api for deleteing the organisation and all its related data across all tables and S3 bucket-------
+//done
 app.delete('/deleteOrganizationData/:organization_name', (req, res) => {
     const organization = req.params.organization_name;
 
@@ -1988,6 +2014,7 @@ app.delete('/deleteOrganizationData/:organization_name', (req, res) => {
 
 
 //-----api for adding player details (phonenumber,name,emailid,campaignid)---------
+//done
 app.post('/addPlayerDetails', (req, res) => {
     const currentMoment = moment().tz('Asia/Kolkata');
     const date = currentMoment.format('YYYY-MM-DD HH:mm:ss');
@@ -2051,6 +2078,7 @@ app.post('/addPlayerDetails', (req, res) => {
 //--------end of code-----------------
 
 //----------api for getting all the signedurls orderby pageno without checking the status,enddate,startdate---------------------- 
+//done ++++
 app.get('/withoutStatus/allsignedurls/:campaignid/:scantype', async (req, res) => {
     try {
         const { campaignid, scantype } = req.params;
@@ -2144,6 +2172,7 @@ function getPresignedUrl(campaignid, pageno, key) {
 
 
 //-------- new api for creating campaign with all the details(usertype and emailid) as per latest requirements----------------
+//done
 app.post('/api/createNewCampaign', (req, res) => {
     const { campaignid, organisation, campaignname, startdate, enddate, desc, scantype, usertype, emailid } = req.body;
 
@@ -2226,6 +2255,7 @@ app.post('/api/createNewCampaign', (req, res) => {
 
 
 //--api for getting the users list(name,emailid,usertype,and the campaigns they are associated with & empty if they are not associated with any campaign) based on organisation name----
+//done ++++
 app.get('/api/users_by_organisation/:organisation', (req, res) => {
     const organisation = req.params.organisation;
 
@@ -2287,6 +2317,7 @@ app.get('/api/users_by_organisation/:organisation', (req, res) => {
 //---------end of code-------------------
 
 //--api for updating image in S3 bucket and checks in database if key already exists-----
+//done
 app.post("/updateimage/:campaignid/:pageno/:key/:scantype", upload('image').single('image'), async (req, res) => {
     const campaignid = req.params.campaignid;
     const pageno = req.params.pageno;

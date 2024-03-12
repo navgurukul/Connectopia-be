@@ -3,132 +3,125 @@ const sequelize = require('sequelize')
 const AWS = require('aws-sdk');
 require('dotenv').config();
 const Organisation = require('../models/organisation');
-const Campaign = require('../models/Campaign');
-const CampaignUser = require('../models/CampaignUser');
-const CampaignConfig = require('../models/campaignConfig');
-const CustData = require('../models/CustData');
-const cmsUser = require('../models/CMSUser');
-const CMSUserService = require('./cmsUser');
+// const Campaign = require('../models/Campaign');
+// const CampaignUser = require('../models/CampaignUser');
+// const CampaignConfig = require('../models/campaignConfig');
+// const CustData = require('../models/CustData');
+// const cmsUser = require('../models/CMSUser');
+// const CMSUserService = require('./cmsUser');
 
 
 module.exports = {
 
-    async createOrganisation(organisation, desc) {
+    async createOrganisation(data) {
         try {
-            const existingOrganisation = await Organisation.findOne({ where: { organisation } });
-
-            if (existingOrganisation) {
-                throw new Error('Organisation already exists');
-            }
-
-            await Organisation.create({ organisation, desc });
-
-            return 'Data inserted';
-        } catch (error) {
-            throw new Error('Error creating organisation: ' + error.message);
-        }
-    },
-
-    async getOrganisationDetails(name) {
-        try {
-            const organisation = await Campaign.findAll({
-                attributes: ['campaignid', 'campaign_name', 'scantype', 'desc',
-                    [sequelize.literal('DATE_FORMAT(startdate, "%Y-%m-%d")'), 'startdate'],
-                    [sequelize.literal('DATE_FORMAT(enddate, "%Y-%m-%d")'), 'enddate'], 'status'],
-                where: { organisation: name }
-            });
-            if (!organisation) {
-                throw new Error('Organisation not found');
-            }
+            const organisation = await Organisation.create(data);
             return organisation;
         } catch (error) {
-            throw new Error('Error fetching organisation details: ' + error.message);
+            throw new Error(`Error creating organisation: ${error.message}`);
         }
-    },
+    }
 
-    async editOrganisation(organisationName, newOrganisationName, newDesc) {
-        try {
-            const organisation = await Organisation.findOne({ where: { organisation: organisationName } });
+    // async getOrganisationDetails(name) {
+    //     try {
+    //         const organisation = await Campaign.findAll({
+    //             attributes: ['campaignid', 'campaign_name', 'scantype', 'desc',
+    //                 [sequelize.literal('DATE_FORMAT(startdate, "%Y-%m-%d")'), 'startdate'],
+    //                 [sequelize.literal('DATE_FORMAT(enddate, "%Y-%m-%d")'), 'enddate'], 'status'],
+    //             where: { organisation: name }
+    //         });
+    //         if (!organisation) {
+    //             throw new Error('Organisation not found');
+    //         }
+    //         return organisation;
+    //     } catch (error) {
+    //         throw new Error('Error fetching organisation details: ' + error.message);
+    //     }
+    // },
 
-            if (!organisation) {
-                throw new Error('Organisation not found');
-            }
+    // async editOrganisation(organisationName, newOrganisationName, newDesc) {
+    //     try {
+    //         const organisation = await Organisation.findOne({ where: { organisation: organisationName } });
 
-            const updateFields = {};
-            if (newOrganisationName) {
-                updateFields.organisation = newOrganisationName;
-            }
-            if (newDesc) {
-                updateFields.desc = newDesc;
-            }
+    //         if (!organisation) {
+    //             throw new Error('Organisation not found');
+    //         }
 
-            await Organisation.update(updateFields, { where: { organisation: organisationName } });
+    //         const updateFields = {};
+    //         if (newOrganisationName) {
+    //             updateFields.organisation = newOrganisationName;
+    //         }
+    //         if (newDesc) {
+    //             updateFields.desc = newDesc;
+    //         }
 
-            return 'Organisation updated successfully';
-        } catch (error) {
-            throw new Error('Error updating organisation: ' + error.message);
-        }
-    },
+    //         await Organisation.update(updateFields, { where: { organisation: organisationName } });
 
-    async deleteorganisationData(organisationName) {
-        const transaction = await sequelize.transaction();
+    //         return 'Organisation updated successfully';
+    //     } catch (error) {
+    //         throw new Error('Error updating organisation: ' + error.message);
+    //     }
+    // },
 
-        try {
-            // Delete organisation
-            await Organisation.destroy({ where: { organisation: organisationName }, transaction });
+    // async deleteorganisationData(organisationName) {
+    //     const transaction = await sequelize.transaction();
 
-            // Fetch campaign IDs
-            const campaignIds = await Campaign.findAll({ where: { organisation: organisationName }, attributes: ['campaignid'], transaction });
-            const campaignIdsArray = campaignIds.map(campaign => campaign.campaignid);
+    //     try {
+    //         // Delete organisation
+    //         await Organisation.destroy({ where: { organisation: organisationName }, transaction });
 
-            // Delete campaigns and related data
-            await Campaign.destroy({ where: { organisation: organisationName }, transaction });
-            await CampaignConfig.destroy({ where: { campaignid: campaignIdsArray }, transaction });
-            await CustData.destroy({ where: { campaignid: campaignIdsArray }, transaction });
-            await CampaignUser.destroy({ where: { campaignid: campaignIdsArray }, transaction });
+    //         // Fetch campaign IDs
+    //         const campaignIds = await Campaign.findAll({ where: { organisation: organisationName }, attributes: ['campaignid'], transaction });
+    //         const campaignIdsArray = campaignIds.map(campaign => campaign.campaignid);
 
-            // Delete users
-            await cmsUser.destroy({ where: { organisation: organisationName }, transaction });
+    //         // Delete campaigns and related data
+    //         await Campaign.destroy({ where: { organisation: organisationName }, transaction });
+    //         await CampaignConfig.destroy({ where: { campaignid: campaignIdsArray }, transaction });
+    //         await CustData.destroy({ where: { campaignid: campaignIdsArray }, transaction });
+    //         await CampaignUser.destroy({ where: { campaignid: campaignIdsArray }, transaction });
 
-            // Commit the transaction
-            await transaction.commit();
+    //         // Delete users
+    //         await cmsUser.destroy({ where: { organisation: organisationName }, transaction });
 
-            // Delete files from S3
-            const s3 = new AWS.S3();
-            const bucketName = process.env.BUCKET_NAME; // Replace with your bucket name
-            const deleteFromS3Promises = campaignIdsArray.map(campaignId => {
-                const s3DeleteParams = {
-                    Bucket: bucketName,
-                    Prefix: campaignId + '/', // Assuming the campaignId is used as the folder name in S3
-                };
-                return s3.deleteObjects({ Bucket: bucketName, Delete: { Objects: [{ Key: s3DeleteParams.Prefix }] } }).promise();
-            });
+    //         // Commit the transaction
+    //         await transaction.commit();
 
-            await Promise.all(deleteFromS3Promises);
+    //         // Delete files from S3
+    //         const s3 = new AWS.S3();
+    //         const bucketName = process.env.BUCKET_NAME; // Replace with your bucket name
+    //         const deleteFromS3Promises = campaignIdsArray.map(campaignId => {
+    //             const s3DeleteParams = {
+    //                 Bucket: bucketName,
+    //                 Prefix: campaignId + '/', // Assuming the campaignId is used as the folder name in S3
+    //             };
+    //             return s3.deleteObjects({ Bucket: bucketName, Delete: { Objects: [{ Key: s3DeleteParams.Prefix }] } }).promise();
+    //         });
 
-            return 'Data deletion completed successfully.';
-        } catch (error) {
-            // Rollback the transaction in case of any error
-            await transaction.rollback();
-            throw new Error('Error deleting organisation data: ' + error.message);
-        }
-    },
+    //         await Promise.all(deleteFromS3Promises);
 
-    async getOrganisations(emailid, usertype) {
-        if (usertype === 'superadmin') {
-            return await Organisation.findAll({
-                attributes: ['organisation', 'desc', 'createddate'],
-            });;
-        } else if (usertype === 'admin' || usertype === 'user') {
-            const userOrganisation = await CMSUserService.getUserOrganisation(emailid);
-            return await Organisation.findAll({
-                attributes: ['organisation', 'desc', 'createddate'],
-                where: { organisation: userOrganisation }
-            });
-        } else {
-            throw new Error('Invalid user type');
-        }
-    },
+    //         return 'Data deletion completed successfully.';
+    //     } catch (error) {
+    //         // Rollback the transaction in case of any error
+    //         await transaction.rollback();
+    //         throw new Error('Error deleting organisation data: ' + error.message);
+    //     }
+    // },
+
+    // async getOrganisations(emailid, usertype) {
+    //     if (usertype === 'superadmin') {
+    //         return await Organisation.findAll({
+    //             attributes: ['organisation', 'desc', 'createddate'],
+    //         });;
+    //     } else if (usertype === 'admin' || usertype === 'user') {
+    //         const userOrganisation = await CMSUserService.getUserOrganisation(emailid);
+    //         return await Organisation.findAll({
+    //             attributes: ['organisation', 'desc', 'createddate'],
+    //             where: { organisation: userOrganisation }
+    //         });
+    //     } else {
+    //         throw new Error('Invalid user type');
+    //     }
+    // },
 
 
 
