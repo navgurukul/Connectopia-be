@@ -25,10 +25,10 @@ StageConfig.init({
     stage_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-            model: Stage,
-            key: 'id'
-        }
+        // references: {
+        //     model: Stage,
+        //     key: 'id'
+        // }
     },
     created_at: {
         type: DataTypes.DATE,

@@ -45,10 +45,10 @@ Stage.init({
     campaign_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-            model: Campaign,
-            key: 'id'
-        }
+        // references: {
+        //     model: Campaign,
+        //     key: 'id'
+        // }
     },
     created_at: {
         type: DataTypes.DATE,

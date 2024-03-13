@@ -4,17 +4,16 @@ const https = require('https');
 const fs = require('fs');
 const sequelize = require('./config/database');
 // const authService = require('./routes/authRoutes');
-// const cmsUser = require('./routes/cmsUser');
 const organisation = require('./routes/organisationRoutes');
+const cmsUser = require('./routes/cmsUser');
 const campaign = require('./routes/campaignRoutes');
 // const otpVerification = require('./routes/otpVerification');
 // const custData = require('./routes/custRoutes');
 
 //new schemas
-const Quest = require('./models/quest');
-const Stage = require('./models/stage');
-const Customer = require('./models/customerData');
-const CMS = require('./models/cmsUser');
+// const Stage = require('./models/stage');
+// const Customer = require('./models/customerData');
+// const CMS = require('./models/cmsUser');
 
 const StageConfig = require('./models/stageConfig');
 
@@ -24,8 +23,8 @@ app.use(bodyParser.json());
 
 // Routes
 // app.use('/', authService);
-// app.use('/', cmsUser);
 app.use('/', organisation);
+app.use('/', cmsUser);
 app.use('/', campaign);
 // app.use('/', otpVerification);
 // app.use('/', custData);

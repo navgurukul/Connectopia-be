@@ -1,7 +1,6 @@
 // services/userService.js
 const bcrypt = require('bcrypt');
 const CMSUser = require('../models/cmsUser');
-const CampaignUser = require('../models/CampaignUser');
 const Campaign = require('../models/Campaign');
 
 module.exports = {

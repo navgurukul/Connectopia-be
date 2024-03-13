@@ -27,18 +27,18 @@ Customer.init({
     stage_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-            model: Stage, // Name of the table
-            key: 'id'
-        }
+        // references: {
+        //     model: Stage, // Name of the table
+        //     key: 'id'
+        // }
     },
     campaign_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-            model: Campaign, // Name of the table
-            key: 'id'
-        }
+        // references: {
+        //     model: Campaign, // Name of the table
+        //     key: 'id'
+        // }
     },
     created_at: {
         type: DataTypes.DATE,

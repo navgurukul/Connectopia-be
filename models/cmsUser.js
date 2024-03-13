@@ -1,6 +1,7 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 const Organisation = require('./organisation');
+const Campaign = require('./campaign');
 
 class CMSUser extends Model { }
 
@@ -27,13 +28,21 @@ CMSUser.init({
         type: DataTypes.ENUM('superadmin', 'admin', 'user'), // Define ENUM values
         allowNull: false
     },
+    campaign_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        // references: {
+        //     model: Campaign,
+        //     key: 'id'
+        // }
+    },
     organisation_id: {
         type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-            model: Organisation,
-            key: 'id'
-        }
+        allowNull: false,
+        // references: {
+        //     model: Organisation,
+        //     key: 'id'
+        // }
     },
     created_at: {
         type: DataTypes.DATE,

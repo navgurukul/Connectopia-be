@@ -3,6 +3,7 @@ const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 const Organisation = require('./organisation')
 const Stage = require('./stage'); 
+const CMSUser = require('./cmsUser');
 
 
 class Campaign extends Model { }
@@ -73,9 +74,11 @@ Campaign.init({
 
 });
 
-Campaign.hasMany(Stage,{
+Campaign.hasMany(CMSUser,{
     foreignKey: 'campaign_id'
 });
+// Campaign.hasMany(Stage,{
+//     foreignKey: 'campaign_id'
+// });
 
-// Export the Campaign model
 module.exports = Campaign;
