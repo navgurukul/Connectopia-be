@@ -1,6 +1,7 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 const Campaign = require('./campaign');
+const CMSUser = require('./cmsUser');
 
 class Organisation extends Model { }
 
@@ -56,8 +57,7 @@ Organisation.init({
   timestamps: false, // If you don't want Sequelize to automatically manage createdAt and updatedAt fields
 });
 
-Organisation.hasMany(Campaign,{
-  foreignKey: 'organisation_id' // Specify the correct foreign key column name
-}); // Define the alias as 'campaigns' for the association
+Organisation.hasMany(Campaign, { foreignKey: 'organisation_id' });
+Organisation.hasMany(CMSUser, { foreignKey: 'organisation_id' });
 
 module.exports = Organisation;

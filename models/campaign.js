@@ -2,10 +2,11 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 const Organisation = require('./organisation')
-// Define the Campaign model
+const Stage = require('./stage'); 
+
+
 class Campaign extends Model { }
 
-// Define the Campaign schema
 Campaign.init({
     id: {
         type: DataTypes.INTEGER,
@@ -22,12 +23,13 @@ Campaign.init({
         allowNull: true
     },
     scantype: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.ENUM('qr', 'image'), // Define ENUM values
         allowNull: false
     },
     email: {
         type: DataTypes.STRING(255),
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
     startdate: {
         type: DataTypes.DATEONLY,
@@ -37,15 +39,19 @@ Campaign.init({
         type: DataTypes.DATEONLY,
         allowNull: false
     },
+    campaign_duration: {
+        type: DataTypes.TIME,
+        allowNull: false
+    },
     status: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.ENUM('active', 'inactive'),
         allowNull: false
     },
     organisation_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Organisation, // Name of the table
+            model: Organisation, 
             key: 'id'
         }
     },
@@ -53,18 +59,22 @@ Campaign.init({
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW
-      },
-      updated_at: {
+    },
+    updated_at: {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW
-      }
+    }
 }, {
     sequelize,
     modelName: 'Campaign',
     tableName: 'campaign', // Assuming table name is 'campaigns'
     timestamps: false // Disable timestamps (createdAt, updatedAt)
 
+});
+
+Campaign.hasMany(Stage,{
+    foreignKey: 'campaign_id'
 });
 
 // Export the Campaign model

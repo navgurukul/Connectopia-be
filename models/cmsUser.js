@@ -1,11 +1,10 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
-const Quest = require('./quest'); // Import the Quest model
 const Organisation = require('./organisation');
 
-class CMS extends Model { }
+class CMSUser extends Model { }
 
-CMS.init({
+CMSUser.init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -24,15 +23,15 @@ CMS.init({
         type: DataTypes.STRING,
         allowNull: false
     },
-    usertype: {
-        type: DataTypes.STRING,
+    user_type: {
+        type: DataTypes.ENUM('superadmin', 'admin', 'user'), // Define ENUM values
         allowNull: false
     },
     organisation_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-            model: Organisation, // Reference to the Quest model
+            model: Organisation,
             key: 'id'
         }
     },
@@ -40,17 +39,17 @@ CMS.init({
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW
-      },
-      updated_at: {
+    },
+    updated_at: {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW
-      }
+    }
 }, {
     sequelize,
-    modelName: 'CMS',
+    modelName: 'CMSUser',
     tableName: 'cms_users',
     timestamps: false
 });
 
-module.exports = CMS;
+module.exports = CMSUser;

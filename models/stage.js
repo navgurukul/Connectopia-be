@@ -1,8 +1,9 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 const Campaign = require('./campaign'); // Import campaign model
-const CMS = require('./cmsUser'); // Import CMSUsers model
-const Quest = require('./quest'); // Import quest model
+const Organisation = require('./organisation');
+const Customer = require('./customerData');
+const Scan = require('./stageConfig');
 
 class Stage extends Model { }
 
@@ -14,18 +15,19 @@ Stage.init({
     },
     name: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
     description: {
         type: DataTypes.STRING,
         allowNull: false
     },
     scanner_type: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM('qr', 'image'), // Define ENUM values
         allowNull: false
     },
     scan_sequence_type: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM('fixed', 'random'), // Define ENUM values
         allowNull: false
     },
     start_date: {
@@ -36,32 +38,16 @@ Stage.init({
         type: DataTypes.DATE,
         allowNull: false
     },
-    stage_duration: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    status: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
     stage_type: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM('single', 'multi'), // Define ENUM values
         allowNull: false
     },
     campaign_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Campaign, // Reference the Quest model
-            key: 'id' // Referencing the primary key of the Quest model
-        }
-    },
-    quest_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: Quest, // Reference the Quest model
-            key: 'id' // Referencing the primary key of the Quest model
+            model: Campaign,
+            key: 'id'
         }
     },
     created_at: {
@@ -82,5 +68,7 @@ Stage.init({
 
 });
 
+Stage.hasMany(Customer, { foreignKey: 'stage_id' });
+Stage.hasMany(Scan, { foreignKey: 'stage_id' });
 
 module.exports = Stage;

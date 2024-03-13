@@ -1,7 +1,7 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 const Stage = require('./stage'); // Import Stage model
-const Quest = require('./quest'); // Import Quest model
+const Campaign = require('./campaign');
 
 class Customer extends Model { }
 
@@ -21,7 +21,8 @@ Customer.init({
     },
     phone_number: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
     stage_id: {
         type: DataTypes.INTEGER,
@@ -31,11 +32,11 @@ Customer.init({
             key: 'id'
         }
     },
-    quest_id: {
+    campaign_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Quest, // Name of the table
+            model: Campaign, // Name of the table
             key: 'id'
         }
     },
@@ -43,17 +44,17 @@ Customer.init({
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW
-      },
-      updated_at: {
+    },
+    updated_at: {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW
-      }
+    }
 }, {
     sequelize,
     modelName: 'Customer',
     tableName: 'customer_data', // Set table name to 'customer_data'
-    timestamps:false
+    timestamps: false
 
 });
 

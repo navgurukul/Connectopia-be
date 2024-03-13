@@ -19,14 +19,14 @@ Scan.init({
         allowNull: false
     },
     scan_type: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM('qr', 'image'), 
         allowNull: false
     },
     stage_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Stage, // Name of the table
+            model: Stage,
             key: 'id'
         }
     },
@@ -34,17 +34,17 @@ Scan.init({
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW
-      },
-      updated_at: {
+    },
+    updated_at: {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW
-      }
+    }
 }, {
     sequelize,
     modelName: 'Scan',
     tableName: 'stage_config', // Set table name to 'stage_config'
-    timestamps:false
+    timestamps: false
 });
 
 
