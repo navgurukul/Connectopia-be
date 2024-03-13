@@ -2,9 +2,9 @@ const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 const Stage = require('./stage'); // Import Stage model
 
-class Scan extends Model { }
+class StageConfig extends Model { }
 
-Scan.init({
+StageConfig.init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -42,10 +42,10 @@ Scan.init({
     }
 }, {
     sequelize,
-    modelName: 'Scan',
+    modelName: 'StageConfig',
     tableName: 'stage_config', // Set table name to 'stage_config'
     timestamps: false
 });
 
 
-module.exports = Scan;
+module.exports = StageConfig;

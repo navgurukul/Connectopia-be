@@ -3,7 +3,7 @@ const sequelize = require('../config/database');
 const Campaign = require('./campaign'); // Import campaign model
 const Organisation = require('./organisation');
 const Customer = require('./customerData');
-const Scan = require('./stageConfig');
+const StageConfig = require('./stageConfig');
 
 class Stage extends Model { }
 
@@ -69,6 +69,6 @@ Stage.init({
 });
 
 Stage.hasMany(Customer, { foreignKey: 'stage_id' });
-Stage.hasMany(Scan, { foreignKey: 'stage_id' });
+Stage.hasMany(StageConfig, { foreignKey: 'stage_id' });
 
 module.exports = Stage;

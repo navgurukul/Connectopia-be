@@ -22,7 +22,7 @@ Campaign.init({
         type: DataTypes.STRING(255),
         allowNull: true
     },
-    scantype: {
+    scan_type: {
         type: DataTypes.ENUM('qr', 'image'), // Define ENUM values
         allowNull: false
     },
