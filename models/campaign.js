@@ -42,7 +42,7 @@ Campaign.init({
     },
     campaign_duration: {
         type: DataTypes.TIME,
-        allowNull: false
+        allowNull: true
     },
     status: {
         type: DataTypes.ENUM('active', 'inactive'),

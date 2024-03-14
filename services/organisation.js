@@ -7,18 +7,65 @@ const Campaign = require('../models/Campaign');
 // const CampaignUser = require('../models/CampaignUser');
 // const CampaignConfig = require('../models/campaignConfig');
 // const CustData = require('../models/CustData');
-// const cmsUser = require('../models/CMSUser');
+const CMSUser = require('../models/cmsUser');
 // const CMSUserService = require('./cmsUser');
 
 
 module.exports = {
 
-    async createOrganisation(data) {
+    async createOrganisation(organisationData) {
         try {
-            const organisation = await Organisation.create(data);
+            // Check if organisation already exists
+            const existingOrganisation = await Organisation.findOne({ where: { name: organisationData.name } });
+            if (existingOrganisation) {
+                throw new Error('Organisation already exists.');
+            }
+
+            const organisation = await Organisation.create(organisationData);
             return organisation;
         } catch (error) {
-            throw new Error(`Error creating organisation: ${error.message}`);
+            throw new Error('Error creating organisation: ' + error.message);
+        }
+    },
+
+    async getOrganisations(emailid, usertype) {
+        if (usertype === 'superadmin') {
+            return await Organisation.findAll();
+        } else if (usertype === 'admin' || usertype === 'user') {
+            const user = await CMSUser.findOne({ where: { email: emailid } });
+            if (!user) {
+                throw new Error('User not found');
+            }
+            const organisationName = user.organisation;
+            const organisation = await Organisation.findOne({ where: { name: organisationName } });
+            if (!organisation) {
+                throw new Error('Organisation not found');
+            }
+            return organisation;
+        } else {
+            throw new Error('Invalid usertype');
+        }
+    },
+
+
+    async updateOrganisation(organisationId, updatedData) {
+        try {
+            // Find the organization by ID
+            const organisation = await Organisation.findByPk(organisationId);
+
+            // If the organization is not found, return null
+            if (!organisation) {
+                return null;
+            }
+
+            // Update the organization with the provided data
+            await organisation.update(updatedData);
+
+            // Return the updated organization
+            return organisation;
+        } catch (error) {
+            // If an error occurs, throw it so it can be caught by the route handler
+            throw new Error('Error updating organisation:', error);
         }
     },
 
@@ -37,6 +84,7 @@ module.exports = {
         }
 
     }
+
     // async getOrganisationDetails(name) {
     //     try {
     //         const organisation = await Campaign.findAll({

@@ -12,18 +12,28 @@ const cmsUserService = require('../services/cmsUser');
 const JWT_SECRET = process.env.JWT_SECRET;
 
 router.post('/createNewUser', async (req, res) => {
-  const { emailid, password, organisation, name, usertype } = req.body;
+  const { emailid, password, organisation_id, name, usertype } = req.body;
 
   try {
-    if (!emailid || !password || !organisation || !name || !usertype) {
+    if (!emailid || !password || !organisation_id || !name || !usertype) {
       return res.status(400).json({ message: 'Incomplete details' });
     }
 
-    await cmsUserService.createUser(emailid, password, organisation, name, usertype);
+    await cmsUserService.createUser(emailid, password, organisation_id, name, usertype);
     res.status(200).json({ message: 'User created' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.put('/editUserDetails', async (req, res) => {
+  try {
+    const updatedUser = await cmsUserService.editUserDetails(req.body);
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

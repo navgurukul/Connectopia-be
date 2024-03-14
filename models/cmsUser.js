@@ -25,12 +25,13 @@ CMSUser.init({
         allowNull: false
     },
     user_type: {
-        type: DataTypes.ENUM('superadmin', 'admin', 'user'), // Define ENUM values
-        allowNull: false
+        type: DataTypes.ENUM('superadmin', 'admin', 'user'),
+        allowNull: false,
+        defaultValue: 'user'
     },
     campaign_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         // references: {
         //     model: Campaign,
         //     key: 'id'
