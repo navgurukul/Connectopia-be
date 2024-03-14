@@ -36,8 +36,8 @@ module.exports = {
             if (!user) {
                 throw new Error('User not found');
             }
-            const organisationName = user.organisation;
-            const organisation = await Organisation.findOne({ where: { name: organisationName } });
+            const organisationId = user.organisation_id;
+            const organisation = await Organisation.findOne({ where: { id: organisationId } });
             if (!organisation) {
                 throw new Error('Organisation not found');
             }
