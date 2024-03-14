@@ -2,7 +2,7 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 const Organisation = require('./organisation')
-const Stage = require('./stage'); 
+const Stage = require('./stage');
 const CMSUser = require('./cmsUser');
 
 
@@ -52,7 +52,7 @@ Campaign.init({
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Organisation, 
+            model: Organisation,
             key: 'id'
         }
     },
@@ -74,11 +74,7 @@ Campaign.init({
 
 });
 
-Campaign.hasMany(CMSUser,{
-    foreignKey: 'campaign_id'
-});
-// Campaign.hasMany(Stage,{
-//     foreignKey: 'campaign_id'
-// });
+// Campaign.hasMany(CMSUser, { foreignKey: 'campaign_id' });
+Campaign.hasMany(Stage, { foreignKey: 'campaign_id' });
 
 module.exports = Campaign;

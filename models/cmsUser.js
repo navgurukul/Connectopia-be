@@ -1,7 +1,7 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 const Organisation = require('./organisation');
-const Campaign = require('./campaign');
+const Campaign = require('../models/campaign');
 
 class CMSUser extends Model { }
 
@@ -30,12 +30,8 @@ CMSUser.init({
         defaultValue: 'user'
     },
     campaign_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.JSON,
         allowNull: true,
-        // references: {
-        //     model: Campaign,
-        //     key: 'id'
-        // }
     },
     organisation_id: {
         type: DataTypes.INTEGER,
@@ -61,5 +57,8 @@ CMSUser.init({
     tableName: 'cms_users',
     timestamps: false
 });
+
+
+// CMSUser.hasMany(Campaign, { foreignKey: 'campaign_id' });
 
 module.exports = CMSUser;

@@ -5,8 +5,8 @@ const fs = require('fs');
 const sequelize = require('./config/database');
 // const authService = require('./routes/authRoutes');
 const organisation = require('./routes/organisationRoutes');
-const cmsUser = require('./routes/cmsUser');
 const campaign = require('./routes/campaignRoutes');
+const cmsUser = require('./routes/cmsUser');
 // const otpVerification = require('./routes/otpVerification');
 // const custData = require('./routes/custRoutes');
 
@@ -24,8 +24,8 @@ app.use(bodyParser.json());
 // Routes
 // app.use('/', authService);
 app.use('/', organisation);
-app.use('/', cmsUser);
 app.use('/', campaign);
+app.use('/', cmsUser);
 // app.use('/', otpVerification);
 // app.use('/', custData);
 

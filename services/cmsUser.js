@@ -5,7 +5,7 @@ const Campaign = require('../models/Campaign');
 
 const saltRounds = 10; // Number of salt rounds for hashing
 module.exports = {
-  async createUser(emailid, password, organisation, name, usertype) {
+  async createUser(emailid, password, organisation_id, name, usertype) {
     try {
       // Hash the password using bcrypt
       const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -13,7 +13,7 @@ module.exports = {
       const user = await CMSUser.create({
         email: emailid,
         password: hashedPassword,
-        organisation_id: organisation,
+        organisation_id: organisation_id,
         name: name,
         user_type: usertype
       });
@@ -63,7 +63,41 @@ module.exports = {
     }
   },
 
+  async assignCampaignToUser(emailid, campaign_id) {
+    // Find user by email
+    const user = await CMSUser.findOne({
+      where: { email: emailid }
+    });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    let updatedCampaignIds;
+    if (Array.isArray(user.campaign_id)) {
+      let data = user.campaign_id;
+      updatedCampaignIds = data.push(campaign_id);
+    } else {
+      updatedCampaignIds = [campaign_id];
+    }
+console.log(updatedCampaignIds);
+    // Update the user's campaign_id with the new array
+    await CMSUser.update({ campaign_id: updatedCampaignIds }, {
+      where: { email: emailid }
+    });
 
+    return 'Campaign assigned to the user successfully';
+  },
+  async getUsersByOrganisation(organisation_id) {
+    try {
+      const users = await CMSUser.findAll({
+        where: { organisation_id },
+      });
+      // delete
+      return users;
+    } catch (error) {
+      console.log(error.message);
+      throw new Error('Error getting users by organisation: ' + error);
+    }
+  },
 
 
   // async updatePassword(emailid, newPassword) {

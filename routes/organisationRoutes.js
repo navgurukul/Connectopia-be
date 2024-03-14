@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const organisationService = require('../services/organisation');
+const cmsUserService = require('../services/cmsUser');
 
 //create an oranisation
 router.post('/organisations', async (req, res) => {
@@ -17,7 +18,7 @@ router.post('/organisations', async (req, res) => {
   }
 });
 
-//
+//organisation list based on usertype
 router.get('/organisationlist/:emailid/:usertype', async (req, res) => {
   const { emailid, usertype } = req.params;
 
@@ -30,6 +31,17 @@ router.get('/organisationlist/:emailid/:usertype', async (req, res) => {
   }
 });
 
+//list of users of organisation
+router.get('/api/users_by_organisation/:organisation_id', async (req, res) => {
+  const organisation_id = req.params.organisation_id;
+
+  try {
+      const users = await cmsUserService.getUsersByOrganisation(organisation_id);
+      res.json(users);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
 
 // update organisation by id
 router.put('/organisations/:id', async (req, res) => {

@@ -38,6 +38,22 @@ router.put('/editUserDetails', async (req, res) => {
 });
 
 
+router.post('/assignCampaignToUser', async (req, res) => {
+  const { emailid, campaign_id } = req.body;
+  try {
+      if (!emailid || !campaign_id) {
+          return res.status(400).send('Please provide complete details');
+      }
+
+      await cmsUserService.assignCampaignToUser(emailid, campaign_id);
+
+      res.status(200).send('New campaign assigned to the user');
+  } catch (error) {
+      console.error('Error assigning campaign to user:', error);
+      res.status(500).send('Server Error');
+  }
+});
+
 router.post('/updatepassword', async (req, res) => {
   const { emailid, newpassword } = req.body;
 
