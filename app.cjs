@@ -2496,7 +2496,7 @@ app.get('/campaign/stages/:campaignid', (req, res) => {
 });
 
 //campaign stages post
-app.post('/campaign/stages/:campaignid', (req, res) => {
+app.put('/campaign/stages/:campaignid', (req, res) => {
     const { campaignid } = req.params;
 
     if (!req.body.number_of_stages) {
