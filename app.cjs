@@ -2466,9 +2466,8 @@ const uploadtoS3 = async (fileData, campaignid, pageno, compositeKey) => {
 };
 //---------end of code----------------------
 
-// campaign timer
-app.get('/campaign/duration/:campaignid', (req, res) => {
-    console.log(req.params, " is the campaign id");
+// campaign stages
+app.get('/campaign/stages/:campaignid', (req, res) => {
     const { campaignid } = req.params;
 
     pool.getConnection((err, connection) => {
@@ -2476,7 +2475,7 @@ app.get('/campaign/duration/:campaignid', (req, res) => {
             return res.status(500).send('Server error');
         }
 
-        let sql = 'SELECT campaignid, TIME_FORMAT(campaign_duration, "%H:%i:%s") AS campaign_duration FROM campaign_table WHERE campaignid = ?';
+        let sql = 'SELECT number_of_stages FROM campaign_table WHERE campaignid = ?';
 
         connection.query(sql, [campaignid], (err, result) => {
             connection.release();
@@ -2489,8 +2488,44 @@ app.get('/campaign/duration/:campaignid', (req, res) => {
                 return res.status(404).send('Campaign not found');
             }
 
-            const campaignDuration = result[0].campaign_duration;
-            res.status(200).send({ campaign_duration: campaignDuration });
+            const campaignStages = result[0].number_of_stages;
+            console.log('Get the Number of stages of Campaign')
+            res.status(200).send({ number_of_stages: campaignStages });
         });
     });
 });
+
+//campaign stages post
+app.post('/campaign/stages/:campaignid', (req, res) => {
+    const { campaignid } = req.params;
+
+    if (!req.body.number_of_stages) {
+        return res.status(400).send('Number of stages is required');
+    }
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error("Error getting the connection:", err);
+            return res.status(500).send('Server error');
+        }
+
+        let sql = 'UPDATE campaign_table SET number_of_stages = ? WHERE campaignid = ?';
+
+        connection.query(sql, [req.body.number_of_stages, campaignid], (err, result) => {
+            connection.release();
+
+            if (err) {
+                console.error("Error updating data:", err);
+                return res.status(500).send('Error updating data');
+            }
+
+            if (result.affectedRows === 0) {
+                return res.status(404).send('Campaign not found');
+            }
+            console.log('Number of stages updated successfully')
+            res.status(200).send({ message: 'Number of stages updated successfully' });
+        });
+    });
+});
+
+
