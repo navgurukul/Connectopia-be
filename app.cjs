@@ -1255,7 +1255,7 @@ app.get('/organisation/:name', (req, res) => {
             return res.status(500).send('server error');
         }
 
-        let sql = 'SELECT campaign_name, campaignid, scantype, `desc`, DATE_FORMAT(startdate, "%Y-%m-%d") AS startdate, DATE_FORMAT(enddate, "%Y-%m-%d") AS enddate, status FROM campaign_table WHERE organisation = ?';
+        let sql = 'SELECT campaign_name, campaignid, scantype, `desc`, DATE_FORMAT(startdate, "%Y-%m-%d") AS startdate, DATE_FORMAT(enddate, "%Y-%m-%d") AS enddate, status, TIME_FORMAT(campaign_duration, "%H:%i:%s") AS campaign_duration  FROM campaign_table WHERE organisation = ?';
 
         connection.query(sql, [name], async (err, campaigns) => {
             if (err) {
@@ -1421,8 +1421,8 @@ app.get('/users_by_organisation/:organisation', (req, res) => {
 //--------api for editing created campaigns(startdate/enddate/user&admins)----------------
 //done
 app.post('/editCampaign', (req, res) => {
-    const { startdate, enddate, desc, campaign_name, newcampaign_name } = req.body;
-
+    const { startdate, enddate, desc, campaign_name, newcampaign_name, campaign_duration } = req.body;
+    console.log(req.body);
     if (!campaign_name) {
         return res.status(400).json({ error: "Campaign name is required to update." });
     }
@@ -1449,6 +1449,11 @@ app.post('/editCampaign', (req, res) => {
     if (newcampaign_name) {
         updateFields.push('campaign_name = ?');
         queryParams.push(newcampaign_name);
+    }
+
+    if (campaign_duration) {
+        updateFields.push('campaign_duration = ?');
+        queryParams.push(campaign_duration);
     }
 
     if (updateFields.length === 0) {
@@ -2460,3 +2465,32 @@ const uploadtoS3 = async (fileData, campaignid, pageno, compositeKey) => {
     });
 };
 //---------end of code----------------------
+
+// campaign timer
+app.get('/campaign/duration/:campaignid', (req, res) => {
+    console.log(req.params, " is the campaign id");
+    const { campaignid } = req.params;
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            return res.status(500).send('Server error');
+        }
+
+        let sql = 'SELECT campaignid, TIME_FORMAT(campaign_duration, "%H:%i:%s") AS campaign_duration FROM campaign_table WHERE campaignid = ?';
+
+        connection.query(sql, [campaignid], (err, result) => {
+            connection.release();
+
+            if (err) {
+                return res.status(500).send('Error fetching data');
+            }
+
+            if (result.length === 0) {
+                return res.status(404).send('Campaign not found');
+            }
+
+            const campaignDuration = result[0].campaign_duration;
+            res.status(200).send({ campaign_duration: campaignDuration });
+        });
+    });
+});
