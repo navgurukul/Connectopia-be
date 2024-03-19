@@ -2174,9 +2174,8 @@ function getPresignedUrl(campaignid, pageno, key) {
 //-------- new api for creating campaign with all the details(usertype and emailid) as per latest requirements----------------
 //done
 app.post('/api/createNewCampaign', (req, res) => {
-    const { campaignid, organisation, campaignname, startdate, enddate, desc, scantype, usertype, emailid } = req.body;
-
-    if (!campaignid || !organisation || !campaignname || !startdate || !enddate || !desc || !usertype || !emailid) {
+    const { campaignid, organisation, campaign_name, startdate, enddate, desc, scantype, usertype, emailid, campaign_duration } = req.body;
+    if (!campaignid || !organisation || !campaign_name || !startdate || !enddate || !desc || !usertype || !emailid) {
         return res.status(400).json({ message: 'incomplete details' });
     }
 
@@ -2191,8 +2190,8 @@ app.post('/api/createNewCampaign', (req, res) => {
         if (usertype == 'superadmin') {
 
             const status = 'inactive';
-            let sql = 'INSERT INTO campaign_table(campaignid, organisation, campaign_name, startdate, enddate, `desc`, status, scantype) VALUES(?,?,?,?,?,?,?,?)';
-            connection.query(sql, [campaignid, organisation, campaignname, startdate, enddate, desc, status, scantype], (err, results) => {
+            let sql = 'INSERT INTO campaign_table(campaignid, organisation, campaign_name, startdate, enddate, `desc`, status, scantype, campaign_duration) VALUES(?,?,?,?,?,?,?,?,?)';
+            connection.query(sql, [campaignid, organisation, campaign_name, startdate, enddate, desc, status, scantype, campaign_duration], (err, results) => {
                 connection.release();
                 if (err) {
                     console.log(err);
@@ -2212,7 +2211,7 @@ app.post('/api/createNewCampaign', (req, res) => {
 
                 const status = 'inactive';
                 let sql = 'INSERT INTO campaign_table(campaignid, organisation, campaign_name, startdate, enddate, `desc`, status, scantype) VALUES(?,?,?,?,?,?,?,?)';
-                connection.query(sql, [campaignid, organisation, campaignname, startdate, enddate, desc, status, scantype], (err, results) => {
+                connection.query(sql, [campaignid, organisation, campaignname, startdate, enddate, desc, status, scantype, campaign_duration], (err, results) => {
 
                     if (err) {
                         return connection.rollback(() => {
