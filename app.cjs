@@ -2215,8 +2215,8 @@ app.post('/api/createNewCampaign', (req, res) => {
                 }
 
                 const status = 'inactive';
-                let sql = 'INSERT INTO campaign_table(campaignid, organisation, campaign_name, startdate, enddate, `desc`, status, scantype) VALUES(?,?,?,?,?,?,?,?)';
-                connection.query(sql, [campaignid, organisation, campaignname, startdate, enddate, desc, status, scantype, campaign_duration], (err, results) => {
+                let sql = 'INSERT INTO campaign_table(campaignid, organisation, campaign_name, startdate, enddate, `desc`, status, scantype, campaign_duration) VALUES(?,?,?,?,?,?,?,?,?)';
+                connection.query(sql, [campaignid, organisation, campaign_name, startdate, enddate, desc, status, scantype, campaign_duration], (err, results) => {
 
                     if (err) {
                         return connection.rollback(() => {
