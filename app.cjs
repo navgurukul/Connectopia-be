@@ -73,8 +73,14 @@ app.listen(port, () => {
 
 // welcome api ( testing purpose )
 app.get('/', (req, res) => {
-    res.send('<p style="text-align:center;"><b>Welcome to the CMS Backend</b></p>');
+    res.status(200).json({ 
+        message: 'Welcome to the CMS Backend' ,
+        status: 200,
+        success: true,
+        error: null,
+    });
 });
+
 
 //-------------api for adding cms users with (emailid,password,organisation,name,usertype)------------------
 //done
