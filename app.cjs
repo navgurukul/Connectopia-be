@@ -73,7 +73,7 @@ app.listen(port, () => {
 
 // welcome api ( testing purpose )
 app.get('/', (req, res) => {
-    res.send('Welcome to the CMS API');
+    res.send('<p style="text-align:center;"><b>Welcome to the CMS API</b></p>');
 });
 
 //-------------api for adding cms users with (emailid,password,organisation,name,usertype)------------------
@@ -2469,7 +2469,6 @@ const uploadtoS3 = async (fileData, campaignid, pageno, compositeKey) => {
     });
 };
 //---------end of code----------------------
-<<<<<<< Updated upstream
 
 // campaign stages
 app.get('/campaign/stages/:campaignid', (req, res) => {
@@ -2532,7 +2531,3 @@ app.put('/campaign/stages/:campaignid', (req, res) => {
         });
     });
 });
-
-
-=======
->>>>>>> Stashed changes
