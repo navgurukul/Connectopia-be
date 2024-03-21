@@ -596,14 +596,12 @@ app.get('/allsignedurls/:campaignid/:scantype', async (req, res) => {
         const currentMoment = moment().tz('Asia/Kolkata');
         // const currentDate = currentMoment.format('YYYY-MM-DD');
         const currentDate = currentMoment;
-        console.log(currentDate);
         const results = await checkCampaignStatus(campaignid);
-        console.log(results);
 
         const startDate = moment(results[0].formatted_startdate, "YYYY-MM-DD");
         const endDate = moment(results[0].formatted_enddate, 'YYYY-MM-DD').endOf('day');
 
-        if (results[0].status === 'inactive' || currentDate.isBetween(startDate, endDate, undefined, '[]')) {
+        if (results[0].status === 'inactive' || !currentDate.isBetween(startDate, endDate, undefined, '[]')) {
             return res.status(400).send('Cannot launch campaign');
         }
 
@@ -625,6 +623,7 @@ app.get('/allsignedurls/:campaignid/:scantype', async (req, res) => {
             (accumulator[current.pageno] = accumulator[current.pageno] || []).push({ key: current.key, value: current.value });
             return accumulator;                                                 // ({ [current.key] : current.value })
         }, {});
+
         Object.keys(groupedResponse).length !== 0?groupedResponse.campaign_duration = results[0].campaign_duration:{}
         console.log("All signed URL fetched Successfully")
         res.status(200).send(groupedResponse);
