@@ -4,9 +4,9 @@ const https = require('https');
 const fs = require('fs');
 const sequelize = require('./config/database');
 // const authService = require('./routes/authRoutes');
-const organisation = require('./routes/organisationRoutes');
-const campaign = require('./routes/campaignRoutes');
-const cmsUser = require('./routes/cmsUser');
+const organisation = require('./rr/organisationRoutes');
+const campaign = require('./rr/campaignRoutes');
+const cmsUser = require('./rr/cmsUser');
 // const otpVerification = require('./routes/otpVerification');
 // const custData = require('./routes/custRoutes');
 
