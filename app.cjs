@@ -1267,7 +1267,7 @@ app.get('/organisation/:name', (req, res) => {
             return res.status(500).send('server error');
         }
 
-        let sql = 'SELECT campaign_name, campaignid, scantype, `desc`, DATE_FORMAT(startdate, "%Y-%m-%d") AS startdate, DATE_FORMAT(enddate, "%Y-%m-%d") AS enddate, status, TIME_FORMAT(campaign_duration, "%H:%i:%s") AS campaign_duration  FROM campaign_table WHERE organisation = ?';
+        let sql = 'SELECT campaign_name, campaignid, scantype, `desc`, DATE_FORMAT(startdate, "%Y-%m-%d") AS startdate, DATE_FORMAT(enddate, "%Y-%m-%d") AS enddate, status, TIME_FORMAT(campaign_duration, "%H:%i:%s") AS campaign_duration, number_of_stages  FROM campaign_table WHERE organisation = ?';
 
         connection.query(sql, [name], async (err, campaigns) => {
             if (err) {
@@ -2199,8 +2199,6 @@ app.post('/api/createNewCampaign', (req, res) => {
     if (!campaignid || !organisation || !campaign_name || !startdate || !enddate || !desc || !usertype || !emailid) {
         return res.status(400).json({ message: 'incomplete details' });
     }
-
-    // if(usertype == 'superadmin')
 
     pool.getConnection((err, connection) => {
         if (err) {
