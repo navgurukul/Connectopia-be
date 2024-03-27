@@ -1321,7 +1321,7 @@ app.get('/campaignsByEmailid/:emailid', (req, res) => {
 
             // For each campaignid, fetch campaign details and associated users
             const promises = campaignIds.map(async (campaignId) => {
-                const sqlCampaignDetails = 'SELECT campaign_name, campaignid, scantype, status, `desc`, DATE_FORMAT(startdate, "%Y-%m-%d") AS startdate, DATE_FORMAT(enddate, "%Y-%m-%d") AS enddate FROM campaign_table WHERE campaignid = ?';
+                const sqlCampaignDetails = 'SELECT campaign_name, campaignid, scantype, status, `desc`, DATE_FORMAT(startdate, "%Y-%m-%d") AS startdate, DATE_FORMAT(enddate, "%Y-%m-%d") AS enddate, campaign_duration, number_of_stages FROM campaign_table WHERE campaignid = ?';
                 const [campaign] = await connection.promise().query(sqlCampaignDetails, [campaignId]);
 
                 const sqlAssociatedUsers = 'SELECT cu.emailid, cms.usertype, cms.name FROM campaign_users cu JOIN cmsusers cms ON cu.emailid = cms.emailid WHERE cu.campaignid = ?';
