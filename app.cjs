@@ -1433,8 +1433,7 @@ app.get('/users_by_organisation/:organisation', (req, res) => {
 //--------api for editing created campaigns(startdate/enddate/user&admins)----------------
 //done
 app.post('/editCampaign', (req, res) => {
-    const { startdate, enddate, desc, campaign_name, newcampaign_name, campaign_duration } = req.body;
-    console.log(req.body);
+    const { startdate, enddate, desc, campaign_name, newcampaign_name, campaign_duration, number_of_stages } = req.body;
     if (!campaign_name) {
         return res.status(400).json({ error: "Campaign name is required to update." });
     }
@@ -1466,6 +1465,11 @@ app.post('/editCampaign', (req, res) => {
     if (campaign_duration) {
         updateFields.push('campaign_duration = ?');
         queryParams.push(campaign_duration);
+    }
+
+    if (number_of_stages) {
+        updateFields.push('number_of_stages = ?');
+        queryParams.push(number_of_stages);
     }
 
     if (updateFields.length === 0) {
