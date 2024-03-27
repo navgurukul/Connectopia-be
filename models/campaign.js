@@ -1,7 +1,9 @@
 const { Model } = require('objection');
 const Joi = require('joi');
-const Organisation = require('./organisation');
-// const Stage = require('./stage');
+const organization = require('./organization');
+const CampaignConfig = require('./campaign_config');
+const StageConfig = require('./stage_config');
+const CampaignUser = require('./campaign_users');
 
 class Campaign extends Model {
   static get tableName() {
@@ -12,37 +14,56 @@ class Campaign extends Model {
     return Joi.object({
       id: Joi.number().integer().greater(0),
       name: Joi.string().min(1).max(255).required(),
-      description: Joi.string().allow(null).max(255),
-      scan_type: Joi.string().valid('qr', 'image').required(),
       email: Joi.string().email().required(),
+      description: Joi.string().allow(null).max(255),
+      scantype: Joi.string().min(1).max(255).required(),
+      scan_sequence: Joi.string().min(1).max(255).required(),
+      total_stages: Joi.number().integer().greater(0).required(),
       startdate: Joi.date().iso().required(),
       enddate: Joi.date().iso().required(),
-      campaign_duration: Joi.string().allow(null),
-      status: Joi.string().valid('active', 'inactive').required(),
-      organisation_id: Joi.number().integer().greater(0).required(),
+      campaign_duration: Joi.date().iso().required(),
+      status: Joi.string().min(1).max(255).required(),
+      organization_id: Joi.number().integer().greater(0),
       created_at: Joi.date().iso().required(),
       updated_at: Joi.date().iso().required(),
+
     });
   }
 
   static get relationMappings() {
     return {
-      organisation: {
+      organization: {
         relation: Model.BelongsToOneRelation,
-        modelClass: Organisation,
+        modelClass: organization,
         join: {
-          from: 'campaign.organisation_id',
-          to: 'organisation.id'
-        }
+          from: 'campaign.organization_id',
+          to: 'organization.id',
+        },
       },
-      // stages: {
-      //   relation: Model.HasManyRelation,
-      //   modelClass: Stage,
-      //   join: {
-      //     from: 'campaign.id',
-      //     to: 'stage.campaign_id'
-      //   }
-      // }
+      campaignConfigs: {
+        relation: Model.HasManyRelation,
+        modelClass: CampaignConfig,
+        join: {
+          from: 'campaign.id',
+          to: 'campaign_config.campaign_id',
+        },
+      },
+      stageConfigs: {
+        relation: Model.HasManyRelation,
+        modelClass: StageConfig,
+        join: {
+          from: 'campaign.id',
+          to: 'stage_config.campaign_id',
+        },
+      },
+      campaignUsers: {
+        relation: Model.HasManyRelation,
+        modelClass: CampaignUser,
+        join: {
+          from: 'campaign.id',
+          to: 'campaign_users.campaign_id',
+        },
+      },
     };
   }
 }

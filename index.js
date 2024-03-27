@@ -7,7 +7,7 @@ require('dotenv').config();
 const { saveInLogs, logOut } = require('./middlewares/logger.js'); // custom logger
 
 const crud = require('./routes/crud.js');
-const organisation = require('./routes/organization.js');
+const organization = require('./routes/organization.js');
 
 
 // Knex connection
@@ -22,7 +22,7 @@ app.use(logOut); // Log to terminal
 
 // Routes
 app.use('/api', crud);
-app.use('/api', organisation);
+app.use('/api', organization);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -36,5 +36,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🌎Server is running at http://localhost:${PORT}🚀`);
+  console.log(`🌎 Server is running at http://localhost:${PORT} 🚀`);
 });
