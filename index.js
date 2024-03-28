@@ -6,7 +6,6 @@ const { Model } = require('objection');
 require('dotenv').config();
 const { saveInLogs, logOut } = require('./middlewares/logger.js'); // custom logger
 
-const crud = require('./routes/crud.js');
 const organization = require('./routes/organization.js');
 
 
@@ -21,7 +20,6 @@ app.use(saveInLogs);  // Save logs to file
 app.use(logOut); // Log to terminal
 
 // Routes
-app.use('/api', crud);
 app.use('/api', organization);
 
 // Error handling middleware

@@ -10,7 +10,6 @@ class StageConfig extends Model {
   static get joiSchema() {
     return Joi.object({
       id: Joi.number().integer().greater(0),
-      status: Joi.string().valid('active', 'inactive').required(),
       level: Joi.number().integer().min(0).max(5).required(),
       stage_number: Joi.number().integer().greater(0).required(),
       campaign_id: Joi.number().integer().greater(0).required(),
