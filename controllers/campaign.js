@@ -4,6 +4,7 @@ const CampaignConfig = require('../models/campaign_config');
 const CustData = require('../models/custdata');
 const CampaignUsers = require('../models/campaign_users');
 const CMSUsers = require('../models/cmsusers');
+const e = require('express');
 
 module.exports = {
     createOrganization: async (req, res) => {
@@ -37,73 +38,137 @@ module.exports = {
         }
     },
 
-    getOrganizationByName: async (req, res) => {
+    // helper function
+    getCampaignTxn: async (usertype = 'user', emailid, orgid = null) => {
         try {
-            const { name } = req.params;
-            if (!name) {
-                return res.status(400).json({ error: 'name is required' });
+            switch (usertype) {
+                case 'superadmin':
+                    const superAdminCampaigns = await Campaign.query().where('organization_id', orgid);
+                    return superAdminCampaigns;
+                case 'admin':
+                case 'user':
+                    const userCampaigns = await Campaign.query().where('email', emailid);
+                    return res.status(200).json(userCampaigns);
+                default:
+                    return res.status(400).json({ error: 'Invalid usertype' });
             }
-            const organization = await Organization.query().findOne({ name });
-            if (!organization) {
-                return res.status(404).json({ error: 'Organization not found' });
-            }
-            res.status(200).json(organization);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     },
 
-    updateOrganizationById: async (req, res) => {
+    getCampaignByEmailUser: async (req, res) => {
+        try {
+            const { emailid, usertype, orgid } = req.params;
+            if (!emailid || !usertype) {
+                return res.status(400).json({ error: 'emailid, usertype and organization_id are required' });
+            }
+            const campaigns = await getCampaignTxn(usertype, emailid, orgid);
+            // res.status(200).json(campaigns);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    },
+
+    getCampaignByEmail: async (req, res) => {
+        try {
+            const { emailid } = req.params;
+            if (!emailid || !usertype) {
+                return res.status(400).json({ error: 'emailid required' });
+            }
+            const campaigns = await getCampaignTxn(usertype, emailid, orgid);
+            // res.status(200).json(campaigns);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    },
+
+    updateCampaignById: async (req, res) => {
         try {
             const { id } = req.params;
-            const { name, logo, description } = req.body;
+            const { name, description, scantype } = req.body;
             if (!name || !logo || !description) {
-                return res.status(400).json({ error: 'name, logo and description are required' });
+                return res.status(400).json({ error: 'campaign id is required' });
             }
-            const organization = await (id ? Organization.query().findById(id) : Organization.query().where('name', name))
-            if (!organization) {
-                return res.status(404).json({ error: 'Organization not found' });
+            const campaign = await Campaign.query().findById(id);
+            if (!campaign) {
+                return res.status(404).json({ error: 'Campaign not found' });
             }
-            const updatedOrganization = await organization.$query().patchAndFetch(req.body);
-            res.status(200).json(updatedOrganization);
+            const updatedCampaign = await Campaign.query().patchAndFetchById(id, req.body);
+            res.status(200).json(updatedCampaign);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     },
 
-    deleteOrganizationByIdOrName: async (req, res) => {
+    deleteCampaignTxn: async (id, name = null) => {
         try {
-            const { organization_name } = req.params;
+            if (!campaign_name || !id) {
+                return res.status(400).json({ error: 'Campaign ID or name is required' });
+            }
+            const campaign = await (id ? Campaign.query().findById(id) : Campaign.query().where('name', name).first());
+            if (!campaign) {
+                return res.status(404).json({ error: 'Campaign not found' });
+            }
+            await Campaign.transaction(async (trx) => {
+                await CampaignConfig.query(trx).delete().where('campaign_id', campaign.id);
+                await CampaignUsers.query(trx).delete().where('campaign_id', campaign.id);
+                await Campaign.query(trx).delete().where('id', campaign.id);
+            });
+            return {
+                msg: 'Campaign data deletion completed successfully.',
+                operation: true
+            };
+        } catch (error) {
+            return {
+                msg: 'Campaign data deletion failed.',
+                operation: false,
+                error: error.message
+            };
+        }
+    },
+
+    deleteCampaignByName: async (req, res) => {
+        try {
+            const { campaign_name } = req.params;
 
             // Check if organization ID is provided
-            if (!organization_name) {
-                return res.status(400).json({ error: 'Organization ID is required' });
+            if (!campaign_name) {
+                return res.status(400).json({ error: 'Campaign name is required' });
             }
 
-            // Fetch organization details to retrieve its name for S3 deletion
-            const organization = await Organization.query().where('name', organization_name).first();
-            if (!organization) {
-                return res.status(404).json({ error: 'Organization not found' });
+            const campaign = await deleteCampaignTxn(null, campaign_name);
+            if (campaign.operation) {
+                console.log(campaign.msg);
+                return res.status(200).json(campaign);
+            } else {
+                console.log(campaign.msg);
+                return res.status(500).json({ error: campaign.error });
             }
 
-            // Begin transaction
-            await Organization.transaction(async (trx) => {
-                // Delete organization and related data
-                await Organization.query(trx).deleteById(organization.id);
-                await Campaign.query(trx).delete().where('organization_id', organization.id);
-                await CampaignConfig.query(trx).delete().whereIn('campaign_id', function() {
-                    this.select('campaign_id').from('campaign').where('organization_id', organization.id);
-                });
-                await CustData.query(trx).delete().whereIn('campaign_id', function() {
-                    this.select('campaign_id').from('campaign').where('organization_id', organization.id);
-                });
-                await CampaignUsers.query(trx).delete().whereIn('campaign_id', function() {
-                    this.select('campaign_id').from('campaign').where('organization_id', organization.id);
-                });
-                await CMSUsers.query(trx).delete().where('organization_id', organization.id);
-            });
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    },
 
-            return res.status(200).send('Organization data deletion completed successfully.');
+    deleteCampaignById: async (req, res) => {
+        try {
+            const { id } = req.params;
+
+            // Check if organization ID is provided
+            if (!id) {
+                return res.status(400).json({ error: 'Campaign ID is required' });
+            }
+
+            const campaign = await deleteCampaignTxn(id, null);
+            if (campaign.operation) {
+                console.log(campaign.msg);
+                return res.status(200).json(campaign);
+            } else {
+                console.log(campaign.msg);
+                return res.status(500).json({ error: campaign.error });
+            }
+
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }

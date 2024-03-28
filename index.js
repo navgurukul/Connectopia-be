@@ -7,6 +7,7 @@ require('dotenv').config();
 const { saveInLogs, logOut } = require('./middlewares/logger.js'); // custom logger
 
 const organization = require('./routes/organization.js');
+const campaign = require('./routes/campaign.js');
 
 
 // Knex connection
@@ -21,6 +22,7 @@ app.use(logOut); // Log to terminal
 
 // Routes
 app.use('/api', organization);
+app.use('/api', campaign);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
