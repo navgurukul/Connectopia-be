@@ -7,6 +7,7 @@ require('dotenv').config();
 const { saveInLogs, logOut } = require('./middlewares/logger.js'); // custom logger
 
 const organization = require('./routes/organization.js');
+const campaign = require('./routes/campaign.js');
 const cmsUser = require('./routes/cms_user.js');
 
 
@@ -23,6 +24,7 @@ app.use(logOut); // Log to terminal
 
 // Routes
 app.use('/api', organization);
+app.use('/api', campaign);
 app.use('/', cmsUser);
 
 // Error handling middleware

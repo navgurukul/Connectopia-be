@@ -5,7 +5,7 @@ exports.up = function (knex) {
         table.string('emailid').notNullable().unique();
         table.string('password').notNullable();
         table.enum('usertype', ['superadmin', 'admin', 'user']).notNullable();
-        table.integer('organization_id').unsigned().notNullable().references('id').inTable('organization');
+        table.integer('organization_id').unsigned().references('id').inTable('organization');
         table.dateTime('created_at').notNullable().defaultTo(knex.fn.now());
         table.dateTime('updated_at').notNullable().defaultTo(knex.fn.now());
     });
