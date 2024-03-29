@@ -151,7 +151,7 @@ module.exports = {
       }
 
       if (newemail) {
-        await CMSUsers.query()
+        await CampaignUsers.query()
           .patch({ email: newemail })
           .where("email", oldemail);
       }
