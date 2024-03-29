@@ -1,20 +1,17 @@
 const express = require('express');
 const router = express.Router();
+const { upload } = require('../middlewares/multer');
 const campaignController = require('../controllers/campaign');
 
 // Routes
-router.get('/campaigndetails/:orgid/:emailid/:usertype', campaignController.getCampaignByEmailUser); // /campaigndetails/:emailid/:usertype
-router.get('/campaign/stages/:campaignid', campaignController.getCampaignById);
-router.put('/campaign/stages/:campaignid', campaignController.updateCampaignById);
-router.get('/campaignsByEmailid/:emailid', campaignController.getCampaignByEmail); // /campaignsByEmailid/:emailid
+router.post('/campaign/create', campaignController.createCampaign); // /api/createNewCampaign
+router.get('/campaign/:orgid/:emailid/:usertype', campaignController.getCampaignByEmailUser); // /campaigndetails/:emailid/:usertype
+router.get('/campaign/stages/:id', campaignController.getCampaignById);
+router.get('/campaign/:email', campaignController.getCampaignByEmail); // /campaignsByEmailid/:emailid
+router.put('/campaign/:id', campaignController.updateCampaignById); // /editCampaign
 
-router.get('/organization/:name', campaignController.getOrganizationByName);
-router.delete('/deleteCampaign/:campaign_name', campaignController.deleteOrganizationByIdOrName); // /deleteOrganizationData/:organization_name'
-
-// handles both PUT and POST requests 
-router.route('/editOrganization/:id') // /editOrganization
-    .put(campaignController.updateOrganizationById)
-    .post(campaignController.updateOrganizationById);
-
+// one can be removed after confirmation
+router.delete('/campaign/:campaign_name', campaignController.deleteCampaignByName); // /deleteCampaign/:campaign_name
+router.delete('/campaign/:id', campaignController.deleteCampaignById); // /deleteCampaign/:campaign_name
 
 module.exports = router;

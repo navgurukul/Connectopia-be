@@ -14,12 +14,12 @@ const S3 = new AWS.S3(awsConfig);
 
 module.exports = {
     // uploadS3 and uploadToS3, loadS3, and handleUploadAndInsert
-    uploadFile: async (fileBuffer, campaign_id, level, key) => {
+    uploadFile: async (fileBuffer, campaign_id, level = null, key) => {
         try {
             const finalData = {}
             const params = {
                 Bucket: bucketName,
-                Key: `${campaign_id}/${level}/${key}`,
+                Key: `${campaign_id}/${level ? level : ''}/${key}`,
                 Body: fileBuffer,
             };
             const imageData = await S3.upload(params).promise();
@@ -49,7 +49,7 @@ module.exports = {
             const params = {
                 Bucket: bucketName,
                 Key: `${campaign_id}/${level}/${key}`,
-                Expires: 60 * 5,
+                Expires: 3600,  // 1 hour
             };
             const url = await S3.getSignedUrl('getObject', params);
             return { url };

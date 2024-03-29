@@ -9,6 +9,7 @@ const { saveInLogs, logOut } = require('./middlewares/logger.js'); // custom log
 const organization = require('./routes/organization.js');
 const campaign = require('./routes/campaign.js');
 const cmsUser = require('./routes/cms_user.js');
+const stage = require('./routes/stage.js');
 
 
 
@@ -26,6 +27,8 @@ app.use(logOut); // Log to terminal
 app.use('/cms', organization);
 app.use('/cms', campaign);
 app.use('/cms', cmsUser);
+app.use('/cms', stage);
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {

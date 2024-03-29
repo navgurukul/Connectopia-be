@@ -1,24 +1,24 @@
-const Organization = require('../models/organization');
 const Campaign = require('../models/campaign');
 const CampaignConfig = require('../models/campaign_config');
-const CustData = require('../models/customer_data');
 const CampaignUsers = require('../models/campaign_users');
+const StageConfig = require('../models/stage_config');
 const CMSUsers = require('../models/cmsusers');
-const e = require('express');
+const { uploadFile } = require('./awsS3');
 
 module.exports = {
-    createOrganization: async (req, res) => {
+    // progress
+    createCampaign: async (req, res) => {
         try {
-            const { name, logo, description } = req.body;
-            if (!name || !logo || !description) {
-                return res.status(400).json({ error: 'name, logo and description are required' });
+            const { organization_id, name, startdate, enddate, description, scantype, usertype, email, campaign_duration, total_stages, scan_sequence } = req.body;
+            if (!organization_id) {
+                return res.status(400).json({ error: 'fill out proper data' });
             }
-            const ifOrganizationExists = await Organization.query().findOne({ name });
-            if (ifOrganizationExists) {
-                return res.status(400).json({ error: 'Organization already exists' });
+            const ifCampaignExists = await Campaign.query().findOne({ name });
+            if (ifCampaignExists) {
+                return res.status(400).json({ error: `Campaign -${name}- already exists` });
             }
-            const organization = await Organization.query().insert(req.body);
-            res.status(201).json(organization);
+            const campaign = await Campaign.query().insert(req.body);
+            res.status(201).json(campaign);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -26,11 +26,11 @@ module.exports = {
 
     getCampaignById: async (req, res) => {
         try {
-            const { campaignid } = req.params;
-            if (!campaignid) {
+            const { id } = req.params;
+            if (!id) {
                 return res.status(400).json({ error: 'campaign id is required' });
             }
-            let totalStages = await Campaign.query().where('id', campaignid).select('total_stages');
+            let totalStages = await Campaign.query().where('id', id).select('total_stages');
             
             res.status(200).json(totalStages);
         } catch (error) {
@@ -72,11 +72,11 @@ module.exports = {
 
     getCampaignByEmail: async (req, res) => {
         try {
-            const { emailid } = req.params;
-            if (!emailid || !usertype) {
-                return res.status(400).json({ error: 'emailid required' });
+            const { email } = req.params;
+            if (!email || !usertype) {
+                return res.status(400).json({ error: 'email required' });
             }
-            const campaigns = await getCampaignTxn(usertype, emailid, orgid);
+            const campaigns = await getCampaignTxn(usertype, email, orgid);
             // res.status(200).json(campaigns);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -86,8 +86,8 @@ module.exports = {
     updateCampaignById: async (req, res) => {
         try {
             const { id } = req.params;
-            const { name, description, scantype } = req.body;
-            if (!name || !logo || !description) {
+            const { name, description, email, campaign_duration, total_stages, startdate, enddate, scantype, status, scan_sequence, organization_id } = req.body;
+            if (!id) {
                 return res.status(400).json({ error: 'campaign id is required' });
             }
             const campaign = await Campaign.query().findById(id);
@@ -101,6 +101,7 @@ module.exports = {
         }
     },
 
+    // progress se delete pending
     deleteCampaignTxn: async (id, name = null) => {
         try {
             if (!campaign_name || !id) {
@@ -128,6 +129,7 @@ module.exports = {
         }
     },
 
+    // bu name and by id both do same work one can be removed after confirmation
     deleteCampaignByName: async (req, res) => {
         try {
             const { campaign_name } = req.params;
@@ -173,5 +175,6 @@ module.exports = {
             return res.status(500).json({ error: error.message });
         }
     },
+
 
 }
