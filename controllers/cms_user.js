@@ -5,7 +5,7 @@ const moment = require("moment-timezone");
 const Organization = require("../models/organization");
 const Campaign = require("../models/campaign");
 const CampaignConfig = require("../models/campaign_config");
-const CustData = require("../models/custdata");
+const CustData = require("../models/customer_data");
 const CampaignUsers = require("../models/campaign_users");
 const CMSUsers = require("../models/cmsusers");
 
