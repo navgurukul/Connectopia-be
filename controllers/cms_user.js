@@ -14,28 +14,28 @@ const saltRounds = 10;
 module.exports = {
   //create cms user
   createNewUser: async (req, res) => {
-    const { emailid, password, organisation_id, name, usertype } = req.body;
+    const { email, password, organisation_id, name, usertype } = req.body;
 
     try {
       if (usertype === "superadmin") {
-        if (!emailid || !password || !name || !usertype) {
+        if (!email || !password || !name || !usertype) {
           return res.status(400).json({ message: "Incomplete details" });
         }
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const newUser = await CMSUsers.query().insert({
-          emailid,
+          email,
           password: hashedPassword,
           name,
           usertype,
         });
       }
       if (usertype === "admin" || usertype === "user") {
-        if (!emailid || !password || !organisation_id || !name || !usertype) {
+        if (!email || !password || !organisation_id || !name || !usertype) {
           return res.status(400).json({ message: "Incomplete details" });
         }
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const newUser = await CMSUsers.query().insert({
-          emailid,
+          email,
           password: hashedPassword,
           organisation_id,
           name,
@@ -52,18 +52,18 @@ module.exports = {
   },
 
   deleteCmsuser: async (req, res) => {
-    const { emailid } = req.body;
+    const { email } = req.body;
 
-    if (!emailid) {
-      return res.status(404).send("Please enter emailid");
+    if (!email) {
+      return res.status(404).send("Please enter email");
     }
 
     try {
-      // Delete entries for the emailid from the campaign_users table
-      await CampaignUsers.query().delete().where("emailid", emailid);
+      // Delete entries for the email from the campaign_users table
+      await CampaignUsers.query().delete().where("email", email);
 
       // Now, delete the user from the cmsusers table
-      await CMSUsers.query().delete().where("emailid", emailid);
+      await CMSUsers.query().delete().where("email", email);
 
       res
         .status(200)
@@ -78,10 +78,10 @@ module.exports = {
   },
 
   updatePassword: async (req, res) => {
-    const { emailid, newpassword } = req.body;
+    const { email, newpassword } = req.body;
 
     // Check if email and new password are provided
-    if (!emailid || !newpassword) {
+    if (!email || !newpassword) {
       return res.status(400).send("Email ID and new password are required");
     }
 
@@ -92,7 +92,7 @@ module.exports = {
       // Update the password in the database
       const numUpdated = await CMSUsers.query()
         .update({ password: hashedNewPassword })
-        .where("emailid", emailid);
+        .where("email", email);
 
       // Check if password is updated
       if (numUpdated === 0) {
@@ -107,7 +107,7 @@ module.exports = {
   },
 
   editUserDetails: async (req, res) => {
-    const { name, password, usertype, oldemailid, newemailid } = req.body;
+    const { name, password, usertype, oldemail, newemail } = req.body;
 
     let updateFields = {};
 
@@ -131,8 +131,8 @@ module.exports = {
       updateFields.usertype = usertype;
     }
 
-    if (newemailid) {
-      updateFields.emailid = newemailid;
+    if (newemail) {
+      updateFields.email = newemail;
     }
 
     if (Object.keys(updateFields).length === 0) {
@@ -142,7 +142,7 @@ module.exports = {
     try {
       const numUpdated = await CMSUsers.query()
         .patch(updateFields)
-        .where("emailid", oldemailid);
+        .where("email", oldemail);
 
       if (numUpdated === 0) {
         return res
@@ -150,10 +150,10 @@ module.exports = {
           .json({ message: "No user found with the provided email ID" });
       }
 
-      if (newemailid) {
+      if (newemail) {
         await CMSUsers.query()
-          .patch({ emailid: newemailid })
-          .where("emailid", oldemailid);
+          .patch({ email: newemail })
+          .where("email", oldemail);
       }
 
       res.status(200).json({ message: "Data updated successfully" });
