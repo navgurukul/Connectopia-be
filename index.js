@@ -23,9 +23,9 @@ app.use(saveInLogs);  // Save logs to file
 app.use(logOut); // Log to terminal
 
 // Routes
-app.use('/api', organization);
-app.use('/api', campaign);
-app.use('/', cmsUser);
+app.use('/cms', organization);
+app.use('/cms', campaign);
+app.use('/cms', cmsUser);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
