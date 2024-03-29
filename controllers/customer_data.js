@@ -28,7 +28,7 @@ module.exports = {
 
     try {
       // Check if the campaign exists
-      const campaign = await CampaignTable.query().findById(campaign_id);
+      const campaign = await CampaignTable.query().findById({campaign_id});
       if (!campaign) {
         return res
           .status(404)
