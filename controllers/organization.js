@@ -47,13 +47,15 @@ module.exports = {
         }
     },
 
-    getOrganizationByName: async (req, res) => {
+    getOrganizationById: async (req, res) => {
         try {
-            const { name } = req.params;
-            if (!name) {
+            const { id } = req.params;
+            // const { name } = req.params;
+            if (!id) {
                 return res.status(400).json({ error: 'name is required' });
             }
-            const organization = await Organization.query().findOne({ name });
+            const organization = await Organization.query().findOne({ id });
+            // const organization = await Organization.query().findOne({ name });
             if (!organization) {
                 return res.status(404).json({ error: 'Organization not found' });
             }
@@ -80,9 +82,11 @@ module.exports = {
         }
     },
 
-    deleteOrganizationByIdOrName: async (req, res) => {
+    // in progress s3 delete pending
+    deleteOrganizationById: async (req, res) => {
         try {
             const { organization_name } = req.params;
+            // const { id } = req.params;
 
             // Check if organization ID is provided
             if (!organization_name) {
@@ -91,6 +95,7 @@ module.exports = {
 
             // Fetch organization details to retrieve its name for S3 deletion
             const organization = await Organization.query().where('name', organization_name).first();
+            // const organization = await Organization.query().where('id', id);
             if (!organization) {
                 return res.status(404).json({ error: 'Organization not found' });
             }
