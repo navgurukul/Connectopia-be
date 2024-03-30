@@ -9,6 +9,7 @@ const CampaignConfig = require("../models/campaign_config");
 const CustData = require("../models/customer_data");
 const CampaignUsers = require("../models/campaign_users");
 const CMSUsers = require("../models/cmsusers");
+const organization = require("../models/organization");
 const JWT_SECRET = process.env.JWT_SECRET;
 const saltRounds = 10;
 
@@ -177,9 +178,13 @@ module.exports = {
     try {
       // Fetch user data along with organisation description
       const user = await CMSUsers.query()
-        .leftJoinRelation("organisation")
-        .select("cmsusers.*", "id")
+        .select("*")
         .where("email", email)
+        .first();
+
+      const organization = await Organization.query()
+        .select("*")
+        .where("id", user.organization_id)
         .first();
 
       if (!user) {
@@ -192,42 +197,64 @@ module.exports = {
         return res.status(401).json({ message: "Invalid email or password." });
       }
 
-      let campaigns_detail = [];
+      let responseData;
 
       // Fetch campaigns details if user is admin or user
       if (user.usertype === "admin" || user.usertype === "user") {
         const campaignResults = await CampaignUsers.query()
-          .joinRelation("campaign")
-          .select(
-            "campaign.id",
-            "campaign.name",
-            "campaign.scantype"
-          )
-          .where("campaign_users.email", email);
+          .select("*")
+          .where("campaign_users.email", email); // Filter by email
 
-        campaigns_detail = campaignResults.map((campaign) => ({
-          campaign_id: campaign.campaign_id,
-          campaign_name: campaign.campaign_name,
-          scantype: campaign.scantype,
-        }));
+        const campaigns_detail = [];
+
+        for (const campaignResult of campaignResults) {
+          const campaign = await Campaign.query()
+            .select("id", "name", "scantype")
+            .where("id", campaignResult.campaign_id)
+            .first();
+
+          if (campaign) {
+            campaigns_detail.push({
+              campaign_id: campaign.id,
+              campaign_name: campaign.name,
+              scantype: campaign.scantype,
+            });
+          }
+        }
+
+        // Sign JWT token
+        const token = jwt.sign({ email: email }, JWT_SECRET, {
+          expiresIn: "1h",
+        });
+
+        // Response data
+        responseData = {
+          token,
+          email: user.email,
+          name: user.name,
+          usertype: user.usertype,
+          organization_name: organization.name,
+          organization_description: organization.description,
+          campaigns_detail,
+        };
+
+      } else if (user.usertype === "superadmin") {
+        const token = jwt.sign({ email: email }, JWT_SECRET, {
+          expiresIn: "1h",
+        });
+
+        responseData = {
+          token,
+          email: user.email,
+          name: user.name,
+          usertype: user.usertype,
+          organization_name: null,
+          organization_description: null,
+        };
+
+      } else {
+        res.status(401).json({ message: "Invalid user role." });
       }
-
-      // Sign JWT token
-      const token = jwt.sign({ email: email }, JWT_SECRET, {
-        expiresIn: "1h",
-      });
-
-      // Response data
-      const responseData = {
-        token,
-        email: user.email,
-        name: user.name,
-        usertype: user.usertype,
-        organisation: user.organisation,
-        organisation_desc: user.desc,
-        campaigns_detail,
-      };
-
       res.status(200).json(responseData);
     } catch (error) {
       console.error("Error during login:", error);
