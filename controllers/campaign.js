@@ -3,7 +3,25 @@ const CampaignConfig = require('../models/campaign_config');
 const CampaignUsers = require('../models/campaign_users');
 const StageConfig = require('../models/stage_config');
 const CMSUsers = require('../models/cmsusers');
-const { uploadFile } = require('./awsS3');
+
+// helper function
+const getCampaignTxn = async (usertype = 'user', emailid, orgid = null) => {
+    try {
+        switch (usertype) {
+            case 'superadmin':
+                const superAdminCampaigns = await Campaign.query().where('organization_id', orgid);
+                return superAdminCampaigns;
+            case 'admin':
+            case 'user':
+                const userCampaigns = await Campaign.query().where('email', emailid);
+                return userCampaigns;
+            default:
+                return { error: 'Invalid usertype' };
+        }
+    } catch (error) {
+        return { error: error.message };
+    }
+}
 
 module.exports = {
     // progress
@@ -31,27 +49,8 @@ module.exports = {
                 return res.status(400).json({ error: 'campaign id is required' });
             }
             let totalStages = await Campaign.query().where('id', id).select('total_stages');
-            
-            res.status(200).json(totalStages);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    },
 
-    // helper function
-    getCampaignTxn: async (usertype = 'user', emailid, orgid = null) => {
-        try {
-            switch (usertype) {
-                case 'superadmin':
-                    const superAdminCampaigns = await Campaign.query().where('organization_id', orgid);
-                    return superAdminCampaigns;
-                case 'admin':
-                case 'user':
-                    const userCampaigns = await Campaign.query().where('email', emailid);
-                    return res.status(200).json(userCampaigns);
-                default:
-                    return res.status(400).json({ error: 'Invalid usertype' });
-            }
+            res.status(200).json(totalStages);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -59,12 +58,12 @@ module.exports = {
 
     getCampaignByEmailUser: async (req, res) => {
         try {
-            const { emailid, usertype, orgid } = req.params;
-            if (!emailid || !usertype) {
+            const { email, usertype, orgid } = req.params;
+            if (!email || !usertype) {
                 return res.status(400).json({ error: 'emailid, usertype and organization_id are required' });
             }
-            const campaigns = await getCampaignTxn(usertype, emailid, orgid);
-            // res.status(200).json(campaigns);
+            const campaigns = await getCampaignTxn(usertype, email, orgid);
+            res.status(200).json(campaigns);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -73,11 +72,11 @@ module.exports = {
     getCampaignByEmail: async (req, res) => {
         try {
             const { email } = req.params;
-            if (!email || !usertype) {
+            if (!email) {
                 return res.status(400).json({ error: 'email required' });
             }
-            const campaigns = await getCampaignTxn(usertype, email, orgid);
-            // res.status(200).json(campaigns);
+            const campaigns = await getCampaignTxn('user', email, null);
+            res.status(200).json(campaigns);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -129,49 +128,28 @@ module.exports = {
         }
     },
 
-    // bu name and by id both do same work one can be removed after confirmation
-    deleteCampaignByName: async (req, res) => {
-        try {
-            const { campaign_name } = req.params;
-
-            // Check if organization ID is provided
-            if (!campaign_name) {
-                return res.status(400).json({ error: 'Campaign name is required' });
-            }
-
-            const campaign = await deleteCampaignTxn(null, campaign_name);
-            if (campaign.operation) {
-                console.log(campaign.msg);
-                return res.status(200).json(campaign);
-            } else {
-                console.log(campaign.msg);
-                return res.status(500).json({ error: campaign.error });
-            }
-
-        } catch (error) {
-            return res.status(500).json({ error: error.message });
-        }
-    },
-
     deleteCampaignById: async (req, res) => {
         try {
             const { id } = req.params;
-
-            // Check if organization ID is provided
             if (!id) {
                 return res.status(400).json({ error: 'Campaign ID is required' });
             }
 
-            const campaign = await deleteCampaignTxn(id, null);
-            if (campaign.operation) {
-                console.log(campaign.msg);
-                return res.status(200).json(campaign);
-            } else {
-                console.log(campaign.msg);
-                return res.status(500).json({ error: campaign.error });
+            const campaignData = await Campaign.query().findById(id);
+            if (!campaignData) {
+                return res.status(404).json({ error: 'Campaign not found' });
             }
+            const check = await Campaign.transaction(async (trx) => {
+                await CampaignConfig.query(trx).delete().where('campaign_id', campaignData.id);
+                await CampaignUsers.query(trx).delete().where('campaign_id', campaignData.id);
+                await StageConfig.query(trx).delete().where('campaign_id', campaignData.id);
+                await Campaign.query(trx).delete().where('id', campaignData.id);
+            });
+            console.log(check)
+            return res.status(200).json({ msg: "Campaign deleted successfully" });
 
         } catch (error) {
+            console.log(error)
             return res.status(500).json({ error: error.message });
         }
     },
@@ -190,6 +168,20 @@ module.exports = {
             }
             const updatedCampaign = await Campaign.query().patchAndFetchById(id, { status });
             res.status(200).json(updatedCampaign);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    },
+
+    // nextCampaignId
+    genNextCampaignId: async (req, res) => {
+        try {
+            const lastCampaign = await Campaign.query().orderBy('id', 'desc').first();
+            if (!lastCampaign) {
+                console.log('No campaign found ID 1 will be generated. ⚠️');
+                return res.status(200).json({ id: 1 });
+            }
+            res.status(200).json({ id: lastCampaign.id + 1 });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
