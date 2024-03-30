@@ -14,4 +14,8 @@ router.put('/campaign/:id', campaignController.updateCampaignById); // /editCamp
 router.delete('/campaign/:campaign_name', campaignController.deleteCampaignByName); // /deleteCampaign/:campaign_name
 router.delete('/campaign/:id', campaignController.deleteCampaignById); // /deleteCampaign/:campaign_name
 
+// /setStatus
+router.put('/campaign/set-status/:id', campaignController.setStatus); // /setStatus/:id
+
+
 module.exports = router;

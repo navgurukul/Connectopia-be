@@ -67,11 +67,12 @@ module.exports = {
 
     updateOrganizationByName: async (req, res) => {
         try {
+            const { id } = req.params;
             const { name, logo, description } = req.body;
             if (!name || !logo || !description) {
                 return res.status(400).json({ error: 'name, logo and description are required' });
             }
-            const organization = await Organization.query().where('name', name).first();
+            const organization = await Organization.query().findById(id);
             if (!organization) {
                 return res.status(404).json({ error: 'Organization not found' });
             }

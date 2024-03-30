@@ -16,7 +16,7 @@ router.delete('/organization/delete/:id', organizationController.deleteOrganizat
 
 
 // handles both PUT and POST requests 
-router.route('/organization/edit') // /editOrganization
+router.route('/organization/edit/:id') // /editOrganization
     .put(organizationController.updateOrganizationByName)
     .post(organizationController.updateOrganizationByName);
 

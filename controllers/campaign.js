@@ -176,5 +176,23 @@ module.exports = {
         }
     },
 
+    // setStatus
+    setStatus: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+            if (!id || !status) {
+                return res.status(400).json({ error: 'campaign id and status are required' });
+            }
+            const campaign = await Campaign.query().findById(id);
+            if (!campaign) {
+                return res.status(404).json({ error: 'Campaign not found' });
+            }
+            const updatedCampaign = await Campaign.query().patchAndFetchById(id, { status });
+            res.status(200).json(updatedCampaign);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    },
 
 }

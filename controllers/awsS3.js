@@ -13,10 +13,12 @@ const S3 = new AWS.S3(awsConfig);
 
 
 module.exports = {
-    // uploadS3 and uploadToS3, loadS3, and handleUploadAndInsert
+    // uploadS3 and uploadToS3, loadS3, handleUpload and handleUploadAndInsert
     uploadFile: async (fileBuffer, campaign_id, level = null, key) => {
         try {
             const finalData = {}
+            const fileExtension = key.split('.').pop();
+            console.log(fileExtension, 'fileExtension------>');
             const params = {
                 Bucket: bucketName,
                 Key: `${campaign_id}/${level ? level : ''}/${key}`,
@@ -34,7 +36,7 @@ module.exports = {
                 const data = await S3.upload(params).promise();
                 finalData.mind = data;
             }
-            return { finalData };
+            return finalData;
         } catch (error) {
             return { error: error.message }
         }
