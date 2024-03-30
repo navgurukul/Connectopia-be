@@ -1,14 +1,15 @@
 // UserController.js
 const bcrypt = require("bcrypt");
 const moment = require("moment-timezone");
-
+dotenv = require("dotenv").config();
+const jwt = require("jsonwebtoken");
 const Organization = require("../models/organization");
 const Campaign = require("../models/campaign");
 const CampaignConfig = require("../models/campaign_config");
 const CustData = require("../models/customer_data");
 const CampaignUsers = require("../models/campaign_users");
 const CMSUsers = require("../models/cmsusers");
-
+const JWT_SECRET = process.env.JWT_SECRET;
 const saltRounds = 10;
 
 module.exports = {
@@ -160,6 +161,77 @@ module.exports = {
     } catch (error) {
       console.error("Error updating user details:", error);
       res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
+  //login
+  newLogin: async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Please provide email and password." });
+    }
+
+    try {
+      // Fetch user data along with organisation description
+      const user = await CMSUsers.query()
+        .leftJoinRelation("organisation")
+        .select("cmsusers.*", "id")
+        .where("email", email)
+        .first();
+
+      if (!user) {
+        return res.status(401).json({ message: "Invalid email or password." });
+      }
+
+      // Verify password
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Invalid email or password." });
+      }
+
+      let campaigns_detail = [];
+
+      // Fetch campaigns details if user is admin or user
+      if (user.usertype === "admin" || user.usertype === "user") {
+        const campaignResults = await CampaignUsers.query()
+          .joinRelation("campaign")
+          .select(
+            "campaign.id",
+            "campaign.name",
+            "campaign.scantype"
+          )
+          .where("campaign_users.email", email);
+
+        campaigns_detail = campaignResults.map((campaign) => ({
+          campaign_id: campaign.campaign_id,
+          campaign_name: campaign.campaign_name,
+          scantype: campaign.scantype,
+        }));
+      }
+
+      // Sign JWT token
+      const token = jwt.sign({ email: email }, JWT_SECRET, {
+        expiresIn: "1h",
+      });
+
+      // Response data
+      const responseData = {
+        token,
+        email: user.email,
+        name: user.name,
+        usertype: user.usertype,
+        organisation: user.organisation,
+        organisation_desc: user.desc,
+        campaigns_detail,
+      };
+
+      res.status(200).json(responseData);
+    } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   },
 };

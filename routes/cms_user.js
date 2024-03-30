@@ -8,5 +8,7 @@ router.delete('/deletecmsuser', userController.deleteCmsuser);
 router.put('/updatepassword', userController.updatePassword);
 router.put('/editUserDetails', userController.editUserDetails);
 
+//loggin
+router.post('/newLogin', userController.newLogin);
 
 module.exports = router;
