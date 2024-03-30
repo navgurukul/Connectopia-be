@@ -8,6 +8,7 @@ const stageController = require('../controllers/stage');
 // 1. /uploadgif/:campaignid/:pageno/:Key/:scantype
 // 2. /uploadimage/:campaignid/:pageno/:key/:scantype
 router.post('campaign/upload-gif/:campaign_id', upload('gif').single('image'), stageController.uploadGraphics);
+// /updategif/:campaignid/:pageno/:Key/:scantype
 router.put('campaign/update-gif/:campaign_id', upload('gif').single('image'), stageController.updateGraphics);
 
 
@@ -24,5 +25,7 @@ router.get('/campaign/get-signed-url/:campaign_id/:scantype', stageController.ge
 // /compile-upload/:campaignid/:pageno/:Key/:scantype
 router.post('/campaign/upload-mind/:campaign_id', upload('mind').single('image'), stageController.uploadMind);
 
+// /delete-image/:campaignid/:pageno/:key
+router.delete('/campaign/delete-image/:campaign_id/:level/:key', stageController.deleteImage);
 
 module.exports = router;

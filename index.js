@@ -10,6 +10,7 @@ const organization = require('./routes/organization.js');
 const campaign = require('./routes/campaign.js');
 const cmsUser = require('./routes/cms_user.js');
 const stage = require('./routes/stage.js');
+const sms = require('./routes/sms.js');
 
 
 
@@ -28,6 +29,7 @@ app.use('/cms', organization);
 app.use('/cms', campaign);
 app.use('/cms', cmsUser);
 app.use('/cms', stage);
+app.use('/cms', sms);
 
 
 // Error handling middleware

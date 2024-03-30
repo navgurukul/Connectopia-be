@@ -244,4 +244,22 @@ module.exports = {
         }
     },
 
+    // /delete-image/:campaignid/:pageno/:key
+    deleteImage: async (req, res) => {
+        try {
+            const { campaign_id, level, key } = req.params;
+            if (!campaign_id || !level || !key) {
+                return res.status(400).json({ error: 'campaign_id, level and key are required' });
+            }
+            const campaign = await CampaignConfig.query().findById({campaign_id});
+            if (!campaign) {
+                return res.status(404).json({ error: 'Campaign not found' });
+            }
+            const deleteData = await StageConfig.query().delete().where({campaign_id, level, key});
+            res.status(200).json(deleteData);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    },
+
 }
