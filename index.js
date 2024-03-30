@@ -7,6 +7,7 @@ require('dotenv').config();
 const { saveInLogs, logOut } = require('./middlewares/logger.js'); // custom logger
 
 const organization = require('./routes/organization.js');
+const customer = require('./routes/customer_data.js');
 const campaign = require('./routes/campaign.js');
 const cmsUser = require('./routes/cms_user.js');
 const stage = require('./routes/stage.js');
@@ -26,6 +27,7 @@ app.use(logOut); // Log to terminal
 
 // Routes
 app.use('/cms', organization);
+app.use('/cms', customer);
 app.use('/cms', campaign);
 app.use('/cms', cmsUser);
 app.use('/cms', stage);

@@ -1,4 +1,5 @@
-const { CustData } = require("../models");
+const CustData  = require("../models/customer_data");
+const Campaign = require("../models/campaign");
 
 module.exports = {
   getPlayersList: async (req, res) => {
@@ -20,15 +21,15 @@ module.exports = {
   },
 
   addPlayer: async (req, res) => {
-    const { phonenumber, name, email, campaign_id } = req.body;
+    const { phone, name, email, campaign_id } = req.body;
 
-    if (!phonenumber || !name || !campaign_id) {
+    if (!phone || !name || !campaign_id) {
       return res.status(400).json({ message: "Incomplete details" });
     }
 
     try {
       // Check if the campaign exists
-      const campaign = await CampaignTable.query().findById({campaign_id});
+      const campaign = await Campaign.query().findById(campaign_id);
       if (!campaign) {
         return res
           .status(404)
@@ -37,15 +38,16 @@ module.exports = {
           });
       }
 
-      const { campaign_name, organisation_id } = campaign;
+      const campaign_name = campaign.name; 
+      const organization_id  = campaign.organization_id;
 
       // Prepare player data
       const playerData = {
-        phonenumber,
+        phone,
         name,
         campaign_id,
         campaign_name,
-        organisation_id,
+        organization_id,
       };
 
       if (email) {

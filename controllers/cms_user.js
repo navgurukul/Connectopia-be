@@ -19,30 +19,36 @@ module.exports = {
     const { email, password, organisation_id, name, usertype } = req.body;
 
     try {
-      if (usertype === "superadmin") {
-        if (!email || !password || !name || !usertype) {
-          return res.status(400).json({ message: "Incomplete details" });
+      if(email){
+        const userExists = await CMSUsers.query().findOne({ email });
+        if (userExists) {
+          return res.status(400).json({ message: "User already exists" });
         }
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const newUser = await CMSUsers.query().insert({
-          email,
-          password: hashedPassword,
-          name,
-          usertype,
-        });
-      }
-      if (usertype === "admin" || usertype === "user") {
-        if (!email || !password || !organisation_id || !name || !usertype) {
-          return res.status(400).json({ message: "Incomplete details" });
+        if (usertype === "superadmin") {
+          if (!email || !password || !name || !usertype) {
+            return res.status(400).json({ message: "Incomplete details" });
+          }
+          const hashedPassword = await bcrypt.hash(password, saltRounds);
+          const newUser = await CMSUsers.query().insert({
+            email,
+            password: hashedPassword,
+            name,
+            usertype,
+          });
         }
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const newUser = await CMSUsers.query().insert({
-          email,
-          password: hashedPassword,
-          organisation_id,
-          name,
-          usertype,
-        });
+        if (usertype === "admin" || usertype === "user") {
+          if (!email || !password || !organisation_id || !name || !usertype) {
+            return res.status(400).json({ message: "Incomplete details" });
+          }
+          const hashedPassword = await bcrypt.hash(password, saltRounds);
+          const newUser = await CMSUsers.query().insert({
+            email,
+            password: hashedPassword,
+            organisation_id,
+            name,
+            usertype,
+          });
+        }
       }
       res.status(200).json({ message: "User created successfully" });
     } catch (error) {
