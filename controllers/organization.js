@@ -7,7 +7,7 @@ const CMSUsers = require('../models/cmsusers');
 
 module.exports = {
     createOrganization: async (req, res) => {
-        /* #swagger.tags = ['organization']
+        /* #swagger.tags = ['Organization']
            #swagger.summary = ' - Create a new organization'
            #swagger.parameters['body'] = {
                 in: 'body',
@@ -37,7 +37,7 @@ module.exports = {
     },
 
     getOrganizationsByEmailUser: async (req, res) => {
-        /* #swagger.tags = ['organization']
+        /* #swagger.tags = ['Organization']
            #swagger.summary = ' - Get all organizations by email and usertype'
         */
         try {
@@ -70,7 +70,7 @@ module.exports = {
     },
 
     getOrganizationById: async (req, res) => {
-        /* #swagger.tags = ['organization']
+        /* #swagger.tags = ['Organization']
            #swagger.summary = ' - Get all organizations by organization id'
         */
         try {
@@ -91,7 +91,7 @@ module.exports = {
     },
 
     updateOrganizationByName: async (req, res) => {
-        /* #swagger.tags = ['organization']
+        /* #swagger.tags = ['Organization']
            #swagger.summary = ' - update organization by organization name'
         */
         try {
@@ -112,7 +112,7 @@ module.exports = {
     },
 
     deleteOrganizationById: async (req, res) => {
-        /* #swagger.tags = ['organization']
+        /* #swagger.tags = ['Organization']
            #swagger.summary = ' - delete organization by organization id'
         */
         try {
@@ -156,7 +156,7 @@ module.exports = {
 
     // /users_by_organization/:organization
     getUsersByOrganization: async (req, res) => {
-        /* #swagger.tags = ['organization']
+        /* #swagger.tags = ['Organization']
            #swagger.summary = ' - Get all users with organizations and its campaign'
         */
         try {
@@ -181,7 +181,7 @@ module.exports = {
 
     // /api/users_by_organization/:organization
     getAssociatedUserOfOrganization: async (req, res) => {
-        /* #swagger.tags = ['organization']
+        /* #swagger.tags = ['Organization']
            #swagger.summary = ' - Get all users by organization name with its associated campaigns'
         */
         try {
