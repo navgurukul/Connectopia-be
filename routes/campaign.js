@@ -7,7 +7,7 @@ router.post('/campaign/create', campaignController.createCampaign); // /api/crea
 router.get('/campaign/:orgid/:email/:usertype', campaignController.getCampaignByEmailUser); // /campaigndetails/:emailid/:usertype ✅
 router.get('/campaign/stages/:id', campaignController.getCampaignById); // ✅
 router.get('/campaign/:email', campaignController.getCampaignByEmail); // /campaignsByEmailid/:emailid ✅
-router.put('/campaign/:id', campaignController.updateCampaignById); // /editCampaign ✅
+router.put('/campaign/edit/:id', campaignController.updateCampaignById); // /editCampaign ✅
 
 // one can be removed after confirmation
 // router.delete('/campaign/:campaign_name', campaignController.deleteCampaignByName); // /deleteCampaign/:campaign_name

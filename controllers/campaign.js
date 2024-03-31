@@ -74,7 +74,7 @@ module.exports = {
             if (!id) {
                 return res.status(400).json({ error: 'campaign id is required' });
             }
-            let totalStages = await Campaign.query().where('id', id).select('total_stages');
+            let totalStages = await Campaign.query().findById(id).select('total_stages');
 
             res.status(200).json(totalStages);
         } catch (error) {

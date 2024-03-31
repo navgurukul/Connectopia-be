@@ -20,7 +20,7 @@ const mobileValidator = (req, res, next) => {
 };
 
 // /sendotp/:mobilenumber
-router.post('/otp/:mobile', mobileValidator, smsController.sendOtp);
+router.post('/otp/send/:mobile', mobileValidator, smsController.sendOtp);
 // /verifyOtp/:mobilenumber/:otp
 router.post('/otp/verify/:mobile/:otp', smsController.verifyOtp);
 

@@ -9,7 +9,7 @@ const test = (req, res, next) => {
 
 // Routes
 router.post('/organization/create', test, organizationController.createOrganization);
-router.get('/organization/:email/:usertype', organizationController.getOrganizationsByEmailUser); // /organizationlist/:emailid/:usertype
+router.get('/organization/list/:email/:usertype', organizationController.getOrganizationsByEmailUser); // /organizationlist/:emailid/:usertype
 
 // one can be removed after confirmation
 // router.get('/organization/:name', organizationController.getOrganizationById);
@@ -19,11 +19,7 @@ router.get('/organization/:id', organizationController.getOrganizationById);
 // router.delete('/organization/delete/:name', organizationController.deleteOrganizationByIdOrName); // /deleteOrganizationData/:organization_name'
 router.delete('/organization/delete/:id', organizationController.deleteOrganizationById); // /deleteOrganizationData/:organization_name'
 
-
-// handles both PUT and POST requests 
-router.route('/organization/edit/:id') // /editOrganization
-    .put(organizationController.updateOrganizationByName)
-    .post(organizationController.updateOrganizationByName);
+router.put('/organization/edit/:id', organizationController.updateOrganizationByName) // /editOrganization
 
 // /users_by_organization/:organization
 router.get('/organization/user/:orgid', organizationController.getUsersByOrganization);

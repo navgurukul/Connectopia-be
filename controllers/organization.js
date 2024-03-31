@@ -72,6 +72,7 @@ module.exports = {
     getOrganizationById: async (req, res) => {
         /* #swagger.tags = ['Organization']
            #swagger.summary = ' - Get all organizations by organization id'
+           #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
         */
         try {
             const { id } = req.params;
@@ -93,6 +94,16 @@ module.exports = {
     updateOrganizationByName: async (req, res) => {
         /* #swagger.tags = ['Organization']
            #swagger.summary = ' - update organization by organization name'
+           #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
+           #swagger.parameters['body'] = {
+                in: 'body',
+                description: 'to update organization',
+                schema: {
+                    $name: 'string',
+                    $logo: 'url here',
+                    $description: 'description...'
+                }
+            }
         */
         try {
             const { id } = req.params;
@@ -114,18 +125,19 @@ module.exports = {
     deleteOrganizationById: async (req, res) => {
         /* #swagger.tags = ['Organization']
            #swagger.summary = ' - delete organization by organization id'
+           #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
         */
         try {
-            const { organization_name } = req.params;
+            const { id } = req.params;
             // const { id } = req.params;
 
             // Check if organization ID is provided
-            if (!organization_name) {
+            if (!id) {
                 return res.status(400).json({ error: 'Organization ID is required' });
             }
 
             // Fetch organization details to retrieve its name for S3 deletion
-            const organization = await Organization.query().where('name', organization_name).first();
+            const organization = await Organization.query().findById(id).first();
             // const organization = await Organization.query().where('id', id);
             if (!organization) {
                 return res.status(404).json({ error: 'Organization not found' });
@@ -134,18 +146,18 @@ module.exports = {
             // Begin transaction
             await Organization.transaction(async (trx) => {
                 // Delete organization and related data
-                await Organization.query(trx).deleteById(organization.id);
-                await Campaign.query(trx).delete().where('organization_id', organization.id);
+                await Organization.query(trx).deleteById(id);
+                await Campaign.query(trx).delete().where('organization_id', id);
                 await CampaignConfig.query(trx).delete().whereIn('campaign_id', function () {
-                    this.select('campaign_id').from('campaign').where('organization_id', organization.id);
+                    this.select('campaign_id').from('campaign').where('organization_id', id);
                 });
                 await CustData.query(trx).delete().whereIn('campaign_id', function () {
-                    this.select('campaign_id').from('campaign').where('organization_id', organization.id);
+                    this.select('campaign_id').from('campaign').where('organization_id', id);
                 });
                 await CampaignUsers.query(trx).delete().whereIn('campaign_id', function () {
-                    this.select('campaign_id').from('campaign').where('organization_id', organization.id);
+                    this.select('campaign_id').from('campaign').where('organization_id', id);
                 });
-                await CMSUsers.query(trx).delete().where('organization_id', organization.id);
+                await CMSUsers.query(trx).delete().where('organization_id', id);
             });
 
             return res.status(200).send('Organization data deletion completed successfully.');
@@ -155,43 +167,54 @@ module.exports = {
     },
 
     // /users_by_organization/:organization
+    // need work here
     getUsersByOrganization: async (req, res) => {
         /* #swagger.tags = ['Organization']
            #swagger.summary = ' - Get all users with organizations and its campaign'
+           #swagger.parameters['orgid'] = {in: 'path', required: true, type: 'integer'}
         */
         try {
             const { orgid } = req.params;
+            console.log(orgid, '(((((((----')
             if (!orgid) {
                 return res.status(400).json({ error: 'Organization name is required' });
             }
             // Fetch users from CMSUsers model filtered by organization
-            const users = await await CMSUsers.query()
-                .where('organization_id', orgid)
-                .withGraphFetched('campaign')
-                .modifiers({
-                    campaigns(query) {
-                        query.select('id', 'campaign_name');
-                    }
-                });
-            res.status(200).json(users);
+            // const users = await CMSUsers.query()
+            //     .where('organization_id', orgid)
+            //     .withGraphFetched('campaign')
+            //     .modifiers({
+            //         campaign(query) {
+            //             query.select('id', 'name');
+            //         }
+            //     });
+            const campData = await Campaign.query().where('organization_id', orgid);
+            const cmsData = await CMSUsers.query().where('organization_id', orgid);
+            const campUser = await CampaignUsers.query().whereIn('campaign_id', campData.map(camp => camp.id));
+            const campUserEmails = campUser.map(camp => camp.emailid);
+            console.log(campData, cmsData, campUser, campUserEmails)
+            res.status(200).json(campUser);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     },
 
     // /api/users_by_organization/:organization
+    // need work here
     getAssociatedUserOfOrganization: async (req, res) => {
         /* #swagger.tags = ['Organization']
            #swagger.summary = ' - Get all users by organization name with its associated campaigns'
+           #swagger.parameters['orgid'] = {in: 'path', required: true, type: 'integer'}
         */
         try {
             const { orgid } = req.params;
+            console.log('UUUUUUUUUU')
             if (!orgid) {
                 return res.status(400).json({ error: 'Organization name is required' });
             }
             // Fetch users from CMSUsers model filtered by organization
-            const users = await await CMSUsers.query()
-                .withGraphFetched('campaign')
+            const users = await CMSUsers.query()
+                .withGraphFetched('campaigns')
                 .modifiers({
                     campaigns(query) {
                         query.join('campaign_users', 'campaign_users.email', 'cmsusers.email')
