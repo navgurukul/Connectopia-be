@@ -19,7 +19,7 @@ router.get('/organization/:id', organizationController.getOrganizationById);
 // router.delete('/organization/delete/:name', organizationController.deleteOrganizationByIdOrName); // /deleteOrganizationData/:organization_name'
 router.delete('/organization/delete/:id', organizationController.deleteOrganizationById); // /deleteOrganizationData/:organization_name'
 
-router.put('/organization/edit/:id', organizationController.updateOrganizationByName) // /editOrganization
+router.put('/organization/edit/:id', organizationController.updateOrganizationById) // /editOrganization
 
 // /users_by_organization/:organization
 router.get('/organization/user/:orgid', organizationController.getUsersByOrganization);

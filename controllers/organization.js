@@ -91,7 +91,7 @@ module.exports = {
         }
     },
 
-    updateOrganizationByName: async (req, res) => {
+    updateOrganizationById: async (req, res) => {
         /* #swagger.tags = ['Organization']
            #swagger.summary = ' - update organization by organization name'
            #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
@@ -175,7 +175,6 @@ module.exports = {
         */
         try {
             const { orgid } = req.params;
-            console.log(orgid, '(((((((----')
             if (!orgid) {
                 return res.status(400).json({ error: 'Organization name is required' });
             }
