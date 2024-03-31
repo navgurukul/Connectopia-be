@@ -39,6 +39,7 @@ module.exports = {
     getOrganizationsByEmailUser: async (req, res) => {
         /* #swagger.tags = ['Organization']
            #swagger.summary = ' - Get all organizations by email and usertype'
+           #swagger.parameters['usertype'] = {in: 'path', required: true, type: 'string', enum: ['superadmin', 'admin', 'user']}
         */
         try {
             const { email, usertype } = req.params;

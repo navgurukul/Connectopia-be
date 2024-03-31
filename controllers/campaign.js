@@ -86,7 +86,8 @@ module.exports = {
         /*
          #swagger.tags = ['Campaign']
          #swagger.summary = 'Get all campaigns by email and usertype'
-         #swagger.parameters['orgid'] = { in: 'query', type: 'number', description: 'organization_id' }
+         #swagger.parameters['usertype'] = { in: 'query', type: 'string', enum: ['superadmin', 'admin', 'user'],}
+         #swagger.parameters['orgid'] = {in: 'query', type: 'number'}
         */
         try {
             const { email, usertype, orgid } = req.params;
@@ -122,10 +123,26 @@ module.exports = {
          #swagger.tags = ['Campaign']
          #swagger.summary = 'Update a Campaign by ID'
          #swagger.parameters['id'] = { in: 'query', type: 'number' }
+         #swagger.parameters['body'] = {
+           in: 'body',
+           description: 'Create a new Campaign',
+           schema: {
+             $name: 'string',
+             $description: 'string',
+             $email: 'string',
+             $scantype: 'qr or image',
+             $startdate: 'YYYY-MM-DD',
+             $enddate: 'YYYY-MM-DD',
+             $status: 'active or inactive',
+             $scan_sequence: 'fixed or random',
+             $campaign_duration: 'HH:MM:SS',
+             $total_stages: 1,
+             $organization_id: 0
+           }
+         }
         */
         try {
             const { id } = req.params;
-            const { name, description, email, campaign_duration, total_stages, startdate, enddate, scantype, status, scan_sequence, organization_id } = req.body;
             if (!id) {
                 return res.status(400).json({ error: 'campaign id is required' });
             }
