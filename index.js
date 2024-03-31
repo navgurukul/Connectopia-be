@@ -1,6 +1,7 @@
 const app = require('express')();
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
+const cors = require('cors');
 const knexConfig = require('./knexfile.js');
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger.json");
@@ -8,6 +9,9 @@ const { Model } = require('objection');
 require('dotenv').config();
 const { saveInLogs, logOut } = require('./middlewares/logger.js'); // custom logger
 
+const environment = process.env.NODE_ENV || 'development';
+
+// routes import
 const organization = require('./routes/organization.js');
 const campaignUser = require('./routes/campaign_user.js');
 const customer = require('./routes/customer_data.js');
@@ -19,11 +23,12 @@ const sms = require('./routes/sms.js');
 
 
 // Knex connection
-const knex = require('knex')(knexConfig.development);
+const knex = require('knex')(environment === 'development' ? knexConfig.development : knexConfig.production);
 Model.knex(knex);
 
 // Middleware
 app.use(helmet());
+app.use(cors());
 app.use(bodyParser.json());
 app.use(saveInLogs);  // Save logs to file
 app.use(logOut); // Log to terminal

@@ -1,13 +1,13 @@
 const swaggerAutogen = require('swagger-autogen')();
 require('dotenv').config();
+const PORT = process.env.PORT || 3000;
 
 const doc = {
     info: {
         title: "Skillmuni APIs",
         description: "Manage Connectopia CMS",
     },
-    // host: process.env.SERVER_URL,
-    host: process.env.SERVER_URL || "localhost:8080/cms",
+    host: process.env.SERVER_URL || `localhost:${PORT}/cms`,
     basePath: "/",
     schemes: ['http', 'https'],
     securityDefinitions: {

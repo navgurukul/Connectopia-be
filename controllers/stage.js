@@ -36,7 +36,7 @@ module.exports = {
             if (!campaign_id || !level || !key || !scantype || !order) {
                 return res.status(400).json({ error: 'please provide all required details' });
             }
-            const campaign = await CampaignConfig.query().findById({campaign_id});
+            const campaign = await CampaignConfig.query().findById({ campaign_id });
             if (!campaign) {
                 return res.status(404).json({ error: 'Campaign not found' });
             }
@@ -63,7 +63,7 @@ module.exports = {
         // if (type === 'gif') {
         //     fileExtension = 'gif';
         // } 
-            
+
         switch (req.file.mimetype) {
             case "image/gif": fileExtension = "gif"; break;
             case "image/jpeg": fileExtension = "jpeg"; break;
@@ -100,7 +100,7 @@ module.exports = {
             if (!campaign_id || !level || !key || !scantype || !order) {
                 return res.status(400).json({ error: 'please provide all required details' });
             }
-            const campaign = await CampaignConfig.query().findById({campaign_id});
+            const campaign = await CampaignConfig.query().findById({ campaign_id });
             if (!campaign) {
                 return res.status(404).json({ error: 'Campaign not found' });
             }
@@ -122,21 +122,21 @@ module.exports = {
 
     // /uploadimage/:campaignid/:pageno/:key/:scantype
     uploadImageToCampaign: async (req, res) => {
-       /* #swagger.tags = ['Stage/Level']
-           #swagger.summary = ' - upload image to campaign'
-           #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-           #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
-           #swagger.parameters['body'] = {
-            in: 'body',
-            schema: {
-                $level: 1,
-                $key: 'string',
-                $scantype: 'string (qr or image)',
-                $content_type: 'string (general or level or product)',
-                $order: 1
-            }
-         }
-        */
+        /* #swagger.tags = ['Stage/Level']
+            #swagger.summary = ' - upload image to campaign'
+            #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+            #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
+            #swagger.parameters['body'] = {
+             in: 'body',
+             schema: {
+                 $level: 1,
+                 $key: 'string',
+                 $scantype: 'string (qr or image)',
+                 $content_type: 'string (general or level or product)',
+                 $order: 1
+             }
+          }
+         */
         try {
             const { campaign_id } = req.params;
             const { content_type, level, key, scantype, order } = req.body;
@@ -149,20 +149,20 @@ module.exports = {
                     msg: "No file provided for upload.",
                 });
             }
-            
+
             if (content_type === 'level') {
-                ifDataExist = await StageConfig.query().findById({campaign_id});
+                ifDataExist = await StageConfig.query().findById({ campaign_id });
                 if (!ifDataExist) {
                     return res.status(404).json({ error: 'Stage not found' });
                 }
                 // progress
                 // return res.status(400).json({ error: 'please provide valid content type' });
             }
-            ifDataExist = await CampaignConfig.query().findById({campaign_id});
+            ifDataExist = await CampaignConfig.query().findById({ campaign_id });
             if (!ifDataExist) {
                 return res.status(404).json({ error: 'Campaign not found' });
             }
-            
+
             const url = await uploadHelperTxn('image', req, campaign_id, level, key);
             console.log(url, '*******');
             req.body.image = url;
@@ -204,20 +204,20 @@ module.exports = {
                     msg: "No file provided for upload.",
                 });
             }
-            
+
             if (content_type === 'level') {
-                ifDataExist = await StageConfig.query().findById({campaign_id});
+                ifDataExist = await StageConfig.query().findById({ campaign_id });
                 if (!ifDataExist) {
                     return res.status(404).json({ error: 'Stage not found' });
                 }
                 // progress
                 // return res.status(400).json({ error: 'please provide valid content type' });
             }
-            ifDataExist = await CampaignConfig.query().findById({campaign_id});
+            ifDataExist = await CampaignConfig.query().findById({ campaign_id });
             if (!ifDataExist) {
                 return res.status(404).json({ error: 'Campaign not found' });
             }
-            
+
             const url = await uploadHelperTxn('image', req, campaign_id, level, key);
             console.log(url, '*******');
             req.body.image = url;
@@ -242,20 +242,20 @@ module.exports = {
             if (!campaign_id || !scantype) {
                 return res.status(400).json({ error: 'campaign_id and scantype are required' });
             }
-            const campaign = await Campaign.query().select('status').findById({campaign_id}).first();
+            const campaign = await Campaign.query().select('status').findById({ campaign_id }).first();
             if (!campaign) {
                 return res.status(404).json({ error: 'Campaign not found' });
             }
             if (campaign.status !== 'active') {
                 return res.status(400).json({ error: 'Campaign is not active' });
             }
-            const productData = await CampaignConfig.query().where({campaign_id, scantype, content_type: 'product'});
+            const productData = await CampaignConfig.query().where({ campaign_id, scantype, content_type: 'product' });
             res.status(200).json(productData);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     },
-    
+
     // /withoutStatus/allsignedurls/:campaignid/:scantype
     getSignedUrlWithoutStatus: async (req, res) => {
         /* #swagger.tags = ['Stage/Level']
@@ -268,7 +268,7 @@ module.exports = {
             if (!campaign_id || !scantype) {
                 return res.status(400).json({ error: 'campaign_id and scantype are required' });
             }
-            const productData = await CampaignConfig.query().where({campaign_id, scantype, content_type: 'general'});
+            const productData = await CampaignConfig.query().where({ campaign_id, scantype, content_type: 'general' });
             res.status(200).json(productData);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -294,10 +294,10 @@ module.exports = {
         try {
             const { campaign_id } = req.params;
             const { level, key, scantype } = req.body;
-            if (!campaign_id || !level || !key || !scantype ) {
+            if (!campaign_id || !level || !key || !scantype) {
                 return res.status(400).json({ error: 'please provide all required details' });
             }
-            const campaign = await CampaignConfig.query().findById({campaign_id});
+            const campaign = await CampaignConfig.query().findById({ campaign_id });
             if (!campaign) {
                 return res.status(404).json({ error: 'Campaign not found' });
             }
@@ -338,11 +338,11 @@ module.exports = {
             if (!campaign_id || !level || !key) {
                 return res.status(400).json({ error: 'campaign_id, level and key are required' });
             }
-            const campaign = await CampaignConfig.query().findById({campaign_id});
+            const campaign = await CampaignConfig.query().findById({ campaign_id });
             if (!campaign) {
                 return res.status(404).json({ error: 'Campaign not found' });
             }
-            const deleteData = await StageConfig.query().delete().where({campaign_id, level, key});
+            const deleteData = await StageConfig.query().delete().where({ campaign_id, level, key });
             res.status(200).json(deleteData);
         } catch (error) {
             res.status(500).json({ error: error.message });

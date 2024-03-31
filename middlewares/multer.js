@@ -17,7 +17,7 @@ module.exports = {
                     //     }
                     // }
                 });
-    
+
             case 'image':
                 return multer({
                     storage: storage,
@@ -31,7 +31,7 @@ module.exports = {
                         }
                     }
                 });
-    
+
             case 'gif':
                 return multer({
                     storage: storage,
@@ -44,7 +44,7 @@ module.exports = {
                         }
                     }
                 });
-    
+
             default:
                 throw new Error("Invalid type");
         }
