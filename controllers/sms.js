@@ -9,6 +9,10 @@ const authKey = process.env.AUTH_KEY
 module.exports = {
     // send otp
     sendOtp: async (req, res) => {
+        /* #swagger.tags = ['SMS/OTP']
+           #swagger.summary = ' - Send OTP to mobile number'
+           #swagger.parameters['mobile'] = {in: 'path', description: '10 digit mobile number', required: true, type: 'string', pattern: '^[0-9]{10}$'}
+        */
         const { mobile } = req.params;
         if (!mobile) {
             return res.status(400).json({ message: "Mobile number is required" });
@@ -39,6 +43,11 @@ module.exports = {
 
     // verify otp
     verifyOtp: async (req, res) => {
+        /* #swagger.tags = ['SMS/OTP']
+           #swagger.summary = ' - verify OTP to mobile number'
+           #swagger.parameters['mobile'] = {in: 'path', description: '10 digit mobile number', required: true, type: 'string', pattern: '^[0-9]{10}$'}
+           #swagger.parameters['otp'] = {in: 'path', required: true, type: 'string', pattern: '^[0-9]{4}$'}
+        */
         const { mobile, otp } = req.params;
         if (!mobile || !otp) {
             return res.status(400).json({ message: "Mobile number and OTP are required" });
