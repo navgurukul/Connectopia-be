@@ -115,7 +115,7 @@ module.exports = {
   },
 
   editUserDetails: async (req, res) => {
-    const { name, password, usertype, oldemail, newemail } = req.body;
+    const { name, password, usertype, email, newemail } = req.body;
 
     let updateFields = {};
 
@@ -150,7 +150,7 @@ module.exports = {
     try {
       const numUpdated = await CMSUsers.query()
         .patch(updateFields)
-        .where("email", oldemail);
+        .where("email", email);
 
       if (numUpdated === 0) {
         return res
@@ -161,7 +161,7 @@ module.exports = {
       if (newemail) {
         await CampaignUsers.query()
           .patch({ email: newemail })
-          .where("email", oldemail);
+          .where("email", email);
       }
 
       res.status(200).json({ message: "Data updated successfully" });

@@ -1,22 +1,21 @@
-const CampaignTable = require("../models/campaign"); 
-const CampaignUsers = require("../models/campaign_users"); 
+const e = require("express");
+const Campaign = require("../models/campaign");
+const CampaignUsers = require("../models/campaign_users");
 
 module.exports = {
   assignCampaignToUser: async (req, res) => {
-    const { email, campaign_name } = req.body;
+    const { email, campaign_id } = req.body;
 
-    if (!email || !campaign_name) {
+    if (!email || !campaign_id) {
       return res.status(400).send("Please provide complete details");
     }
 
     try {
       // Retrieve campaign ID from the campaign name
-      const campaign = await CampaignTable.query().findOne({ campaign_name });
+      const campaign = await Campaign.query().where("id", campaign_id);
       if (!campaign) {
-        return res.status(404).send(`Campaign "${campaign_name}" not found`);
+        return res.status(404).send(`Campaign "${campaign_id}" not found`);
       }
-      const { campaign_id } = campaign;
-
       // Insert the association between user and campaign
       await CampaignUsers.query().insert({ email, campaign_id });
 
