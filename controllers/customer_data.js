@@ -73,7 +73,9 @@ module.exports = {
       // Insert player data into database
       await CustData.query().insert(playerData);
 
-      return res.status(200).send("Player data inserted successfully.");
+      return res
+        .status(200)
+        .json({ message: "Player data inserted successfully." });
     } catch (error) {
       console.error("Error inserting player data:", error);
       return res.status(500).json({ message: "Internal server error" });

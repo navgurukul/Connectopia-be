@@ -25,13 +25,13 @@ module.exports = {
            schema: {
              $email: 'example@gmail.com',
              $password: 'string',
-             $organisation_id: 0,
+             $organization_id: 0,
              $name: 'string',
              $usertype: 'admin or user'
            }
           }
     */
-    const { email, password, organisation_id, name, usertype } = req.body;
+    const { email, password, organization_id, name, usertype } = req.body;
 
     try {
       if (email) {
@@ -52,14 +52,14 @@ module.exports = {
           });
         }
         if (usertype === "admin" || usertype === "user") {
-          if (!email || !password || !organisation_id || !name || !usertype) {
+          if (!email || !password || !organization_id || !name || !usertype) {
             return res.status(400).json({ message: "Incomplete details" });
           }
           const hashedPassword = await bcrypt.hash(password, saltRounds);
           const newUser = await CMSUsers.query().insert({
             email,
             password: hashedPassword,
-            organisation_id,
+            organization_id,
             name,
             usertype,
           });
@@ -98,9 +98,9 @@ module.exports = {
       // Now, delete the user from the cmsusers table
       await CMSUsers.query().delete().where("email", email);
 
-      res
-        .status(200)
-        .send("Cmsuser account and related campaign entries deleted");
+      res.status(200).json({
+        message: "Cmsuser account and related campaign entries deleted",
+      });
     } catch (error) {
       console.error(
         "Error deleting cmsuser and related campaign entries:",
@@ -204,48 +204,47 @@ module.exports = {
 
     try {
       // Fetch user data along with organisation description
-      const user = await CMSUsers.query()
-        .select("*")
-        .where("email", email)
-        .first();
-
-      const organization = await Organization.query()
-        .select("*")
-        .where("id", user.organization_id)
-        .first();
-
+      const user = await CMSUsers.query().where("email", email).first();
+      console.log(user);
       if (!user) {
         return res.status(401).json({ message: "Invalid email or password." });
       }
-
-      // Verify password
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: "Invalid email or password." });
-      }
-
       let responseData;
 
-      // Fetch campaigns details if user is admin or user
-      if (user.usertype === "admin" || user.usertype === "user") {
-        const campaignResults = await CampaignUsers.query()
+      if (user.organization_id) {
+        const organization = await Organization.query()
           .select("*")
-          .where("campaign_users.email", email); // Filter by email
+          .where("id", user.organization_id)
+          .first();
+
+        // Verify password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          return res
+            .status(401)
+            .json({ message: "Invalid email or password." });
+        }
 
         const campaigns_detail = [];
+        // Fetch campaigns details if user is admin or user
+        if (user.usertype === "admin" || user.usertype === "user") {
+          const campaignResults = await CampaignUsers.query()
+            .select("*")
+            .where("campaign_users.email", email); // Filter by email
 
-        for (const campaignResult of campaignResults) {
-          const campaign = await Campaign.query()
-            .select("id", "name", "scantype")
-            .where("id", campaignResult.campaign_id)
-            .first();
+          for (const campaignResult of campaignResults) {
+            const campaign = await Campaign.query()
+              .select("id", "name", "scantype")
+              .where("id", campaignResult.campaign_id)
+              .first();
 
-          if (campaign) {
-            campaigns_detail.push({
-              campaign_id: campaign.id,
-              campaign_name: campaign.name,
-              scantype: campaign.scantype,
-            });
+            if (campaign) {
+              campaigns_detail.push({
+                campaign_id: campaign.id,
+                campaign_name: campaign.name,
+                scantype: campaign.scantype,
+              });
+            }
           }
         }
 

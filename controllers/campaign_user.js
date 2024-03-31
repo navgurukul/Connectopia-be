@@ -30,7 +30,9 @@ module.exports = {
       // Insert the association between user and campaign
       await CampaignUsers.query().insert({ email, campaign_id });
 
-      return res.status(200).send("New campaign assigned to the user");
+      return res
+        .status(200)
+        .json({ message: "New campaign assigned to the user" });
     } catch (error) {
       console.error("Error assigning campaign to user:", error);
       return res.status(500).send("Internal server error");
@@ -38,7 +40,7 @@ module.exports = {
   },
 
   removeCampaignFromUser: async (req, res) => {
-     /*
+    /*
          #swagger.tags = ['Campaign User']
          #swagger.summary = 'Remove assigned campaign from user'
          #swagger.parameters['body'] = {
@@ -68,7 +70,7 @@ module.exports = {
       // Delete the association between user and campaign
       await CampaignUsers.query().delete().where({ email, campaign_id });
 
-      return res.status(200).send("Campaign deleted from user");
+      return res.status(200).json({ message: "Campaign deleted from user" });
     } catch (error) {
       console.error("Error removing campaign from user:", error);
       return res.status(500).send("Internal server error");
