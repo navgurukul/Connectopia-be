@@ -15,6 +15,10 @@ module.exports = {
      2. 
      */
     uploadGraphics: async (req, res) => {
+        /* #swagger.tags = ['Stage/Level']
+           #swagger.summary = ' - Create a new Campaign'
+           #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
+        */
         try {
             //:campaign_id/:level/:key/:scantype
             const { campaign_id } = req.params;
