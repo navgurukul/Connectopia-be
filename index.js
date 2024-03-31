@@ -2,6 +2,8 @@ const app = require('express')();
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const knexConfig = require('./knexfile.js');
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./swagger.json");
 const { Model } = require('objection');
 require('dotenv').config();
 const { saveInLogs, logOut } = require('./middlewares/logger.js'); // custom logger
@@ -24,6 +26,9 @@ app.use(helmet());
 app.use(bodyParser.json());
 app.use(saveInLogs);  // Save logs to file
 app.use(logOut); // Log to terminal
+
+// Swagger
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Routes
 app.use('/cms', organization);

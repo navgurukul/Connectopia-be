@@ -26,8 +26,29 @@ const getCampaignTxn = async (usertype = 'user', emailid, orgid = null) => {
 module.exports = {
     // progress
     createCampaign: async (req, res) => {
+        /*
+         #swagger.tags = ['Campaign']
+         #swagger.summary = 'Create a new Campaign'
+         #swagger.parameters['body'] = {
+           in: 'body',
+           description: 'Create a new Campaign',
+           schema: {
+             $name: 'string',
+             $description: 'string',
+             $email: 'string',
+             $scantype: 'qr or image',
+             $startdate: 'YYYY-MM-DD',
+             $enddate: 'YYYY-MM-DD',
+             $status: 'active or inactive',
+             $scan_sequence: 'fixed or random',
+             $campaign_duration: 'HH:MM:SS',
+             $total_stages: 1,
+             $organization_id: 0
+           }
+         }
+        */
         try {
-            const { organization_id, name, startdate, enddate, description, scantype, usertype, email, campaign_duration, total_stages, scan_sequence } = req.body;
+            const { organization_id, name } = req.body;
             if (!organization_id) {
                 return res.status(400).json({ error: 'fill out proper data' });
             }
@@ -43,6 +64,11 @@ module.exports = {
     },
 
     getCampaignById: async (req, res) => {
+        /*
+         #swagger.tags = ['Campaign']
+         #swagger.summary = 'Get a Campaigns total stage by campaign ID'
+         #swagger.parameters['id'] = { in: 'query', type: 'number' }
+        */
         try {
             const { id } = req.params;
             if (!id) {
@@ -57,6 +83,11 @@ module.exports = {
     },
 
     getCampaignByEmailUser: async (req, res) => {
+        /*
+         #swagger.tags = ['Campaign']
+         #swagger.summary = 'Get all campaigns by email and usertype'
+         #swagger.parameters['orgid'] = { in: 'query', type: 'number', description: 'organization_id' }
+        */
         try {
             const { email, usertype, orgid } = req.params;
             if (!email || !usertype) {
@@ -70,6 +101,10 @@ module.exports = {
     },
 
     getCampaignByEmail: async (req, res) => {
+        /*
+         #swagger.tags = ['Campaign']
+         #swagger.summary = 'Get all campaigns by email'
+        */
         try {
             const { email } = req.params;
             if (!email) {
@@ -83,6 +118,11 @@ module.exports = {
     },
 
     updateCampaignById: async (req, res) => {
+        /*
+         #swagger.tags = ['Campaign']
+         #swagger.summary = 'Update a Campaign by ID'
+         #swagger.parameters['id'] = { in: 'query', type: 'number' }
+        */
         try {
             const { id } = req.params;
             const { name, description, email, campaign_duration, total_stages, startdate, enddate, scantype, status, scan_sequence, organization_id } = req.body;
@@ -129,6 +169,11 @@ module.exports = {
     },
 
     deleteCampaignById: async (req, res) => {
+        /*
+         #swagger.tags = ['Campaign']
+         #swagger.summary = 'Delete a Campaign by ID'
+         #swagger.parameters['id'] = { in: 'query', type: 'number' }
+        */
         try {
             const { id } = req.params;
             if (!id) {
@@ -156,9 +201,13 @@ module.exports = {
 
     // setStatus
     setStatus: async (req, res) => {
+        /*
+         #swagger.tags = ['Campaign']
+         #swagger.summary = 'Set status of a Campaign by ID'
+         #swagger.parameters['id'] = { in: 'query', type: 'number' }
+        */
         try {
-            const { id } = req.params;
-            const { status } = req.body;
+            const { id, status } = req.params;
             if (!id || !status) {
                 return res.status(400).json({ error: 'campaign id and status are required' });
             }
@@ -175,6 +224,10 @@ module.exports = {
 
     // nextCampaignId
     genNextCampaignId: async (req, res) => {
+        /*
+         #swagger.tags = ['Campaign']
+         #swagger.summary = 'Generate next Campaign ID'
+        */
         try {
             const lastCampaign = await Campaign.query().orderBy('id', 'desc').first();
             if (!lastCampaign) {
