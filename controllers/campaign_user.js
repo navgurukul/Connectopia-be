@@ -4,6 +4,17 @@ const CampaignUsers = require("../models/campaign_users");
 
 module.exports = {
   assignCampaignToUser: async (req, res) => {
+    /*
+         #swagger.tags = ['Campaign User']
+         #swagger.summary = 'Assign campaign to user'
+         #swagger.parameters['body'] = {
+           in: 'body',
+           schema: {
+             $email: 'example@gmail.com',
+             $campaign_id: 0
+           }
+          }
+    */
     const { email, campaign_id } = req.body;
 
     if (!email || !campaign_id) {
@@ -27,6 +38,17 @@ module.exports = {
   },
 
   removeCampaignFromUser: async (req, res) => {
+     /*
+         #swagger.tags = ['Campaign User']
+         #swagger.summary = 'Remove assigned campaign from user'
+         #swagger.parameters['body'] = {
+           in: 'body',
+           schema: {
+             $email: 'example@gmail.com',
+             $campaign_id: 0
+           }
+          }
+    */
     const { email, campaign_id } = req.body;
 
     if (!email || !campaign_id) {

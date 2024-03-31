@@ -5,8 +5,7 @@ const userController = require('../controllers/cms_user');
 
 router.post('/createNewUser', userController.createNewUser);  // ✅
 router.delete('/deleteCmsUser', userController.deleteCmsuser); // ✅
-router.put('/updatePassword', userController.updatePassword);  // ✅
-router.put('/editUserDetails', userController.editUserDetails); // ✅
+router.put('/updateUserDetails', userController.updateUserDetails); // ✅
 
 //loggin
 router.post('/newLogin', userController.newLogin);

@@ -1,8 +1,12 @@
-const CustData  = require("../models/customer_data");
+const CustData = require("../models/customer_data");
 const Campaign = require("../models/campaign");
 
 module.exports = {
   getPlayersList: async (req, res) => {
+    /*
+         #swagger.tags = ['Customer']
+         #swagger.summary = 'Get list of customers by campaign ID'
+    */
     const campaign_id = req.params.campaign_id;
     if (!campaign_id) {
       return res.status(400).send("campaignid is required");
@@ -21,6 +25,20 @@ module.exports = {
   },
 
   addPlayer: async (req, res) => {
+    /*
+          #swagger.tags = ['Customer']
+         #swagger.summary = 'Add a Player'
+         #swagger.parameters['body'] = {
+           in: 'body',
+           description: 'Create a new Campaign',
+           schema: {
+             $name: 'string',
+             $phone: 1234567890,
+             $email: 'example@gmail.com',
+             $campaign_id: 0
+           }
+         }
+        */
     const { phone, name, email, campaign_id } = req.body;
 
     if (!phone || !name || !campaign_id) {
@@ -31,15 +49,13 @@ module.exports = {
       // Check if the campaign exists
       const campaign = await Campaign.query().findById(campaign_id);
       if (!campaign) {
-        return res
-          .status(404)
-          .json({
-            message: `No campaign found for the given campaign ID: ${campaign_id}`,
-          });
+        return res.status(404).json({
+          message: `No campaign found for the given campaign ID: ${campaign_id}`,
+        });
       }
 
-      const campaign_name = campaign.name; 
-      const organization_id  = campaign.organization_id;
+      const campaign_name = campaign.name;
+      const organization_id = campaign.organization_id;
 
       // Prepare player data
       const playerData = {

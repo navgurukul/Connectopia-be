@@ -16,10 +16,25 @@ const saltRounds = 10;
 module.exports = {
   //create cms user
   createNewUser: async (req, res) => {
+    /*
+         #swagger.tags = ['CMS User']
+         #swagger.summary = 'Create a cms user'
+         #swagger.parameters['body'] = {
+           in: 'body',
+           description: 'Create a cms user',
+           schema: {
+             $email: 'example@gmail.com',
+             $password: 'string',
+             $organisation_id: 0,
+             $name: 'string',
+             $usertype: 'admin or user'
+           }
+          }
+    */
     const { email, password, organisation_id, name, usertype } = req.body;
 
     try {
-      if(email){
+      if (email) {
         const userExists = await CMSUsers.query().findOne({ email });
         if (userExists) {
           return res.status(400).json({ message: "User already exists" });
@@ -60,6 +75,16 @@ module.exports = {
   },
 
   deleteCmsuser: async (req, res) => {
+    /*
+         #swagger.tags = ['CMS User']
+         #swagger.summary = 'Delete a cms user by email'
+         #swagger.parameters['body'] = {
+           in: 'body',
+           schema: {
+             $email: 'example@gmail.com'
+           }
+          }
+    */
     const { email } = req.body;
 
     if (!email) {
@@ -85,36 +110,21 @@ module.exports = {
     }
   },
 
-  updatePassword: async (req, res) => {
-    const { email, newpassword } = req.body;
-
-    // Check if email and new password are provided
-    if (!email || !newpassword) {
-      return res.status(400).send("Email ID and new password are required");
-    }
-
-    try {
-      // Hash the new password
-      const hashedNewPassword = await bcrypt.hash(newpassword, saltRounds);
-
-      // Update the password in the database
-      const numUpdated = await CMSUsers.query()
-        .update({ password: hashedNewPassword })
-        .where("email", email);
-
-      // Check if password is updated
-      if (numUpdated === 0) {
-        return res.status(400).send("No user found with the provided email ID");
-      }
-
-      res.status(200).send("Password updated");
-    } catch (error) {
-      console.error("Error updating password:", error);
-      res.status(500).send("Internal server error");
-    }
-  },
-
-  editUserDetails: async (req, res) => {
+  updateUserDetails: async (req, res) => {
+    /*
+         #swagger.tags = ['CMS User']
+         #swagger.summary = 'Update a cms user details'
+         #swagger.parameters['body'] = {
+           in: 'body',
+           schema: {
+             $name: 'string',
+             $password: 'string',
+             $usertype: 'admin or user',
+             $email: 'example@gmail.com',
+             $newemail: 'newexample@gmail.com'
+           }
+          }
+    */
     const { name, password, usertype, email, newemail } = req.body;
 
     let updateFields = {};
@@ -173,6 +183,17 @@ module.exports = {
 
   //login
   newLogin: async (req, res) => {
+    /*
+         #swagger.tags = ['User Login']
+         #swagger.summary = 'Login to CMS Dashboard'
+         #swagger.parameters['body'] = {
+           in: 'body',
+           schema: {
+             $email: 'example@gmail.com',
+             $password: 'string'
+           }
+          }
+    */
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -243,7 +264,6 @@ module.exports = {
           organization_description: organization.description,
           campaigns_detail,
         };
-
       } else if (user.usertype === "superadmin") {
         const token = jwt.sign({ email: email }, JWT_SECRET, {
           expiresIn: "1h",
@@ -257,7 +277,6 @@ module.exports = {
           organization_name: null,
           organization_description: null,
         };
-
       } else {
         res.status(401).json({ message: "Invalid user role." });
       }
