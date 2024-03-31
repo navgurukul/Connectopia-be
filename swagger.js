@@ -7,8 +7,8 @@ const doc = {
         title: "Skillmuni APIs",
         description: "Manage Connectopia CMS",
     },
-    host: process.env.SERVER_URL || `localhost:${PORT}/cms`,
-    basePath: "/",
+    host: process.env.SERVER_URL || `localhost:${PORT}`,
+    basePath: "/cms",
     schemes: ['http', 'https'],
     securityDefinitions: {
         apiKey: {
