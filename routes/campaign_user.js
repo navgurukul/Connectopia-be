@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const campaignUserController = require('../controllers/campaign_user');
 
-router.post('/assignCampaignToUser', campaignUserController.assignCampaignToUser); // ✅
-router.delete('/removeCampaignFromUser', campaignUserController.removeCampaignFromUser); // ✅
+router.post('/campaign/assign/user', campaignUserController.assignCampaignToUser); // ✅
+router.delete('/campaign/remove/user', campaignUserController.removeCampaignFromUser); // ✅
 
 
 module.exports = router;
