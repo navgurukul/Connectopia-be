@@ -263,31 +263,31 @@ module.exports = {
         (campaignUser) => campaignUser.campaign_id
       );
       const campaigns = await Campaign.query().whereIn("id", campaignIds);
-      const usersWithCampaigns = users.map((user) => {
-        const userCampaignUsers = campaignUsers.filter(
-          (campaignUser) => campaignUser.email === user.email
-        );
 
-        const userCampaignData = userCampaignUsers.map((campaignUser) => {
-          const campaign = campaigns.find(
-            (campaign) => campaign.id === campaignUser.campaign_id
-          );
-          return campaign;
-        });
+      const usersWithCampaigns = users
+        .map((user) => {
+          const userCampaignData = campaignUsers
+            .filter((campaignUser) => campaignUser.email === user.email)
+            .map((campaignUser) => {
+              const campaign = campaigns.find(
+                (campaign) => campaign.id === campaignUser.campaign_id
+              );
+              return campaign;
+            });
 
-        if (userCampaignData) {
-          const userData = {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            usertype: user.usertype,
-            campaigns: userCampaignData,
-          };
-          if (userData.campaigns.length > 0) {
+          if (userCampaignData.length > 0) {
+            const userData = {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              usertype: user.usertype,
+              campaigns: userCampaignData,
+            };
+
             return userData;
           }
-        }
-      });
+        })
+        .filter((user) => user !== undefined);
 
       res.status(200).json(usersWithCampaigns);
     } catch (error) {
