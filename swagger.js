@@ -10,6 +10,8 @@ const doc = {
     host: process.env.SERVER_URL || `localhost:${PORT}`,
     basePath: "/cms",
     schemes: ['http', 'https'],
+    consumes: ['application/json', 'multipart/form-data', 'application/octet-stream'], 
+    produces: ['application/json'],  
     securityDefinitions: {
         apiKey: {
             type: 'apiKey',

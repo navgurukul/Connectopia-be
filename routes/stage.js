@@ -13,9 +13,9 @@ router.put('/campaign/update-gif/:campaign_id', upload('gif').single('image'), s
 
 
 // /uploadimage/:campaignid/:pageno/:key/:scantype
-router.post('/campaign/upload-image/:campaign_id', upload('image').single('image'), stageController.uploadImageToCampaign);  
+router.post('/campaign/upload-image/:campaign_id/:level/:key/:scantype/:order/:stage_number/:content_type', upload('image').single('image'), stageController.uploadImageToCampaign);  
 // /updateimage/:campaignid/:pageno/:key/:scantype
-router.put('/campaign/update-image/:campaign_id', upload('image').single('image'), stageController.updateImageToCampaign);
+router.put('/campaign/update-image/:id/:content_type', upload('image').single('image'), stageController.updateImageToCampaign);
 
 // /allsignedurls/:campaignid/:scantype
 router.get('/campaign/get-signed-url/:campaign_id/:scantype', stageController.getSignedUrl);

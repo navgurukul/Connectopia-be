@@ -2,6 +2,7 @@ exports.up = function (knex) {
     // all stages/levels data will be stored in this table
     return knex.schema.createTable('stage_config', function (table) {
         table.increments('id').primary();
+        table.string('key');
         table.string('image').notNullable();
         table.integer('order').notNullable();
         table.enum('level', [1, 2, 3, 4, 5]).notNullable();
