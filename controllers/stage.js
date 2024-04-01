@@ -19,19 +19,13 @@ const uploadHelperTxn = async (type, req, campaign_id, level, key) => {
         case "image/svg+xml": fileExtension = "svg"; break;
         default: return res.status(400).send('Unsupported file type.');
     }
-    // const compositeKey = `${req.file.originalname}/${key}.${fileExtension}`;
-    const compositeKey = `${key}.${fileExtension}`;
+    let compositeKey = type === 'mind' ? key : `${key}.${fileExtension}`;
     const url = await uploadFile(req.file.buffer, campaign_id, level, compositeKey);
     return url;
 }
 
 module.exports = {
     // progress
-    /**
-     DOUBTS :
-     1. how to confirm that api get called for general content or level content
-     2. 
-     */
     uploadGraphics: async (req, res) => {
         /* #swagger.tags = ['Stage/Level']
            #swagger.summary = ' - upload gif to campaign'
@@ -273,26 +267,18 @@ module.exports = {
     uploadMind: async (req, res) => {
         /* #swagger.tags = ['Stage/Level']
            #swagger.summary = ' - upload mind file to campaign'
-           #swagger.consumes = ['multipart/form-data']
-           #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
            #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
-           #swagger.parameters['body'] = {
-                in: 'body',
-                description: 'Create a new Campaign',
-                schema: {
-                    $level: 1,
-                    $key: 'string',
-                    $scantype: 'qr or image'
-                }
-         }
+           #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+           #swagger.parameters['order'] = {in: 'path', type: 'integer'}
+           #swagger.parameters['key'] = {in: 'path', required: true, type: 'string'}
+           #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', enum: ['product', 'general']}
         */
         try {
-            const { campaign_id } = req.params;
-            const { level, key, scantype } = req.body;
-            if (!campaign_id || !level || !key || !scantype) {
+            const { campaign_id, order, key, content_type } = req.params;
+            if (!campaign_id || !order || !key || !content_type) {
                 return res.status(400).json({ error: 'please provide all required details' });
             }
-            const campaign = await CampaignConfig.query().findById({ campaign_id });
+            const campaign = await CampaignConfig.query().where({ campaign_id: parseInt(campaign_id) }).first();
             if (!campaign) {
                 return res.status(404).json({ error: 'Campaign not found' });
             }
@@ -302,18 +288,24 @@ module.exports = {
                 });
             }
             const image = await loadImage(req.file.buffer);
-            const { OfflineCompiler } = await import('./mind-ar-js-master/src/image-target/offline-compiler.js');
+            const { OfflineCompiler } = await import('../mind-ar-js-master/src/image-target/offline-compiler.js');
             const compiler = new OfflineCompiler();
             await compiler.compileImageTargets([image], console.log);
             const buffer = compiler.exportData();
             const compositeKeyMind = `${key}.mind`;
-            const originalImageExtension = req.file.originalname.split('.').pop();
-            const compositeKeyImage = `${key}.${originalImageExtension}`;
 
-            const url = await uploadHelperTxn('mind', req, campaign_id, level, key);
-            req.body.image = url;
-            const insertData = StageConfig.query().insert(req.body);
-
+            const level = 'product';
+            const imgUrl = await uploadHelperTxn('image', req, campaign_id, level, key);
+            const mindUrl = await uploadFile(buffer, campaign_id, level, compositeKeyMind);
+            // const mindUrl = await uploadHelperTxn('mind', buffer, campaign_id, level, compositeKeyMind);
+            const data = {
+                campaign_id: parseInt(campaign_id),
+                key,
+                order: parseInt(order),
+                image: imgUrl,
+                content_type,
+            }
+            const insertData = await CampaignConfig.query().insert(data);
             res.status(200).json(insertData);
         } catch (error) {
             res.status(500).json({ error: error.message });

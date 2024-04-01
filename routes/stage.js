@@ -13,7 +13,7 @@ router.put('/campaign/update-gif/:campaign_id', upload('gif').single('image'), s
 
 
 // /uploadimage/:campaignid/:pageno/:key/:scantype
-router.post('/campaign/upload-image/:campaign_id/:level/:key/:scantype/:order/:stage_number/:content_type', upload('image').single('image'), stageController.uploadImageToCampaign);  
+router.post('/campaign/upload-image/:campaign_id/:level/:key/:scantype/:order/:stage_number/:content_type', upload('image').single('image'), stageController.uploadImageToCampaign);
 // /updateimage/:campaignid/:pageno/:key/:scantype
 router.put('/campaign/update-image/:id/:content_type', upload('image').single('image'), stageController.updateImageToCampaign);
 
@@ -23,7 +23,7 @@ router.get('/campaign/get-signed-url/:campaign_id/:scantype', stageController.ge
 router.get('/campaign/get-signed-url/no-status/:campaign_id/:scantype', stageController.getSignedUrlWithoutStatus);
 
 // /compile-upload/:campaignid/:pageno/:Key/:scantype
-router.post('/campaign/upload-mind/:campaign_id', upload('mind').single('image'), stageController.uploadMind);
+router.post('/campaign/upload-mind/:campaign_id/:order/:key/:content_type', upload('mind').single('image'), stageController.uploadMind);
 
 // /delete-image/:campaignid/:pageno/:key
 router.delete('/campaign/delete-image/:campaign_id/:level/:key', stageController.deleteImage);

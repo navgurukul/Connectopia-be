@@ -9,13 +9,13 @@ module.exports = {
                 return multer({
                     storage: storage,
                     limits: { fileSize: 10 * 1024 * 1024 }, // 30MB for .mind files
-                    fileFilter: function (req, file, cb) {
-                        if (file.mimetype === "application/x-mind") {
-                            cb(null, true);
-                        } else {
-                            cb(new Error("Only .mind files are allowed"), false);
-                        }
-                    }
+                    // fileFilter: function (req, file, cb) {
+                    //     if (file.mimetype === "application/x-mind") {
+                    //         cb(null, true);
+                    //     } else {
+                    //         cb(new Error("Only .mind files are allowed"), false);
+                    //     }
+                    // }
                 });
 
             case 'image':

@@ -14,15 +14,7 @@ module.exports = {
   // uploadS3 and uploadToS3, loadS3, handleUpload and handleUploadAndInsert
   uploadFile: async (fileBuffer, campaign_id, level = null, key) => {
     try {
-      const urls = {};
-      const fileExtension = key.split(".").pop();
-      const params = {
-        Bucket: bucketName,
-        Key: `${campaign_id}/${level ? level : ""}/${key}`,
-        Body: fileBuffer,
-      };
-      const imageData = await S3.upload(params).promise();
-      urls.image = imageData.Location;
+      // const fileExtension = key.split(".").pop();
       if (key.includes(".mind")) {
         const params = {
           Bucket: bucketName,
@@ -31,9 +23,16 @@ module.exports = {
           ContentType: "application/octet-stream",
         };
         const data = await S3.upload(params).promise();
-        urls.mind = data.Location;
+        return data.Location;
       }
-      return urls;
+
+      const params = {
+        Bucket: bucketName,
+        Key: `${campaign_id}/${level ? level : ""}/${key}`,
+        Body: fileBuffer,
+      };
+      const imageData = await S3.upload(params).promise();
+      return imageData.Location;;
     } catch (error) {
       return { error: error.message };
     }
