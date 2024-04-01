@@ -62,7 +62,7 @@ module.exports = {
                     .json({ error: `Campaign -${name}- already exists` });
             }
             const campaign = await Campaign.query().insert(req.body);
-            res.status(201).json(campaign);
+            res.status(200).json(campaign);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
