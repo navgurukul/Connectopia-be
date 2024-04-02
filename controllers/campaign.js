@@ -235,10 +235,10 @@ module.exports = {
                     .where("campaign_id", campaignData.id);
                 await Campaign.query(trx).delete().where("id", campaignData.id);
             });
-            console.log(check);
+            // console.log(check);
             return res.status(200).json({ msg: "Campaign deleted successfully" });
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             return res.status(500).json({ error: error.message });
         }
     },

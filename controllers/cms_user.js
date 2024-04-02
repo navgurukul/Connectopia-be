@@ -205,7 +205,7 @@ module.exports = {
     try {
       // Fetch user data along with organisation description
       const user = await CMSUsers.query().where("email", email).first();
-      console.log(user);
+      // console.log(user);
       if (!user) {
         return res.status(401).json({ message: "Invalid email or password." });
       }
