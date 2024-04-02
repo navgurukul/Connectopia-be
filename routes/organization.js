@@ -2,13 +2,9 @@ const express = require('express');
 const router = express.Router();
 const organizationController = require('../controllers/organization');
 
-const test = (req, res, next) => {
-    console.log(req.body);
-    next();
-}
 
 // Routes
-router.post('/organization/create', test, organizationController.createOrganization);
+router.post('/organization/create', organizationController.createOrganization);
 router.get('/organization/list/:email/:usertype', organizationController.getOrganizationsByEmailUser); // /organizationlist/:emailid/:usertype
 
 // one can be removed after confirmation
