@@ -5,24 +5,30 @@ const StageConfig = require("../models/stage_config");
 const CMSUsers = require("../models/cmsusers");
 
 // helper function
-const getCampaignTxn = async (usertype = "user", emailid, orgid = null) => {
+const getCampaignTxn = async (usertype, email) => {
   try {
-    switch (usertype) {
-      case "superadmin":
-        const superAdminCampaigns = await Campaign.query().where(
-          "organization_id",
-          orgid
-        );
-        return superAdminCampaigns;
-      case "admin":
-      case "user":
-        const userCampaigns = await Campaign.query().where("email", emailid);
-        return userCampaigns;
-      default:
-        return { error: "Invalid usertype" };
+    const userExist = await CMSUsers.query().where("email", email);
+    if (userExist.length > 0) {
+      switch (usertype) {
+        case "superadmin":
+          const superAdminCampaigns = await Campaign.query();
+          return superAdminCampaigns;
+        case "admin":
+        case "user":
+          const userCampaigns = await Campaign.query().where("email", email);
+          if (userCampaigns.length > 0) {
+            return userCampaigns;
+          } else {
+            throw new Error("No campaigns found by email");
+          }
+        default:
+          throw new Error("Invalid usertype");
+      }
+    } else {
+      throw new Error("User not found by this email");
     }
   } catch (error) {
-    return { error: error.message };
+    throw new Error(error.message);
   }
 };
 
@@ -91,22 +97,28 @@ module.exports = {
 
   getCampaignByEmailUser: async (req, res) => {
     /*
-             #swagger.tags = ['Campaign']
-             #swagger.summary = 'Get all campaigns by email and usertype'
-             #swagger.parameters['usertype'] = { in: 'query', type: 'string', enum: ['superadmin', 'admin', 'user'],}
-             #swagger.parameters['orgid'] = {in: 'query', type: 'number'}
-            */
+     #swagger.tags = ['Campaign']
+     #swagger.summary = 'Get all campaigns by email and usertype'
+     #swagger.parameters['usertype'] = { in: 'path', required: true, type: 'string', enum: ['superadmin', 'admin', 'user'],}
+    */
     try {
-      const { email, usertype, orgid } = req.params;
+      const { email, usertype } = req.params;
       if (!email || !usertype) {
         return res.status(400).json({
-          error: "emailid, usertype and organization_id are required",
+          error: "email and usertype is required",
         });
       }
-      const campaigns = await getCampaignTxn(usertype, email, orgid);
+      const campaigns = await getCampaignTxn(usertype, email);
       res.status(200).json(campaigns);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      if (
+        error.message === "No campaigns found" ||
+        error.message === "No campaigns found by email"
+      ) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: error.message });
+      }
     }
   },
 

@@ -4,7 +4,7 @@ const campaignController = require('../controllers/campaign');
 
 // Routes
 router.post('/campaign/create', campaignController.createCampaign); // /api/createNewCampaign ✅
-router.get('/campaign/:orgid/:email/:usertype', campaignController.getCampaignByEmailUser); // /campaigndetails/:emailid/:usertype ✅
+router.get('/campaign/:email/:usertype', campaignController.getCampaignByEmailUser); // /campaigndetails/:emailid/:usertype ✅
 router.get('/campaign/stages/:id', campaignController.getCampaignById); // ✅
 router.get('/campaign/:email', campaignController.getCampaignByEmail); // /campaignsByEmailid/:emailid ✅
 router.put('/campaign/edit/:id', campaignController.updateCampaignById); // /editCampaign ✅
