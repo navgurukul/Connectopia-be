@@ -9,7 +9,7 @@ router.get('/organization/list/:email/:usertype', organizationController.getOrga
 
 // one can be removed after confirmation
 // router.get('/organization/:name', organizationController.getOrganizationById);
-router.get('/organization/:id', organizationController.getOrganizationById);
+router.get('/organization/:id', organizationController.getCampaignAndUserByOrganizationId);
 
 // one can be removed after confirmation
 // router.delete('/organization/delete/:name', organizationController.deleteOrganizationByIdOrName); // /deleteOrganizationData/:organization_name'
