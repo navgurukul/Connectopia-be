@@ -182,7 +182,9 @@ module.exports = {
 
       return res
         .status(200)
-        .send("Organization data deletion completed successfully.");
+        .json({
+          message: "Organization data deletion completed successfully.",
+        });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }

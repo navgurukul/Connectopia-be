@@ -23,6 +23,10 @@ module.exports = {
 
     try {
       // Retrieve campaign ID from the campaign name
+      const checkUser = await CampaignUsers.query().where("email", email).andWhere("campaign_id", campaign_id);
+      if (checkUser.length > 0) {
+        return res.status(400).send("User is already associated with the campaign");
+      }
       const campaign = await Campaign.query().where("id", campaign_id);
       if (!campaign) {
         return res.status(404).send(`Campaign "${campaign_id}" not found`);

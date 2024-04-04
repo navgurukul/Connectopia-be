@@ -17,10 +17,10 @@ router.delete('/organization/delete/:id', organizationController.deleteOrganizat
 
 router.put('/organization/edit/:id', organizationController.updateOrganizationById) // /editOrganization
 
-// /users_by_organization/:organization
+// /api/users_by_organization/:organization
 router.get('/organization/user/:orgid', organizationController.getUsersByOrganization);
 
-// /api/users_by_organization/:organization
+// /users_by_organization/:organization
 router.get('/organization/associated-user/:orgid', organizationController.getAssociatedUserOfOrganization);
 
 module.exports = router;
