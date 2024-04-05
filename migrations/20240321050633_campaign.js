@@ -4,7 +4,7 @@ exports.up = function (knex) {
         table.string('name').notNullable().unique();
         table.string('description').nullable();
         table.enum('scantype', ['qr', 'image']).notNullable();
-        table.string('email').notNullable().unique();
+        table.string('email').notNullable();
         table.date('startdate').notNullable();
         table.date('enddate').notNullable();
         table.time('campaign_duration').nullable();
