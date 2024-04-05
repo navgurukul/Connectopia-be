@@ -314,6 +314,7 @@ module.exports = {
         */
     try {
       const { campaign_id, scantype } = req.params;
+      const id = parseInt(campaign_id);
       if (!campaign_id || !scantype) {
         return res
           .status(400)
@@ -321,7 +322,7 @@ module.exports = {
       }
       const campaign = await Campaign.query()
         .select("status")
-        .findById({ campaign_id })
+        .findById(id)
         .first();
       if (!campaign) {
         return res.status(404).json({ error: "Campaign not found" });
@@ -331,7 +332,6 @@ module.exports = {
       }
       const productData = await CampaignConfig.query().where({
         campaign_id,
-        scantype,
         content_type: "product",
       });
       res.status(200).json(productData);
