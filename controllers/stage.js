@@ -356,7 +356,6 @@ module.exports = {
       }
       const productData = await CampaignConfig.query().where({
         campaign_id,
-        scantype,
         content_type: "general",
       });
       res.status(200).json(productData);
