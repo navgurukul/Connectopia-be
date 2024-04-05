@@ -4,8 +4,6 @@ const CampaignConfig = require("../models/campaign_config");
 const CustData = require("../models/customer_data");
 const CampaignUsers = require("../models/campaign_users");
 const CMSUsers = require("../models/cmsusers");
-const { or } = require("mathjs");
-const organization = require("../models/organization");
 
 module.exports = {
   createOrganization: async (req, res) => {
@@ -85,34 +83,51 @@ module.exports = {
       if (!id) {
         return res.status(400).json({ error: "ID is required" });
       }
-      
+
       // Retrieve campaigns by organization ID
       const campaigns = await Campaign.query().where("organization_id", id);
       if (!campaigns || campaigns.length === 0) {
-        return res.status(404).json({ error: "No campaigns found for the organization" });
+        return res
+          .status(404)
+          .json({ error: "No campaigns found for the organization" });
       }
-      
+
       // Retrieve CMS users by organization ID
       const cmsUsers = await CMSUsers.query().where("organization_id", id);
-      
+
       // Retrieve CampaignUser records based on campaigns and CMS users
+      const campaignIds = campaigns.map((campaign) => campaign.id);
+      const userEmails = cmsUsers.map((user) => user.email);
+
       const campaignUsers = await CampaignUsers.query()
-        .whereIn("campaign_id", campaigns.map(campaign => campaign.id))
-        .whereIn("email", cmsUsers.map(user => user.email));
-      
+        .whereIn("campaign_id", campaignIds)
+        .whereIn("email", userEmails);
+
+      // Retrieve organization_id and usertype from CMSUsers
+      const userMap = new Map(
+        cmsUsers.map((user) => [
+          user.email,
+          { organization_id: user.organization_id, usertype: user.usertype },
+        ])
+      );
+
       // Map users to campaigns
-      const campaignsWithUsers = campaigns.map(campaign => {
-        const users = campaignUsers.filter(user => user.campaign_id === campaign.id);
+      const campaignsWithUsers = campaigns.map((campaign) => {
+        const users = campaignUsers
+          .filter((user) => user.campaign_id === campaign.id)
+          .map((user) => {
+            const { organization_id, usertype } = userMap.get(user.email);
+            return { ...user, organization_id, usertype };
+          });
         campaign.users = users;
         return campaign;
       });
-      
+
       res.status(200).json(campaignsWithUsers);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   },
-  
 
   updateOrganizationById: async (req, res) => {
     /* #swagger.tags = ['Organization']
