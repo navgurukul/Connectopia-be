@@ -11,6 +11,8 @@ router.post('/campaign/upload-gif/:campaign_id', upload('gif').single('image'), 
 // /updategif/:campaignid/:pageno/:Key/:scantype
 router.put('/campaign/update-gif/:campaign_id', upload('gif').single('image'), stageController.updateGraphics);
 
+// upload campaign main QR
+router.post('/campaign/upload-qr/:campaign_id/:key/:content_type', upload('image').single('image'), stageController.uploadQR);
 
 // /uploadimage/:campaignid/:pageno/:key/:scantype
 router.post('/campaign/upload-image/:campaign_id/:level/:key/:scantype/:order/:stage_number/:content_type', upload('image').single('image'), stageController.uploadImageToCampaign);

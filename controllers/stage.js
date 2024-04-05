@@ -206,6 +206,57 @@ module.exports = {
     }
   },
 
+  // :campaign_id/:key/:content_type
+  uploadQR: async (req, res) => {
+    /*  #swagger.tags = ['Stage/Level']
+        #swagger.summary = 'Upload Campaign Main QR'
+        #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
+        #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+
+        */
+    try {
+      const { campaign_id, content_type, key } = req.params;
+      const id = parseInt(campaign_id);
+
+      // Check if required parameters are missing
+      if (!campaign_id, !content_type, !key) {
+        return res
+          .status(400)
+          .json({ error: "Please provide all required details" });
+      }
+
+      // Check if no file is provided for upload
+      if (!req.file) {
+        return res.status(400).json({
+          msg: "No file provided for upload.",
+        });
+      }
+
+      const data = {
+        campaign_id: id,
+        content_type,
+        key,
+        order: 0,
+      };
+
+      // If content type is not 'level', assume it's 'campaign' and proceed with upload
+      const ifCampaignExist = await Campaign.query().findById(id);
+      if (!ifCampaignExist) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+
+      // Perform the file upload and insertion of data
+      const url = await uploadHelperTxn("image", req, campaign_id, 'product', key);
+      data.image = url;
+
+      const insertedData = await CampaignConfig.query().insert(data);
+      res.status(200).json(insertedData);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+
   // /updateimage/:campaignid/:pageno/:key/:scantype
   updateImageToCampaign: async (req, res) => {
     /* 
