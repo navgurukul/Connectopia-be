@@ -345,7 +345,7 @@ module.exports = {
     /* #swagger.tags = ['Stage/Level']
            #swagger.summary = ' - get all signed urls for campaign without status'
            #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-           #swagger.parameters['scantype'] = { in: 'query', type: 'string', enum: ['qr', 'image'],}           
+           #swagger.parameters['scantype'] = { in: 'path', required: true, type: 'string', enum: ['qr', 'image'],}           
         */
     try {
       const { campaign_id, scantype } = req.params;
