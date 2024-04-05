@@ -4,6 +4,8 @@ const CampaignConfig = require("../models/campaign_config");
 const CustData = require("../models/customer_data");
 const CampaignUsers = require("../models/campaign_users");
 const CMSUsers = require("../models/cmsusers");
+const { or } = require("mathjs");
+const organization = require("../models/organization");
 
 module.exports = {
   createOrganization: async (req, res) => {
@@ -73,27 +75,44 @@ module.exports = {
     }
   },
 
-  getOrganizationById: async (req, res) => {
+  getCampaignAndUserByOrganizationId: async (req, res) => {
     /* #swagger.tags = ['Organization']
-               #swagger.summary = ' - Get all organizations by organization id'
-               #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
-            */
+       #swagger.summary = ' - Get all organizations by organization id'
+       #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
+    */
     try {
       const { id } = req.params;
-      // const { name } = req.params;
       if (!id) {
-        return res.status(400).json({ error: "name is required" });
+        return res.status(400).json({ error: "ID is required" });
       }
-      const organization = await Organization.query().findOne({ id });
-      // const organization = await Organization.query().findOne({ name });
-      if (!organization) {
-        return res.status(404).json({ error: "Organization not found" });
+      
+      // Retrieve campaigns by organization ID
+      const campaigns = await Campaign.query().where("organization_id", id);
+      if (!campaigns || campaigns.length === 0) {
+        return res.status(404).json({ error: "No campaigns found for the organization" });
       }
-      res.status(200).json(organization);
+      
+      // Retrieve CMS users by organization ID
+      const cmsUsers = await CMSUsers.query().where("organization_id", id);
+      
+      // Retrieve CampaignUser records based on campaigns and CMS users
+      const campaignUsers = await CampaignUsers.query()
+        .whereIn("campaign_id", campaigns.map(campaign => campaign.id))
+        .whereIn("email", cmsUsers.map(user => user.email));
+      
+      // Map users to campaigns
+      const campaignsWithUsers = campaigns.map(campaign => {
+        const users = campaignUsers.filter(user => user.campaign_id === campaign.id);
+        campaign.users = users;
+        return campaign;
+      });
+      
+      res.status(200).json(campaignsWithUsers);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   },
+  
 
   updateOrganizationById: async (req, res) => {
     /* #swagger.tags = ['Organization']
@@ -180,11 +199,9 @@ module.exports = {
         await CMSUsers.query(trx).delete().where("organization_id", id);
       });
 
-      return res
-        .status(200)
-        .json({
-          message: "Organization data deletion completed successfully.",
-        });
+      return res.status(200).json({
+        message: "Organization data deletion completed successfully.",
+      });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
