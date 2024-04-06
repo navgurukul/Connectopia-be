@@ -363,7 +363,7 @@ module.exports = {
           .status(404)
           .json({
             error:
-              "No campaign found with the provided campaign_id and scantype",
+              "No campaign found with the provided scantype",
           });
       }
 
