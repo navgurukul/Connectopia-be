@@ -1,5 +1,8 @@
 const { Model } = require('objection');
 const Joi = require('joi');
+const CMSUser = require('./cmsusers');
+const Campaign = require('./campaign');
+const CustData = require('./customer_data');
 
 class organization extends Model {
   static get tableName() {
@@ -21,7 +24,7 @@ class organization extends Model {
     return {
       campaigns: {
         relation: Model.HasManyRelation,
-        modelClass: __dirname + '/campaign',
+        modelClass: Campaign,
         join: {
           from: 'organization.id',
           to: 'campaign.organization_id',
@@ -29,7 +32,7 @@ class organization extends Model {
       },
       cmsusers: {
         relation: Model.HasManyRelation,
-        modelClass: __dirname + '/cmsusers',
+        modelClass: CMSUser,
         join: {
           from: 'organization.id',
           to: 'cmsusers.organization_id',
@@ -37,7 +40,7 @@ class organization extends Model {
       },
       custdata: {
         relation: Model.HasManyRelation,
-        modelClass: __dirname + '/custdata',
+        modelClass: CustData,
         join: {
           from: 'organization.id',
           to: 'custdata.organization_id',

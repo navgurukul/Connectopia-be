@@ -1,6 +1,6 @@
 const { Model } = require('objection');
 const Joi = require('joi');
-const organization = require('./organization');
+const Organization = require('./organization');
 
 class CMSUser extends Model {
   static get tableName() {
@@ -24,7 +24,7 @@ class CMSUser extends Model {
     return {
       organization: {
         relation: Model.BelongsToOneRelation,
-        modelClass: organization,
+        modelClass: Organization,
         join: {
           from: 'cmsusers.organization_id',
           to: 'organization.id',

@@ -129,6 +129,72 @@ module.exports = {
     }
   },
 
+  //withGraphFetched implemented need more time to fix this
+  // getCampaignAndUserByOrganizationId: async (req, res) => {
+  //   /* #swagger.tags = ['Organization']
+  //      #swagger.summary = ' - Get all organizations by organization id'
+  //      #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
+  //   */
+  //   try {
+  //     const { id } = req.params;
+  //     if (!id) {
+  //       return res.status(400).json({ error: "ID is required" });
+  //     }
+
+  //     const organization = await Organization.query()
+  //       .findById(id)
+  //       .withGraphFetched("[campaigns, cmsusers]");
+
+  //       const fetchCampaignUsers = async (campaignId, email) => {
+  //       try {
+  //         const campaignUsers = await CampaignUsers.query()
+  //           .where("campaign_id", campaignId)
+  //           .andWhere("email", email);
+  //         return campaignUsers;
+  //       } catch (error) {
+  //         console.error("Error fetching campaign users:", error);
+  //         return [];
+  //       }
+  //     };
+
+  //     const organizationWithCampaignUsers = {
+  //       ...organization,
+  //       campaigns: await Promise.all(
+  //         organization.campaigns.map(async (campaign) => {
+  //           const campaignUsers = organization.cmsusers
+  //             .filter((user) => user.email) // Filter out users with undefined emails
+  //             .map(async (user) => await fetchCampaignUsers(campaign.id, user.email))
+  //             .filter((campaignUser) => campaignUser); // Filter out undefined campaignUsers
+      
+  //           const usersWithCampaignUsers = {
+  //             ...campaign,
+  //             users: await Promise.all(
+  //               campaignUsers.map(async (campaignUser) => {
+  //                 const user = organization.cmsusers.find((u) => u.email === campaignUser.email);
+  //                 return {
+  //                   ...user,
+  //                   password: undefined,
+  //                 };
+  //               })
+  //             ),
+  //           };
+  //           return usersWithCampaignUsers;
+  //         })
+  //       ),
+  //     };
+      
+      
+      
+      
+
+  //     // Output the organization data with campaign users
+  //     return res.status(200).json(organizationWithCampaignUsers);
+  //     // console.log(organizationWithCampaignUsers);
+  //   } catch (error) {
+  //     res.status(500).json({ error: error.message });
+  //   }
+  // },
+
   updateOrganizationById: async (req, res) => {
     /* #swagger.tags = ['Organization']
                #swagger.summary = ' - update organization by organization name'

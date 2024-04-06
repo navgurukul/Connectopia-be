@@ -343,9 +343,9 @@ module.exports = {
   // /withoutStatus/allsignedurls/:campaignid/:scantype
   getSignedUrlWithoutStatus: async (req, res) => {
     /* #swagger.tags = ['Stage/Level']
-           #swagger.summary = ' - get all signed urls for campaign without status'
+           #swagger.summary = 'Get all signed URLs for campaign without status'
            #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-           #swagger.parameters['scantype'] = { in: 'path', required: true, type: 'string', enum: ['qr', 'image'],}           
+           #swagger.parameters['scantype'] = { in: 'path', required: true, type: 'string', enum: ['qr', 'image']}           
         */
     try {
       const { campaign_id, scantype } = req.params;
@@ -354,11 +354,53 @@ module.exports = {
           .status(400)
           .json({ error: "campaign_id and scantype are required" });
       }
-      const productData = await CampaignConfig.query().where({
-        campaign_id,
-        content_type: "general",
-      });
-      res.status(200).json(productData);
+
+      const campaign = await Campaign.query()
+        .where("id", campaign_id)
+        .andWhere("scantype", scantype);
+      if (!campaign.length) {
+        return res
+          .status(404)
+          .json({
+            error:
+              "No campaign found with the provided campaign_id and scantype",
+          });
+      }
+
+      const campaignData = {};
+      const productData = await CampaignConfig.query()
+        .where({ campaign_id })
+        .orderBy("order", "asc");
+      const levelData = await StageConfig.query()
+        .where({ campaign_id })
+        .orderBy("order", "asc");
+
+      if (!productData.length) {
+        return res
+          .status(404)
+          .json({ error: "No data found for this campaign" });
+      }
+
+      const general = productData.filter(
+        (data) => data.content_type === "general"
+      );
+      const product = productData.filter(
+        (data) => data.content_type === "product"
+      );
+
+      if (general.length) {
+        campaignData.general = general;
+      }
+
+      if (product.length) {
+        campaignData.product = product;
+      }
+
+      if (levelData.length) {
+        campaignData.level = levelData;
+      }
+
+      res.status(200).json(campaignData);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
