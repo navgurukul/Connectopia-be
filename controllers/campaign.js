@@ -4,6 +4,7 @@ const CampaignUsers = require("../models/campaign_users");
 const StageConfig = require("../models/stage_config");
 const CMSUsers = require("../models/cmsusers");
 const Organization = require("../models/organization");
+const Stage = require("../controllers/stage");
 
 // helper function
 const getCampaignTxn = async (usertype, email) => {
@@ -58,7 +59,8 @@ module.exports = {
                  }
                 */
         try {
-            const { organization_id, name } = req.body;
+            const { organization_id, name} = req.body;
+            const stageNum = req.body.total_stages;
             if (!organization_id) {
                 return res.status(400).json({ error: "fill out proper data" });
             }
@@ -73,6 +75,7 @@ module.exports = {
                     .json({ error: `Campaign -${name}- already exists` });
             }
             const campaign = await Campaign.query().insert(req.body);
+            const stageCreate = await Stage.createStageByPasses(campaign.id, stageNum)
             res.status(200).json(campaign);
         } catch (error) {
             res.status(500).json({ error: error.message });

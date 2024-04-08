@@ -6,6 +6,7 @@ const CampaignUsers = require("../models/campaign_users");
 const StageConfig = require("../models/stage_config");
 const CMSUsers = require("../models/cmsusers");
 const { uploadFile } = require("./awsS3");
+const Stage = require("../models/stage.js");
 
 // helper function
 const uploadHelperTxn = async (type, req, campaign_id, level, key) => {
@@ -53,7 +54,8 @@ module.exports = {
     */
     try {
       //:campaign_id/:level/:key/:scantype
-      const { campaign_id, level, key, scantype, order, stage_number } = req.params;
+      const { campaign_id, level, key, scantype, order, stage_number } =
+        req.params;
       console.log(req.body);
       if (!campaign_id || !level || !key || !scantype || !order) {
         return res
@@ -146,7 +148,7 @@ module.exports = {
         req.params;
       const id = parseInt(campaign_id);
       // remove space from key and limit character
-      const updatedKey = key.replace(/\s+/g, '-').slice(0, 50);
+      const updatedKey = key.replace(/\s+/g, "-").slice(0, 50);
 
       // Check if required parameters are missing
       if (!campaign_id || !level || !key || !order || !content_type) {
@@ -190,7 +192,13 @@ module.exports = {
 
       // const fileExt = req.file.originalname.split('.').pop();
       // Perform the file upload and insertion of data
-      const url = await uploadHelperTxn("image", req, campaign_id, level, updatedKey);
+      const url = await uploadHelperTxn(
+        "image",
+        req,
+        campaign_id,
+        level,
+        updatedKey
+      );
       data.image = url;
 
       const insertedData = await (content_type === "level"
@@ -510,6 +518,22 @@ module.exports = {
       res.status(200).json(deleteData);
     } catch (error) {
       res.status(500).json({ error: error.message });
+    }
+  },
+
+  createStageByPasses: async (campaignId, stageNum) => {
+    console.log(campaignId, stageNum);
+    try {
+      for (let i = 1; i <= stageNum; i++) {
+        console.log(i);
+        const stageData = {
+          campaign_id: campaignId,
+        };
+        await Stage.query().insert(stageData);
+      }
+      return "stages created";
+    } catch (error) {
+      throw error;
     }
   },
 };
