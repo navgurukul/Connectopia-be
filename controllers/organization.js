@@ -4,6 +4,7 @@ const CampaignConfig = require("../models/campaign_config");
 const CustData = require("../models/customer_data");
 const CampaignUsers = require("../models/campaign_users");
 const CMSUsers = require("../models/cmsusers");
+const StageConfig = require("../models/stage_config");
 
 module.exports = {
   createOrganization: async (req, res) => {
@@ -165,7 +166,7 @@ module.exports = {
   //             .filter((user) => user.email) // Filter out users with undefined emails
   //             .map(async (user) => await fetchCampaignUsers(campaign.id, user.email))
   //             .filter((campaignUser) => campaignUser); // Filter out undefined campaignUsers
-      
+
   //           const usersWithCampaignUsers = {
   //             ...campaign,
   //             users: await Promise.all(
@@ -182,10 +183,6 @@ module.exports = {
   //         })
   //       ),
   //     };
-      
-      
-      
-      
 
   //     // Output the organization data with campaign users
   //     return res.status(200).json(organizationWithCampaignUsers);
@@ -237,16 +234,14 @@ module.exports = {
             */
     try {
       const { id } = req.params;
-      // const { id } = req.params;
 
-      // Check if organization ID is provided
       if (!id) {
         return res.status(400).json({ error: "Organization ID is required" });
       }
 
       // Fetch organization details to retrieve its name for S3 deletion
       const organization = await Organization.query().findById(id).first();
-      // const organization = await Organization.query().where('id', id);
+
       if (!organization) {
         return res.status(404).json({ error: "Organization not found" });
       }
@@ -254,32 +249,39 @@ module.exports = {
       // Begin transaction
       await Organization.transaction(async (trx) => {
         // Delete organization and related data
-        await Organization.query(trx).deleteById(id);
-        await Campaign.query(trx).delete().where("organization_id", id);
         await CampaignConfig.query(trx)
-          .delete()
-          .whereIn("campaign_id", function () {
-            this.select("campaign_id")
-              .from("campaign")
-              .where("organization_id", id);
-          });
+        .delete()
+        .whereIn("campaign_id", function () {
+          this.select("campaign_id")
+          .from("campaign")
+          .where("organization_id", id);
+        });
+        await StageConfig.query(trx)
+        .delete()
+        .whereIn("campaign_id", function () {
+          this.select("campaign_id")
+          .from("campaign")
+          .where("organization_id", id);
+        });
         await CustData.query(trx)
-          .delete()
-          .whereIn("campaign_id", function () {
-            this.select("campaign_id")
-              .from("campaign")
-              .where("organization_id", id);
-          });
+        .delete()
+        .whereIn("campaign_id", function () {
+          this.select("campaign_id")
+          .from("campaign")
+          .where("organization_id", id);
+        });
         await CampaignUsers.query(trx)
-          .delete()
-          .whereIn("campaign_id", function () {
-            this.select("campaign_id")
-              .from("campaign")
-              .where("organization_id", id);
-          });
+        .delete()
+        .whereIn("campaign_id", function () {
+          this.select("campaign_id")
+          .from("campaign")
+          .where("organization_id", id);
+        });
         await CMSUsers.query(trx).delete().where("organization_id", id);
+        await Campaign.query(trx).delete().where("organization_id", id);
+        await Organization.query(trx).deleteById(id);
       });
-
+      
       return res.status(200).json({
         message: "Organization data deletion completed successfully.",
       });
