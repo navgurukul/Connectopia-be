@@ -23,19 +23,22 @@ module.exports = {
             */
     try {
       const { name, logo, description } = req.body;
+      let resp;
       if (!name || !logo || !description) {
-        return res
-          .status(400)
-          .json({ error: "name, logo and description are required" });
+        resp = responseWrapper(null, "name, logo and description are required", 400);
+        return res.status(400).json(resp);
       }
       const ifOrganizationExists = await Organization.query().findOne({ name });
       if (ifOrganizationExists) {
-        return res.status(400).json({ error: "Organization already exists" });
+        resp = responseWrapper(null, "Organization already exists", 302);
+        return res.status(302).json(resp);
       }
       const organization = await Organization.query().insert(req.body);
-      res.status(200).json(organization);
+      resp = responseWrapper(organization, "success", 200);
+      return res.status(200).json(resp);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      const resp = responseWrapper(null, error.message, 500);
+      return res.status(500).json(resp);
     }
   },
 
@@ -45,11 +48,11 @@ module.exports = {
                #swagger.parameters['usertype'] = {in: 'path', required: true, type: 'string', enum: ['superadmin', 'admin', 'user']}
             */
     try {
+      let resp;
       const { email, usertype } = req.params;
       if (!email || !usertype) {
-        return res
-          .status(400)
-          .json({ error: "email and usertype both required" });
+        resp = responseWrapper(null, "email and usertype both required", 400);
+        return res.status(400).json(resp);
       }
       let organizations;
       switch (usertype) {
@@ -62,16 +65,20 @@ module.exports = {
             .findOne({ email })
             .withGraphFetched("organization");
           if (!organizations) {
-            return res.status(404).json({ error: "User not found" });
+            resp = responseWrapper(null, "User not found", 204);
+            return res.status(200).json(resp);
           }
           organizations = organizations.organization;
           break;
         default:
-          return res.status(400).json({ error: "Invalid usertype" });
+          resp = responseWrapper(null, "Invalid usertype", 400);
+          return res.status(400).json(resp);
       }
-      res.status(200).json(organizations);
+      resp = responseWrapper(organizations, "success", 200);
+      return res.status(200).json(resp);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      const resp = responseWrapper(null, error.message, 500);
+      return res.status(500).json(resp);
     }
   },
 
@@ -82,19 +89,21 @@ module.exports = {
     */
     try {
       const { id } = req.params;
+      let resp;
       if (!id) {
-        return res.status(400).json({ error: "ID is required" });
+        resp = responseWrapper(null, "ID is required", 400);
+        return res.status(400).json(resp);
       }
 
       const isOrganizationExists = await Organization.query().findById(id);
       if (!isOrganizationExists) {
-        const resp = responseWrapper(null, "organization not found", 204);
+        resp = responseWrapper(null, "organization not found", 204);
         return res.status(200).json(resp);
       }
       // Retrieve campaigns by organization ID
       const campaigns = await Campaign.query().where("organization_id", id);
       if (!campaigns || campaigns.length === 0) {
-        const resp = responseWrapper(null, "No campaigns found for the organization", 204);
+        resp = responseWrapper(null, "No campaigns found for the organization", 204);
         return res.status(200).json(resp);
       }
 
@@ -129,10 +138,11 @@ module.exports = {
         return campaign;
       });
 
-      const resp = responseWrapper(campaignsWithUsers, "success", 200);
+      resp = responseWrapper(campaignsWithUsers, "success", 200);
       res.status(200).json(resp);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      const resp = responseWrapper(null, error.message, 500);
+      return res.status(500).json(resp);
     }
   },
 
@@ -213,23 +223,26 @@ module.exports = {
                 }
             */
     try {
+      let resp;
       const { id } = req.params;
       const { name, logo, description } = req.body;
       if (!name || !logo || !description) {
-        return res
-          .status(400)
-          .json({ error: "name, logo and description are required" });
+        resp = responseWrapper(null, "name, logo and description are required", 400);
+        return res.status(400).json(resp);
       }
       const organization = await Organization.query().findById(id);
       if (!organization) {
-        return res.status(404).json({ error: "Organization not found" });
+        resp = responseWrapper(null, "Organization not found", 400);
+        return res.status(400).json(resp);
       }
       const updatedOrganization = await organization
         .$query()
         .patchAndFetch(req.body);
-      res.status(200).json(updatedOrganization);
+      resp = responseWrapper(updatedOrganization, "success", 200);
+      res.status(200).json(resp);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      const resp = responseWrapper(null, error.message, 500);
+      return res.status(500).json(resp);
     }
   },
 
@@ -240,16 +253,18 @@ module.exports = {
             */
     try {
       const { id } = req.params;
-
+      let resp;
       if (!id) {
-        return res.status(400).json({ error: "Organization ID is required" });
+        resp = responseWrapper(null, "Organization ID is required", 400);
+        return res.status(400).json(resp);
       }
 
       // Fetch organization details to retrieve its name for S3 deletion
       const organization = await Organization.query().findById(id).first();
 
       if (!organization) {
-        return res.status(404).json({ error: "Organization not found" });
+        resp = responseWrapper(null, "Organization not found", 204);
+        return res.status(200).json(resp);
       }
 
       // Begin transaction
@@ -288,11 +303,11 @@ module.exports = {
         await Organization.query(trx).deleteById(id);
       });
       
-      return res.status(200).json({
-        message: "Organization data deletion completed successfully.",
-      });
+      resp = responseWrapper(null, "success", 200);
+      res.status(200).json(resp);
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      const resp = responseWrapper(null, error.message, 500);
+      return res.status(500).json(resp);
     }
   },
 
@@ -304,12 +319,18 @@ module.exports = {
                #swagger.parameters['orgid'] = {in: 'path', required: true, type: 'integer'}
             */
     const { orgid } = req.params;
+    let resp;
     try {
       if (!orgid) {
-        return res.status(400).json({ error: "Organization ID is required" });
+        resp = responseWrapper(null, "Organization ID is required", 400);
+        return res.status(400).json(resp);
       }
 
       const users = await CMSUsers.query().where("organization_id", orgid);
+      if (!users || users.length === 0) {
+        resp = responseWrapper(null, "No users found for the organization", 204);
+        return res.status(200).json(resp);
+      }
       const userEmails = users.map((user) => user.email);
       const campaignUsers = await CampaignUsers.query().whereIn(
         "email",
@@ -341,9 +362,11 @@ module.exports = {
         };
       });
 
-      res.status(200).json(usersWithCampaigns);
+      resp = responseWrapper(usersWithCampaigns, "success", 200);
+      res.status(200).json(resp);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      const resp = responseWrapper(null, error.message, 500);
+      return res.status(500).json(resp);
     }
   },
 
@@ -355,9 +378,11 @@ module.exports = {
                #swagger.parameters['orgid'] = {in: 'path', required: true, type: 'integer'}
             */
     const { orgid } = req.params;
+    let resp;
     try {
       if (!orgid) {
-        return res.status(400).json({ error: "Organization ID is required" });
+        resp = responseWrapper(null, "Organization ID is required", 400);
+        return res.status(400).json(resp);
       }
 
       const users = await CMSUsers.query().where("organization_id", orgid);
@@ -397,9 +422,11 @@ module.exports = {
         })
         .filter((user) => user !== undefined);
 
-      res.status(200).json(usersWithCampaigns);
+      resp = responseWrapper(usersWithCampaigns, "success", 200);
+      res.status(200).json(resp);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      const resp = responseWrapper(null, error.message, 500);
+      return res.status(500).json(resp);
     }
   },
 };
