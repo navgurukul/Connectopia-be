@@ -219,7 +219,7 @@ module.exports = {
       const id = parseInt(campaign_id);
 
       // Check if required parameters are missing
-      if (!campaign_id, !content_type, !key) {
+      if ((!campaign_id, !content_type, !key)) {
         return res
           .status(400)
           .json({ error: "Please provide all required details" });
@@ -246,7 +246,13 @@ module.exports = {
       }
 
       // Perform the file upload and insertion of data
-      const url = await uploadHelperTxn("image", req, campaign_id, 'product', key);
+      const url = await uploadHelperTxn(
+        "image",
+        req,
+        campaign_id,
+        "product",
+        key
+      );
       data.image = url;
 
       const insertedData = await CampaignConfig.query().insert(data);
@@ -255,7 +261,6 @@ module.exports = {
       res.status(500).json({ error: error.message });
     }
   },
-
 
   // /updateimage/:campaignid/:pageno/:key/:scantype
   updateImageToCampaign: async (req, res) => {
@@ -361,10 +366,7 @@ module.exports = {
       if (!campaign.length) {
         return res
           .status(404)
-          .json({
-            error:
-              "No campaign found with the provided scantype",
-          });
+          .json({ error: "No campaign found with the provided scantype" });
       }
 
       const campaignData = {};
@@ -373,7 +375,8 @@ module.exports = {
         .orderBy("order", "asc");
       const levelData = await StageConfig.query()
         .where({ campaign_id })
-        .orderBy("order", "asc");
+        .orderBy("stage_number", "asc")
+        .orderBy("order", "asc"); 
 
       if (!productData.length) {
         return res
@@ -397,7 +400,15 @@ module.exports = {
       }
 
       if (levelData.length) {
-        campaignData.level = levelData;
+        const stages = {};
+        levelData.forEach((level) => {
+          const stageKey = `stage-${level.stage_number}`;
+          if (!stages[stageKey]) {
+            stages[stageKey] = [];
+          }
+          stages[stageKey].push(level);
+        });
+        campaignData.stages = stages;
       }
 
       res.status(200).json(campaignData);
