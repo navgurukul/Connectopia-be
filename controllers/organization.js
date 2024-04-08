@@ -5,6 +5,7 @@ const CustData = require("../models/customer_data");
 const CampaignUsers = require("../models/campaign_users");
 const CMSUsers = require("../models/cmsusers");
 const StageConfig = require("../models/stage_config");
+const responseWrapper = require("../helpers/responseWrapper");
 
 module.exports = {
   createOrganization: async (req, res) => {
@@ -85,12 +86,16 @@ module.exports = {
         return res.status(400).json({ error: "ID is required" });
       }
 
+      const isOrganizationExists = await Organization.query().findById(id);
+      if (!isOrganizationExists) {
+        const resp = responseWrapper(null, "organization not found", 204);
+        return res.status(200).json(resp);
+      }
       // Retrieve campaigns by organization ID
       const campaigns = await Campaign.query().where("organization_id", id);
       if (!campaigns || campaigns.length === 0) {
-        return res
-          .status(404)
-          .json({ error: "No campaigns found for the organization" });
+        const resp = responseWrapper(null, "No campaigns found for the organization", 204);
+        return res.status(200).json(resp);
       }
 
       // Retrieve CMS users by organization ID
@@ -124,7 +129,8 @@ module.exports = {
         return campaign;
       });
 
-      res.status(200).json(campaignsWithUsers);
+      const resp = responseWrapper(campaignsWithUsers, "success", 200);
+      res.status(200).json(resp);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
