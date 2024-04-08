@@ -4,20 +4,15 @@ const { upload } = require('../middlewares/multer');
 const stageController = require('../controllers/stage');
 
 
-// S3 routes  // 4 api combined
-// 1. /uploadgif/:campaignid/:pageno/:Key/:scantype
-// 2. /uploadimage/:campaignid/:pageno/:key/:scantype
-// router.post('/campaign/upload-gif/:campaign_id/:level/:key/:scantype/:order/:stage_number', upload('gif').single('image'), stageController.uploadGraphics);
-// /updategif/:campaignid/:pageno/:Key/:scantype
-// router.put('/campaign/update-gif/:campaign_id', upload('gif').single('image'), stageController.updateGraphics);
-
 // upload campaign main QR
 router.post('/campaign/upload-qr/:campaign_id/:key/:content_type', upload('image').single('image'), stageController.uploadQR);
 
 // /uploadimage/:campaignid/:pageno/:key/:scantype
-router.post('/campaign/upload-image/:campaign_id/:level/:key/:order/:stage_number/:content_type', upload('image').single('image'), stageController.uploadImageToCampaign);
+// This can handle both upload of image and gif
+router.post('/campaign/upload-image/:campaign_id/:level/:order/:content_type', upload('image').single('image'), stageController.uploadImageToCampaign);
 // /updateimage/:campaignid/:pageno/:key/:scantype
-router.put('/campaign/update-image/:id/:content_type', upload('image').single('image'), stageController.updateImageToCampaign);
+// and this can update image and gif
+router.put('/campaign/update-image/:content_id/:content_type', upload('image').single('image'), stageController.updateImageToCampaign);
 
 // /allsignedurls/:campaignid/:scantype
 router.get('/campaign/get-signed-url/:campaign_id/:scantype', stageController.getSignedUrl);

@@ -41,96 +41,7 @@ const uploadHelperTxn = async (type, req, campaign_id, level, key) => {
 };
 
 module.exports = {
-  // progress
-  uploadGraphics: async (req, res) => {
-    /* #swagger.tags = ['Stage/Level']
-        #swagger.summary = 'upload gif to campaign'
-        #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
-        #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-        #swagger.parameters['level'] = {in: 'query', type: 'integer'}
-        #swagger.parameters['stage_number'] = {in: 'query', type: 'integer'}
-        #swagger.parameters['order'] = {in: 'query', required: true, type: 'integer'}
-
-    */
-    try {
-      //:campaign_id/:level/:key/:scantype
-      const { campaign_id, level, key, scantype, order, stage_number } =
-        req.params;
-      console.log(req.body);
-      if (!campaign_id || !level || !key || !scantype || !order) {
-        return res
-          .status(400)
-          .json({ error: "please provide all required details" });
-      }
-      const campaign = await CampaignConfig.query().findById({ campaign_id });
-      if (!campaign) {
-        return res.status(404).json({ error: "Campaign not found" });
-      }
-      if (!req.file) {
-        return res.status(400).json({
-          msg: "No file provided for upload.",
-        });
-      }
-      const url = await uploadHelperTxn(
-        "gif",
-        req,
-        campaign_id,
-        level,
-        compositeKey
-      );
-      req.body.image = url;
-      const insertData = StageConfig.query().insert(req.body);
-
-      res.status(200).json(insertData);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
-  // update for uper wala
-  updateGraphics: async (req, res) => {
-    /* #swagger.tags = ['Stage/Level']
-           #swagger.summary = ' - update gif to campaign'
-           #swagger.consumes = ['multipart/form-data']
-           #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-           #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
-           #swagger.parameters['body'] = {
-            in: 'body',
-            schema: {
-                $level: 1,
-                $key: 'string',
-                $scantype: 'string (qr or image)',
-                $order: 1
-            }
-         }
-        */
-    try {
-      const { campaign_id } = req.params;
-      const { level, key, scantype, order } = req.body;
-      if (!campaign_id || !level || !key || !scantype || !order) {
-        return res
-          .status(400)
-          .json({ error: "please provide all required details" });
-      }
-      const campaign = await CampaignConfig.query().findById({ campaign_id });
-      if (!campaign) {
-        return res.status(404).json({ error: "Campaign not found" });
-      }
-      if (!req.file) {
-        return res.status(400).json({
-          msg: "No file provided for upload.",
-        });
-      }
-      const url = await uploadHelperTxn("gif", req, campaign_id, level, key);
-      req.body.image = url;
-      const updateData = StageConfig.query().update(req.body);
-
-      res.status(200).json(updateData);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
+  
   uploadImageToCampaign: async (req, res) => {
     /* 
       #swagger.tags = ['Stage/Level']
@@ -138,14 +49,14 @@ module.exports = {
       #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer', default: 0}
       #swagger.parameters['level'] = {in: 'path', type: 'integer', default: 0}
-      #swagger.parameters['stage_number'] = {in: 'path', type: 'integer', default: 0}
+      #swagger.parameters['stage_id'] = {in: 'query', type: 'integer', default: 0}
       #swagger.parameters['order'] = {in: 'path', required: true, type: 'integer', default: 0}
       #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'level', enum: ['level', 'geenral']}
 
     */
     try {
-      const { campaign_id, content_type, level, key, order, stage_number } =
-        req.params;
+      const { campaign_id, content_type, level, order } = req.params;
+      const {stage_id, key } = req.query
       const id = parseInt(campaign_id);
       // remove space from key and limit character
       const updatedKey = key.replace(/\s+/g, "-").slice(0, 50);
@@ -179,7 +90,7 @@ module.exports = {
           return res.status(404).json({ error: "Stage not found" });
         }
         data.level = parseInt(level);
-        data.stage_number = parseInt(stage_number);
+        data.stage_id = parseInt(stage_id);
       } else {
         // If content type is not 'level', assume it's 'campaign' and proceed with upload
         const ifDataExist = await CampaignConfig.query().where({
@@ -270,14 +181,14 @@ module.exports = {
       #swagger.tags = ['Stage/Level']
       #swagger.summary = 'Update image to campaign'
       #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
-      #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
+      #swagger.parameters['content_id'] = {in: 'path', required: true, type: 'integer'}
       #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'level', enum: ['level', 'geenral']}
 
         */
     try {
-      const { id, content_type } = req.params;
-      const cid = parseInt(id);
-      if (!id || !content_type) {
+      const { content_id, content_type } = req.params;
+      const cid = parseInt(content_id);
+      if (!content_id || !content_type) {
         return res.status(400).json({ error: "please content ID" });
       }
       if (!req.file) {
@@ -380,7 +291,7 @@ module.exports = {
 
       const levelData = await StageConfig.query()
         .where({ campaign_id })
-        .orderBy("stage_number", "asc")
+        .orderBy("stage_id", "asc")
         .orderBy("level", "asc")
         .orderBy("order", "asc");
 
@@ -407,7 +318,7 @@ module.exports = {
       if (levelData.length) {
         const stages = {};
         levelData.forEach((level) => {
-          const stageKey = `stage-${level.stage_number}`;
+          const stageKey = `stage-${level.stage_id}`;
           const levelKey = `level-${level.level}`;
 
           if (!stages[stageKey]) {

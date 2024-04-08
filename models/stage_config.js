@@ -11,7 +11,7 @@ class StageConfig extends Model {
     return Joi.object({
       id: Joi.number().integer().greater(0),
       level: Joi.number().integer().min(0).max(5).required(),
-      stage_number: Joi.number().integer().greater(0).required(),
+      stage_id: Joi.number().integer().greater(0).required(),
       campaign_id: Joi.number().integer().greater(0).required(),
       created_at: Joi.date().iso().required(),
       updated_at: Joi.date().iso().required(),
