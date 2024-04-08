@@ -43,24 +43,17 @@ module.exports = {
   // progress
   uploadGraphics: async (req, res) => {
     /* #swagger.tags = ['Stage/Level']
-           #swagger.summary = ' - upload gif to campaign'
-           #swagger.consumes = ['multipart/form-data']
-           #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-           #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
-           #swagger.parameters['body'] = {
-            in: 'body',
-            schema: {
-                $level: 1,
-                $key: 'string',
-                $scantype: 'string (qr or image)',
-                $order: 1
-            }
-         }
-        */
+        #swagger.summary = 'upload gif to campaign'
+        #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
+        #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+        #swagger.parameters['level'] = {in: 'query', type: 'integer'}
+        #swagger.parameters['stage_number'] = {in: 'query', type: 'integer'}
+        #swagger.parameters['order'] = {in: 'query', required: true, type: 'integer'}
+
+    */
     try {
       //:campaign_id/:level/:key/:scantype
-      const { campaign_id } = req.params;
-      const { level, key, scantype, order } = req.body;
+      const { campaign_id, level, key, scantype, order, stage_number } = req.params;
       console.log(req.body);
       if (!campaign_id || !level || !key || !scantype || !order) {
         return res
@@ -136,22 +129,24 @@ module.exports = {
     }
   },
 
-  // /uploadimage/:campaignid/:pageno/:key/:scantype
   uploadImageToCampaign: async (req, res) => {
     /* 
-            #swagger.tags = ['Stage/Level']
-            #swagger.summary = 'Upload image to campaign'
-            #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
-            #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-            #swagger.parameters['level'] = {in: 'path', type: 'integer'}
-            #swagger.parameters['stage_number'] = {in: 'path', type: 'integer'}
-            #swagger.parameters['order'] = {in: 'path', required: true, type: 'integer'}
+      #swagger.tags = ['Stage/Level']
+      #swagger.summary = 'Upload image to campaign'
+      #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
+      #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer', default: 0}
+      #swagger.parameters['level'] = {in: 'path', type: 'integer', default: 0}
+      #swagger.parameters['stage_number'] = {in: 'path', type: 'integer', default: 0}
+      #swagger.parameters['order'] = {in: 'path', required: true, type: 'integer', default: 0}
+      #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'level', enum: ['level', 'geenral']}
 
-        */
+    */
     try {
       const { campaign_id, content_type, level, key, order, stage_number } =
         req.params;
       const id = parseInt(campaign_id);
+      // remove space from key and limit character
+      const updatedKey = key.replace(/\s+/g, '-').slice(0, 50);
 
       // Check if required parameters are missing
       if (!campaign_id || !level || !key || !order || !content_type) {
@@ -171,7 +166,7 @@ module.exports = {
         campaign_id: id,
         order: parseInt(order),
         content_type,
-        key,
+        key: updatedKey,
       };
       // Check if the provided content type is 'level' and handle accordingly
       if (content_type === "level") {
@@ -193,8 +188,9 @@ module.exports = {
         }
       }
 
+      // const fileExt = req.file.originalname.split('.').pop();
       // Perform the file upload and insertion of data
-      const url = await uploadHelperTxn("image", req, campaign_id, level, key);
+      const url = await uploadHelperTxn("image", req, campaign_id, level, updatedKey);
       data.image = url;
 
       const insertedData = await (content_type === "level"
@@ -206,7 +202,6 @@ module.exports = {
     }
   },
 
-  // :campaign_id/:key/:content_type
   uploadQR: async (req, res) => {
     /*  #swagger.tags = ['Stage/Level']
         #swagger.summary = 'Upload Campaign Main QR'
@@ -262,13 +257,14 @@ module.exports = {
     }
   },
 
-  // /updateimage/:campaignid/:pageno/:key/:scantype
   updateImageToCampaign: async (req, res) => {
     /* 
-            #swagger.tags = ['Stage/Level']
-            #swagger.summary = 'Update image to campaign'
-            #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
-            #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
+      #swagger.tags = ['Stage/Level']
+      #swagger.summary = 'Update image to campaign'
+      #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
+      #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
+      #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'level', enum: ['level', 'geenral']}
+
         */
     try {
       const { id, content_type } = req.params;
@@ -291,7 +287,7 @@ module.exports = {
         }
         level = ifData.level;
       } else {
-        ifData = await CampaignConfig.query().where("id", cid).first();
+        ifData = await CampaignConfig.query().findById(cid).first();
         level = "general";
       }
       const campaign_id = ifData.campaign_id;

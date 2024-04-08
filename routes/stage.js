@@ -7,15 +7,15 @@ const stageController = require('../controllers/stage');
 // S3 routes  // 4 api combined
 // 1. /uploadgif/:campaignid/:pageno/:Key/:scantype
 // 2. /uploadimage/:campaignid/:pageno/:key/:scantype
-router.post('/campaign/upload-gif/:campaign_id', upload('gif').single('image'), stageController.uploadGraphics);
+// router.post('/campaign/upload-gif/:campaign_id/:level/:key/:scantype/:order/:stage_number', upload('gif').single('image'), stageController.uploadGraphics);
 // /updategif/:campaignid/:pageno/:Key/:scantype
-router.put('/campaign/update-gif/:campaign_id', upload('gif').single('image'), stageController.updateGraphics);
+// router.put('/campaign/update-gif/:campaign_id', upload('gif').single('image'), stageController.updateGraphics);
 
 // upload campaign main QR
 router.post('/campaign/upload-qr/:campaign_id/:key/:content_type', upload('image').single('image'), stageController.uploadQR);
 
 // /uploadimage/:campaignid/:pageno/:key/:scantype
-router.post('/campaign/upload-image/:campaign_id/:level/:key/:scantype/:order/:stage_number/:content_type', upload('image').single('image'), stageController.uploadImageToCampaign);
+router.post('/campaign/upload-image/:campaign_id/:level/:key/:order/:stage_number/:content_type', upload('image').single('image'), stageController.uploadImageToCampaign);
 // /updateimage/:campaignid/:pageno/:key/:scantype
 router.put('/campaign/update-image/:id/:content_type', upload('image').single('image'), stageController.updateImageToCampaign);
 
