@@ -369,10 +369,12 @@ module.exports = {
       const productData = await CampaignConfig.query()
         .where({ campaign_id })
         .orderBy("order", "asc");
+
       const levelData = await StageConfig.query()
         .where({ campaign_id })
         .orderBy("stage_number", "asc")
-        .orderBy("order", "asc"); 
+        .orderBy("level", "asc")
+        .orderBy("order", "asc");
 
       if (!productData.length) {
         return res
@@ -394,19 +396,24 @@ module.exports = {
       if (product.length) {
         campaignData.product = product;
       }
-
       if (levelData.length) {
         const stages = {};
         levelData.forEach((level) => {
           const stageKey = `stage-${level.stage_number}`;
+          const levelKey = `level-${level.level}`;
+
           if (!stages[stageKey]) {
-            stages[stageKey] = [];
+            stages[stageKey] = {};
           }
-          stages[stageKey].push(level);
+
+          if (!stages[stageKey].hasOwnProperty(levelKey)) {
+            stages[stageKey][levelKey] = [];
+          }
+          stages[stageKey][levelKey].push(level);
         });
+
         campaignData.stages = stages;
       }
-
       res.status(200).json(campaignData);
     } catch (error) {
       res.status(500).json({ error: error.message });
