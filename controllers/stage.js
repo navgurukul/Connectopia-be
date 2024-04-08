@@ -373,10 +373,11 @@ module.exports = {
       const productData = await CampaignConfig.query()
         .where({ campaign_id })
         .orderBy("order", "asc");
+
       const levelData = await StageConfig.query()
         .where({ campaign_id })
         .orderBy("stage_number", "asc")
-        .orderBy("order", "asc"); 
+        .orderBy("order", "asc");
 
       if (!productData.length) {
         return res
@@ -400,17 +401,26 @@ module.exports = {
       }
 
       if (levelData.length) {
+        if (!productData.length || !levelData.length) {
+          return res
+            .status(404)
+            .json({ error: "No data found for this campaign" });
+        }
+
         const stages = {};
         levelData.forEach((level) => {
           const stageKey = `stage-${level.stage_number}`;
+          const levelKey = `level-${level.order}`;
+
           if (!stages[stageKey]) {
-            stages[stageKey] = [];
+            stages[stageKey] = {};
           }
-          stages[stageKey].push(level);
+
+          stages[stageKey][levelKey] = level;
         });
+
         campaignData.stages = stages;
       }
-
       res.status(200).json(campaignData);
     } catch (error) {
       res.status(500).json({ error: error.message });
