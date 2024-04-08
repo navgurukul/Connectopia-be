@@ -19,6 +19,9 @@ router.get('/campaign/get-signed-url/:campaign_id/:scantype', stageController.ge
 // /withoutStatus/allsignedurls/:campaignid/:scantype
 router.get('/campaign/get-signed-url/no-status/:campaign_id/:scantype', stageController.getSignedUrlWithoutStatus);
 
+router.get('/campaign/stages/with-level/:campaign_id',stageController.getStagesByCampaignIdWithLevels);
+// get stages by campaign id with its level
+
 // /compile-upload/:campaignid/:pageno/:Key/:scantype
 router.post('/campaign/upload-mind/:campaign_id/:order/:key/:content_type', upload('mind').single('image'), stageController.uploadMind);
 
