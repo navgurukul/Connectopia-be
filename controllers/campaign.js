@@ -4,6 +4,7 @@ const CampaignUsers = require("../models/campaign_users");
 const StageConfig = require("../models/stage_config");
 const CMSUsers = require("../models/cmsusers");
 const Organization = require("../models/organization");
+const responseWrapper = require("../helpers/responseWrapper");
 
 // helper function
 const getCampaignTxn = async (usertype, email) => {
@@ -59,23 +60,27 @@ module.exports = {
                 */
         try {
             const { organization_id, name } = req.body;
+            let resp;
             if (!organization_id) {
-                return res.status(400).json({ error: "fill out proper data" });
+                resp = responseWrapper(null, "fill out proper data", 400);
+                res.status(400).json(resp);
             }
             const ifOrg = await Organization.query().findById(organization_id);
             if (!ifOrg) {
-                return res.status(404).json({ error: "Organization not found" });
+                resp = responseWrapper(null, "Organization not found", 204);
+                res.status(200).json(resp);
             }
             const ifCampaignExists = await Campaign.query().findOne({ name });
             if (ifCampaignExists) {
-                return res
-                    .status(400)
-                    .json({ error: `Campaign -${name}- already exists` });
+                resp = responseWrapper(null, `Campaign -${name}- already exists`, 204);
+                res.status(200).json(resp);
             }
             const campaign = await Campaign.query().insert(req.body);
-            res.status(200).json(campaign);
+            resp = responseWrapper(campaign, "success", 201);
+            res.status(200).json(resp);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            const resp = responseWrapper(null, error.message, 500);
+            res.status(500).json(resp);
         }
     },
 
@@ -87,16 +92,19 @@ module.exports = {
                 */
         try {
             const { id } = req.params;
+            let resp;
             if (!id) {
-                return res.status(400).json({ error: "campaign id is required" });
+                resp = responseWrapper(null, "campaign id is required", 400);
+                res.status(400).json(resp);
             }
             let totalStages = await Campaign.query()
                 .findById(id)
                 .select("total_stages");
-
-            res.status(200).json(totalStages);
+            resp = responseWrapper(totalStages, "success", 200);
+            res.status(200).json(resp);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            const resp = responseWrapper(null, error.message, 500);
+            res.status(500).json(resp);
         }
     },
 
@@ -108,39 +116,38 @@ module.exports = {
         */
         try {
             const { email, usertype } = req.params;
+            let resp;
             if (!email || !usertype) {
-                return res.status(400).json({
-                    error: "email and usertype is required",
-                });
+                resp = responseWrapper(null, "email and usertype is required", 400);
+                res.status(400).json(resp);
             }
             const campaigns = await getCampaignTxn(usertype, email);
-            res.status(200).json(campaigns);
+            resp = responseWrapper(campaigns, "success", 200);
+            res.status(200).json(resp);
         } catch (error) {
-            if (
-                error.message === "No campaigns found" ||
-                error.message === "No campaigns found by email"
-            ) {
-                res.status(404).json({ error: error.message });
-            } else {
-                res.status(500).json({ error: error.message });
-            }
+            const resp = responseWrapper(null, error.message, 500);
+            res.status(500).json(resp);
         }
     },
 
     getCampaignByEmail: async (req, res) => {
         /*
-                 #swagger.tags = ['Campaign']
-                 #swagger.summary = 'Get all campaigns by email'
-                */
+            #swagger.tags = ['Campaign']
+            #swagger.summary = 'Get all campaigns by email'
+        */
         try {
             const { email } = req.params;
+            let resp;
             if (!email) {
-                return res.status(400).json({ error: "email required" });
+                resp = responseWrapper(null, "email required", 400);
+                res.status(400).json(resp);
             }
             const campaigns = await getCampaignTxn("user", email, null);
-            res.status(200).json(campaigns);
+            resp = responseWrapper(campaigns, "success", 200);
+            res.status(200).json(resp);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            const resp = responseWrapper(null, error.message, 500);
+            res.status(500).json(resp);
         }
     },
 
@@ -169,26 +176,32 @@ module.exports = {
                 */
         try {
             const { id } = req.params;
+            let resp;
             if (!id) {
-                return res.status(400).json({ error: "campaign id is required" });
+                resp = responseWrapper(null, "Campaign ID is required", 400);
+                res.status(400).json(resp);
             }
             const campaign = await Campaign.query().findById(id);
             if (!campaign) {
-                return res.status(404).json({ error: "Campaign not found" });
+                resp = responseWrapper(null, "Campaign not found", 204);
+                res.status(200).json(resp);
             }
             const updatedCampaign = await Campaign.query().patchAndFetchById(
                 id,
                 req.body
             );
-            res.status(200).json(updatedCampaign);
+            resp = responseWrapper(updatedCampaign, "success", 200);
+            res.status(200).json(resp);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            const resp = responseWrapper(null, error.message, 500);
+            res.status(500).json(resp);
         }
     },
 
     // progress se delete pending
     deleteCampaignTxn: async (id, name = null) => {
         try {
+            let resp;
             if (!campaign_name || !id) {
                 return res
                     .status(400)
@@ -198,7 +211,8 @@ module.exports = {
                 ? Campaign.query().findById(id)
                 : Campaign.query().where("name", name).first());
             if (!campaign) {
-                return res.status(404).json({ error: "Campaign not found" });
+                resp = responseWrapper(null, "Campaign not found", 204);
+                res.status(200).json(resp);
             }
             await Campaign.transaction(async (trx) => {
                 await CampaignConfig.query(trx)
@@ -224,19 +238,22 @@ module.exports = {
 
     deleteCampaignById: async (req, res) => {
         /*
-                 #swagger.tags = ['Campaign']
-                 #swagger.summary = 'Delete a Campaign by ID'
-                 #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
-                */
+            #swagger.tags = ['Campaign']
+            #swagger.summary = 'Delete a Campaign by ID'
+            #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
+        */
         try {
             const { id } = req.params;
+            let resp;
             if (!id) {
-                return res.status(400).json({ error: "Campaign ID is required" });
+                resp = responseWrapper(null, "Campaign ID is required", 400);
+                res.status(400).json(resp);
             }
 
             const campaignData = await Campaign.query().findById(id);
             if (!campaignData) {
-                return res.status(404).json({ error: "Campaign not found" });
+                resp = responseWrapper(null, "Campaign not found", 204);
+                res.status(200).json(resp);
             }
             const check = await Campaign.transaction(async (trx) => {
                 await CampaignConfig.query(trx)
@@ -250,57 +267,63 @@ module.exports = {
                     .where("campaign_id", campaignData.id);
                 await Campaign.query(trx).delete().where("id", campaignData.id);
             });
-            // console.log(check);
-            return res.status(200).json({ msg: "Campaign deleted successfully" });
+            resp = responseWrapper(null, "success", 200);
+            res.status(200).json(resp);
         } catch (error) {
-            // console.log(error);
-            return res.status(500).json({ error: error.message });
+            const resp = responseWrapper(null, error.message, 500);
+            res.status(500).json(resp);
         }
     },
 
     // setStatus
     setStatus: async (req, res) => {
         /*
-                 #swagger.tags = ['Campaign']
-                 #swagger.summary = 'Set status of a Campaign by ID'
-                 #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
-                */
+            #swagger.tags = ['Campaign']
+            #swagger.summary = 'Set status of a Campaign by ID'
+            #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
+        */
         try {
             const { id, status } = req.params;
-            console.log(id, status);
+            let resp;
             if (!id || !status) {
-                return res
-                    .status(400)
-                    .json({ error: "campaign id and status are required" });
+                resp = responseWrapper(null, "campaign id and status are required", 400);
+                res.status(400).json(resp);
             }
             const campaign = await Campaign.query().findById(id);
             if (!campaign) {
-                return res.status(404).json({ error: "Campaign not found" });
+                resp = responseWrapper(null, "Campaign not found", 204);
+                res.status(200).json(resp);
             }
             const updatedCampaign = await Campaign.query().patchAndFetchById(id, {
                 status,
             });
-            res.status(200).json(updatedCampaign);
+            resp = responseWrapper(updatedCampaign, "success", 200);
+            res.status(200).json(resp);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            const resp = responseWrapper(null, error.message, 500);
+            res.status(500).json(resp);
         }
     },
 
     // nextCampaignId
     genNextCampaignId: async (req, res) => {
         /*
-                 #swagger.tags = ['Campaign']
-                 #swagger.summary = 'Generate next Campaign ID'
-                */
+            #swagger.tags = ['Campaign']
+            #swagger.summary = 'Generate next Campaign ID'
+        */
         try {
+            let resp;
             const lastCampaign = await Campaign.query().orderBy("id", "desc").first();
             if (!lastCampaign) {
                 console.log("No campaign found ID 1 will be generated. ⚠️");
-                return res.status(200).json({ id: 1 });
+                const resp = responseWrapper({ id: 1 }, error.message, 200);
+                res.status(200).json(resp);
             }
-            res.status(200).json({ id: lastCampaign.id + 1 });
+            resp = responseWrapper({ id: lastCampaign.id + 1 }, "success", 200);
+            res.status(200).json(resp);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            const resp = responseWrapper(null, error.message, 500);
+            res.status(500).json(resp);
         }
     },
 };
