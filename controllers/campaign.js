@@ -4,6 +4,7 @@ const CampaignUsers = require("../models/campaign_users");
 const StageConfig = require("../models/stage_config");
 const CMSUsers = require("../models/cmsusers");
 const Organization = require("../models/organization");
+const Stage = require("../controllers/stage");
 const responseWrapper = require("../helpers/responseWrapper");
 
 // helper function
@@ -59,7 +60,8 @@ module.exports = {
                  }
                 */
         try {
-            const { organization_id, name } = req.body;
+            const { organization_id, name} = req.body;
+            const stageNum = req.body.total_stages;
             let resp;
             if (!organization_id) {
                 resp = responseWrapper(null, "fill out proper data", 400);
@@ -76,6 +78,7 @@ module.exports = {
                 res.status(200).json(resp);
             }
             const campaign = await Campaign.query().insert(req.body);
+            const stageCreate = await Stage.createStageByPasses(campaign.id, stageNum)
             resp = responseWrapper(campaign, "success", 201);
             res.status(200).json(resp);
         } catch (error) {
