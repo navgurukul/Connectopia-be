@@ -23,22 +23,25 @@ module.exports = {
             */
     try {
       const { name, logo, description } = req.body;
-      let resp;
+
       if (!name || !logo || !description) {
-        resp = responseWrapper(null, "name, logo and description are required", 400);
-        res.status(400).json(resp);
+        const resp = responseWrapper(null, "Name, logo, and description are required", 400);
+        return res.status(400).json(resp);
       }
-      const ifOrganizationExists = await Organization.query().findOne({ name });
-      if (ifOrganizationExists) {
-        resp = responseWrapper(null, "Organization already exists", 302);
-        res.status(302).json(resp);
+
+      const existingOrganization = await Organization.query().findOne({ name });
+      if (existingOrganization) {
+        const resp = responseWrapper(null, "Organization already exists", 302);
+        return res.status(302).json(resp);
       }
+
       const organization = await Organization.query().insert(req.body);
-      resp = responseWrapper(organization, "success", 200);
-      res.status(200).json(resp);
+      const resp = responseWrapper(organization, "Success", 200);
+      return res.status(200).json(resp);
     } catch (error) {
-      const resp = responseWrapper(null, error.message, 500);
-      res.status(500).json(resp);
+      console.error("Error creating organization:", error);
+      const resp = responseWrapper(null, "Internal server error", 500);
+      return res.status(500).json(resp);
     }
   },
 
@@ -48,11 +51,11 @@ module.exports = {
                #swagger.parameters['usertype'] = {in: 'path', required: true, type: 'string', enum: ['superadmin', 'admin', 'user']}
             */
     try {
-      let resp;
+
       const { email, usertype } = req.params;
       if (!email || !usertype) {
-        resp = responseWrapper(null, "email and usertype both required", 400);
-        res.status(400).json(resp);
+        const resp = responseWrapper(null, "email and usertype both required", 400);
+        return res.status(400).json(resp);
       }
       let organizations;
       switch (usertype) {
@@ -65,20 +68,20 @@ module.exports = {
             .findOne({ email })
             .withGraphFetched("organization");
           if (!organizations) {
-            resp = responseWrapper(null, "User not found", 204);
-            res.status(200).json(resp);
+            const resp = responseWrapper(null, "User not found", 204);
+            return res.status(200).json(resp);
           }
           organizations = organizations.organization;
           break;
         default:
-          resp = responseWrapper(null, "Invalid usertype", 400);
-          res.status(400).json(resp);
+          const resp = responseWrapper(null, "Invalid usertype", 400);
+          return res.status(400).json(resp);
       }
-      resp = responseWrapper(organizations, "success", 200);
-      res.status(200).json(resp);
+      const resp = responseWrapper(organizations, "success", 200);
+      return res.status(200).json(resp);
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
-      res.status(500).json(resp);
+      return res.status(500).json(resp);
     }
   },
 
@@ -89,22 +92,22 @@ module.exports = {
     */
     try {
       const { id } = req.params;
-      let resp;
+
       if (!id) {
-        resp = responseWrapper(null, "ID is required", 400);
-        res.status(400).json(resp);
+        const resp = responseWrapper(null, "ID is required", 400);
+        return res.status(400).json(resp);
       }
 
       const isOrganizationExists = await Organization.query().findById(id);
       if (!isOrganizationExists) {
-        resp = responseWrapper(null, "organization not found", 204);
-        res.status(200).json(resp);
+        const resp = responseWrapper(null, "organization not found", 204);
+        return res.status(200).json(resp);
       }
       // Retrieve campaigns by organization ID
       const campaigns = await Campaign.query().where("organization_id", id);
       if (!campaigns || campaigns.length === 0) {
-        resp = responseWrapper(null, "No campaigns found for the organization", 204);
-        res.status(200).json(resp);
+        const resp = responseWrapper(null, "No campaigns found for the organization", 204);
+        return res.status(200).json(resp);
       }
 
       // Retrieve CMS users by organization ID
@@ -138,11 +141,11 @@ module.exports = {
         return campaign;
       });
 
-      resp = responseWrapper(campaignsWithUsers, "success", 200);
-      res.status(200).json(resp);
+      const resp = responseWrapper(campaignsWithUsers, "success", 200);
+      return res.status(200).json(resp);
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
-      res.status(500).json(resp);
+      return res.status(500).json(resp);
     }
   },
 
@@ -204,7 +207,7 @@ module.exports = {
   //     return res.status(200).json(organizationWithCampaignUsers);
   //     // console.log(organizationWithCampaignUsers);
   //   } catch (error) {
-  //     res.status(500).json({ error: error.message });
+  //   return res.status(500).json({ error: error.message });
   //   }
   // },
 
@@ -223,26 +226,26 @@ module.exports = {
                 }
             */
     try {
-      let resp;
+
       const { id } = req.params;
       const { name, logo, description } = req.body;
       if (!name || !logo || !description) {
-        resp = responseWrapper(null, "name, logo and description are required", 400);
+        const resp = responseWrapper(null, "name, logo and description are required", 400);
         return res.status(400).json(resp);
       }
       const organization = await Organization.query().findById(id);
       if (!organization) {
-        resp = responseWrapper(null, "Organization not found", 400);
+        const resp = responseWrapper(null, "Organization not found", 400);
         return res.status(400).json(resp);
       }
       const updatedOrganization = await organization
         .$query()
         .patchAndFetch(req.body);
-      resp = responseWrapper(updatedOrganization, "success", 200);
-      res.status(200).json(resp);
+      const resp = responseWrapper(updatedOrganization, "success", 200);
+      return res.status(200).json(resp);
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
-      res.status(500).json(resp);
+      return res.status(500).json(resp);
     }
   },
 
@@ -253,61 +256,61 @@ module.exports = {
             */
     try {
       const { id } = req.params;
-      let resp;
+
       if (!id) {
-        resp = responseWrapper(null, "Organization ID is required", 400);
-        res.status(400).json(resp);
+        const resp = responseWrapper(null, "Organization ID is required", 400);
+        return res.status(400).json(resp);
       }
 
       // Fetch organization details to retrieve its name for S3 deletion
       const organization = await Organization.query().findById(id).first();
 
       if (!organization) {
-        resp = responseWrapper(null, "Organization not found", 204);
-        res.status(200).json(resp);
+        const resp = responseWrapper(null, "Organization not found", 204);
+        return res.status(200).json(resp);
       }
 
       // Begin transaction
       await Organization.transaction(async (trx) => {
         // Delete organization and related data
         await CampaignConfig.query(trx)
-        .delete()
-        .whereIn("campaign_id", function () {
-          this.select("campaign_id")
-          .from("campaign")
-          .where("organization_id", id);
-        });
+          .delete()
+          .whereIn("campaign_id", function () {
+            this.select("campaign_id")
+              .from("campaign")
+              .where("organization_id", id);
+          });
         await StageConfig.query(trx)
-        .delete()
-        .whereIn("campaign_id", function () {
-          this.select("campaign_id")
-          .from("campaign")
-          .where("organization_id", id);
-        });
+          .delete()
+          .whereIn("campaign_id", function () {
+            this.select("campaign_id")
+              .from("campaign")
+              .where("organization_id", id);
+          });
         await CustData.query(trx)
-        .delete()
-        .whereIn("campaign_id", function () {
-          this.select("campaign_id")
-          .from("campaign")
-          .where("organization_id", id);
-        });
+          .delete()
+          .whereIn("campaign_id", function () {
+            this.select("campaign_id")
+              .from("campaign")
+              .where("organization_id", id);
+          });
         await CampaignUsers.query(trx)
-        .delete()
-        .whereIn("campaign_id", function () {
-          this.select("campaign_id")
-          .from("campaign")
-          .where("organization_id", id);
-        });
+          .delete()
+          .whereIn("campaign_id", function () {
+            this.select("campaign_id")
+              .from("campaign")
+              .where("organization_id", id);
+          });
         await CMSUsers.query(trx).delete().where("organization_id", id);
         await Campaign.query(trx).delete().where("organization_id", id);
         await Organization.query(trx).deleteById(id);
       });
-      
-      resp = responseWrapper(null, "success", 200);
-      res.status(200).json(resp);
+
+      const resp = responseWrapper(null, "success", 200);
+      return res.status(200).json(resp);
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
-      res.status(500).json(resp);
+      return res.status(500).json(resp);
     }
   },
 
@@ -319,17 +322,17 @@ module.exports = {
                #swagger.parameters['orgid'] = {in: 'path', required: true, type: 'integer'}
             */
     const { orgid } = req.params;
-    let resp;
+
     try {
       if (!orgid) {
-        resp = responseWrapper(null, "Organization ID is required", 400);
-        res.status(400).json(resp);
+        const resp = responseWrapper(null, "Organization ID is required", 400);
+        return res.status(400).json(resp);
       }
 
       const users = await CMSUsers.query().where("organization_id", orgid);
       if (!users || users.length === 0) {
-        resp = responseWrapper(null, "No users found for the organization", 204);
-        res.status(200).json(resp);
+        const resp = responseWrapper(null, "No users found for the organization", 204);
+        return res.status(200).json(resp);
       }
       const userEmails = users.map((user) => user.email);
       const campaignUsers = await CampaignUsers.query().whereIn(
@@ -362,11 +365,11 @@ module.exports = {
         };
       });
 
-      resp = responseWrapper(usersWithCampaigns, "success", 200);
-      res.status(200).json(resp);
+      const resp = responseWrapper(usersWithCampaigns, "success", 200);
+      return res.status(200).json(resp);
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
-      res.status(500).json(resp);
+      return res.status(500).json(resp);
     }
   },
 
@@ -378,11 +381,11 @@ module.exports = {
                #swagger.parameters['orgid'] = {in: 'path', required: true, type: 'integer'}
             */
     const { orgid } = req.params;
-    let resp;
+
     try {
       if (!orgid) {
-        resp = responseWrapper(null, "Organization ID is required", 400);
-        res.status(400).json(resp);
+        const resp = responseWrapper(null, "Organization ID is required", 400);
+        return res.status(400).json(resp);
       }
 
       const users = await CMSUsers.query().where("organization_id", orgid);
@@ -422,11 +425,11 @@ module.exports = {
         })
         .filter((user) => user !== undefined);
 
-      resp = responseWrapper(usersWithCampaigns, "success", 200);
-      res.status(200).json(resp);
+      const resp = responseWrapper(usersWithCampaigns, "success", 200);
+      return res.status(200).json(resp);
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
-      res.status(500).json(resp);
+      return res.status(500).json(resp);
     }
   },
 };

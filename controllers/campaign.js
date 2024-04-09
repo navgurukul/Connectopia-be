@@ -60,30 +60,29 @@ module.exports = {
                  }
                 */
         try {
-            const { organization_id, name} = req.body;
+            const { organization_id, name } = req.body;
             const stageNum = req.body.total_stages;
-            let resp;
             if (!organization_id) {
-                resp = responseWrapper(null, "fill out proper data", 400);
-                res.status(400).json(resp);
+                const resp = responseWrapper(null, "fill out proper data", 400);
+                return res.status(400).json(resp);
             }
             const ifOrg = await Organization.query().findById(organization_id);
             if (!ifOrg) {
-                resp = responseWrapper(null, "Organization not found", 204);
-                res.status(200).json(resp);
+                const resp = responseWrapper(null, "Organization not found", 204);
+                return res.status(200).json(resp);
             }
             const ifCampaignExists = await Campaign.query().findOne({ name });
             if (ifCampaignExists) {
-                resp = responseWrapper(null, `Campaign -${name}- already exists`, 204);
-                res.status(200).json(resp);
+                const resp = responseWrapper(null, `Campaign -${name}- already exists`, 204);
+                return res.status(200).json(resp);
             }
             const campaign = await Campaign.query().insert(req.body);
             const stageCreate = await Stage.createStageByPasses(campaign.id, stageNum)
-            resp = responseWrapper(campaign, "success", 201);
-            res.status(200).json(resp);
+            const resp = responseWrapper(campaign, "success", 201);
+            return res.status(200).json(resp);
         } catch (error) {
             const resp = responseWrapper(null, error.message, 500);
-            res.status(500).json(resp);
+            return res.status(500).json(resp);
         }
     },
 
@@ -95,19 +94,18 @@ module.exports = {
                 */
         try {
             const { id } = req.params;
-            let resp;
             if (!id) {
-                resp = responseWrapper(null, "campaign id is required", 400);
-                res.status(400).json(resp);
+                const resp = responseWrapper(null, "campaign id is required", 400);
+                return res.status(400).json(resp);
             }
             let totalStages = await Campaign.query()
                 .findById(id)
                 .select("total_stages");
-            resp = responseWrapper(totalStages, "success", 200);
-            res.status(200).json(resp);
+            const resp = responseWrapper(totalStages, "success", 200);
+            return res.status(200).json(resp);
         } catch (error) {
             const resp = responseWrapper(null, error.message, 500);
-            res.status(500).json(resp);
+            return res.status(500).json(resp);
         }
     },
 
@@ -119,17 +117,16 @@ module.exports = {
         */
         try {
             const { email, usertype } = req.params;
-            let resp;
             if (!email || !usertype) {
-                resp = responseWrapper(null, "email and usertype is required", 400);
-                res.status(400).json(resp);
+                const resp = responseWrapper(null, "email and usertype is required", 400);
+                return res.status(400).json(resp);
             }
             const campaigns = await getCampaignTxn(usertype, email);
-            resp = responseWrapper(campaigns, "success", 200);
-            res.status(200).json(resp);
+            const resp = responseWrapper(campaigns, "success", 200);
+            return res.status(200).json(resp);
         } catch (error) {
             const resp = responseWrapper(null, error.message, 500);
-            res.status(500).json(resp);
+            return res.status(500).json(resp);
         }
     },
 
@@ -140,17 +137,16 @@ module.exports = {
         */
         try {
             const { email } = req.params;
-            let resp;
             if (!email) {
-                resp = responseWrapper(null, "email required", 400);
-                res.status(400).json(resp);
+                const resp = responseWrapper(null, "email required", 400);
+                return res.status(400).json(resp);
             }
             const campaigns = await getCampaignTxn("user", email, null);
-            resp = responseWrapper(campaigns, "success", 200);
-            res.status(200).json(resp);
+            const resp = responseWrapper(campaigns, "success", 200);
+            return res.status(200).json(resp);
         } catch (error) {
             const resp = responseWrapper(null, error.message, 500);
-            res.status(500).json(resp);
+            return res.status(500).json(resp);
         }
     },
 
@@ -179,32 +175,30 @@ module.exports = {
                 */
         try {
             const { id } = req.params;
-            let resp;
             if (!id) {
-                resp = responseWrapper(null, "Campaign ID is required", 400);
-                res.status(400).json(resp);
+                const resp = responseWrapper(null, "Campaign ID is required", 400);
+                return res.status(400).json(resp);
             }
             const campaign = await Campaign.query().findById(id);
             if (!campaign) {
-                resp = responseWrapper(null, "Campaign not found", 204);
-                res.status(200).json(resp);
+                const resp = responseWrapper(null, "Campaign not found", 204);
+                return res.status(200).json(resp);
             }
             const updatedCampaign = await Campaign.query().patchAndFetchById(
                 id,
                 req.body
             );
-            resp = responseWrapper(updatedCampaign, "success", 200);
-            res.status(200).json(resp);
+            const resp = responseWrapper(updatedCampaign, "success", 200);
+            return res.status(200).json(resp);
         } catch (error) {
             const resp = responseWrapper(null, error.message, 500);
-            res.status(500).json(resp);
+            return res.status(500).json(resp);
         }
     },
 
     // progress se delete pending
     deleteCampaignTxn: async (id, name = null) => {
         try {
-            let resp;
             if (!campaign_name || !id) {
                 return res
                     .status(400)
@@ -214,8 +208,9 @@ module.exports = {
                 ? Campaign.query().findById(id)
                 : Campaign.query().where("name", name).first());
             if (!campaign) {
-                resp = responseWrapper(null, "Campaign not found", 204);
-                res.status(200).json(resp);
+                return res
+                    .status(400)
+                    .json({ error: "Campaign not found" });
             }
             await Campaign.transaction(async (trx) => {
                 await CampaignConfig.query(trx)
@@ -247,16 +242,15 @@ module.exports = {
         */
         try {
             const { id } = req.params;
-            let resp;
             if (!id) {
-                resp = responseWrapper(null, "Campaign ID is required", 400);
-                res.status(400).json(resp);
+                const resp = responseWrapper(null, "Campaign ID is required", 400);
+                return res.status(400).json(resp);
             }
 
             const campaignData = await Campaign.query().findById(id);
             if (!campaignData) {
-                resp = responseWrapper(null, "Campaign not found", 204);
-                res.status(200).json(resp);
+                const resp = responseWrapper(null, "Campaign not found", 204);
+                return res.status(200).json(resp);
             }
             const check = await Campaign.transaction(async (trx) => {
                 await CampaignConfig.query(trx)
@@ -270,11 +264,11 @@ module.exports = {
                     .where("campaign_id", campaignData.id);
                 await Campaign.query(trx).delete().where("id", campaignData.id);
             });
-            resp = responseWrapper(null, "success", 200);
-            res.status(200).json(resp);
+            const resp = responseWrapper(null, "success", 200);
+            return res.status(200).json(resp);
         } catch (error) {
             const resp = responseWrapper(null, error.message, 500);
-            res.status(500).json(resp);
+            return res.status(500).json(resp);
         }
     },
 
@@ -287,24 +281,23 @@ module.exports = {
         */
         try {
             const { id, status } = req.params;
-            let resp;
             if (!id || !status) {
-                resp = responseWrapper(null, "campaign id and status are required", 400);
-                res.status(400).json(resp);
+                const resp = responseWrapper(null, "campaign id and status are required", 400);
+                return res.status(400).json(resp);
             }
             const campaign = await Campaign.query().findById(id);
             if (!campaign) {
-                resp = responseWrapper(null, "Campaign not found", 204);
-                res.status(200).json(resp);
+                const resp = responseWrapper(null, "Campaign not found", 204);
+                return res.status(200).json(resp);
             }
             const updatedCampaign = await Campaign.query().patchAndFetchById(id, {
                 status,
             });
-            resp = responseWrapper(updatedCampaign, "success", 200);
-            res.status(200).json(resp);
+            const resp = responseWrapper(updatedCampaign, "success", 200);
+            return res.status(200).json(resp);
         } catch (error) {
             const resp = responseWrapper(null, error.message, 500);
-            res.status(500).json(resp);
+            return res.status(500).json(resp);
         }
     },
 
@@ -315,18 +308,17 @@ module.exports = {
             #swagger.summary = 'Generate next Campaign ID'
         */
         try {
-            let resp;
             const lastCampaign = await Campaign.query().orderBy("id", "desc").first();
             if (!lastCampaign) {
                 console.log("No campaign found ID 1 will be generated. ⚠️");
                 const resp = responseWrapper({ id: 1 }, error.message, 200);
-                res.status(200).json(resp);
+                return res.status(200).json(resp);
             }
-            resp = responseWrapper({ id: lastCampaign.id + 1 }, "success", 200);
-            res.status(200).json(resp);
+            const resp = responseWrapper({ id: lastCampaign.id + 1 }, "success", 200);
+            return res.status(200).json(resp);
         } catch (error) {
             const resp = responseWrapper(null, error.message, 500);
-            res.status(500).json(resp);
+            return res.status(500).json(resp);
         }
     },
 };

@@ -12,6 +12,8 @@ const CMSUsers = require("../models/cmsusers");
 const organization = require("../models/organization");
 const JWT_SECRET = process.env.JWT_SECRET;
 const saltRounds = 10;
+const responseWrapper = require("../helpers/responseWrapper");
+
 
 module.exports = {
   //create cms user
@@ -37,11 +39,13 @@ module.exports = {
       if (email) {
         const userExists = await CMSUsers.query().findOne({ email });
         if (userExists) {
-          return res.status(400).json({ message: "User already exists" });
+          const resp = responseWrapper(null, "User already exists", 400);
+          return res.status(400).json(resp);
         }
         if (usertype === "superadmin") {
           if (!email || !password || !name || !usertype) {
-            return res.status(400).json({ message: "Incomplete details" });
+            const resp = responseWrapper(null, "Incomplete details", 400);
+            return res.status(400).json(resp);
           }
           const hashedPassword = await bcrypt.hash(password, saltRounds);
           const newUser = await CMSUsers.query().insert({
@@ -53,7 +57,8 @@ module.exports = {
         }
         if (usertype === "admin" || usertype === "user") {
           if (!email || !password || !organization_id || !name || !usertype) {
-            return res.status(400).json({ message: "Incomplete details" });
+            const resp = responseWrapper(null, "Incomplete details", 400);
+            return res.status(400).json(resp);
           }
           const hashedPassword = await bcrypt.hash(password, saltRounds);
           const newUser = await CMSUsers.query().insert({
@@ -65,12 +70,11 @@ module.exports = {
           });
         }
       }
-      res.status(200).json({ message: "User created successfully" });
+      const resp = responseWrapper(null, "success", 201);
+      return res.status(200).json(resp);
     } catch (error) {
-      console.error(error);
-      res
-        .status(500)
-        .json({ message: "Error creating user: " + error.message });
+      const resp = responseWrapper(null, error.message, 500);
+      return res.status(500).json(resp);
     }
   },
 
@@ -88,7 +92,8 @@ module.exports = {
     const { email } = req.body;
 
     if (!email) {
-      return res.status(404).send("Please enter email");
+      const resp = responseWrapper(null, "Please enter email", 400);
+      return res.status(400).json(resp);
     }
 
     try {
@@ -98,15 +103,15 @@ module.exports = {
       // Now, delete the user from the cmsusers table
       await CMSUsers.query().delete().where("email", email);
 
-      res.status(200).json({
-        message: "Cmsuser account and related campaign entries deleted",
-      });
+      const resp = responseWrapper(null, "success", 201);
+      return res.status(200).json(resp);
     } catch (error) {
       console.error(
         "Error deleting cmsuser and related campaign entries:",
         error
       );
-      res.status(500).send("Server error");
+      const resp = responseWrapper(null, error.message, 500);
+      return res.status(500).json(resp);
     }
   },
 
@@ -154,7 +159,8 @@ module.exports = {
     }
 
     if (Object.keys(updateFields).length === 0) {
-      return res.status(400).json({ message: "No fields provided for update" });
+      const resp = responseWrapper(null, "No fields provided for update", 400);
+      return res.status(400).json(resp);
     }
 
     try {
@@ -163,9 +169,8 @@ module.exports = {
         .where("email", email);
 
       if (numUpdated === 0) {
-        return res
-          .status(404)
-          .json({ message: "No user found with the provided email ID" });
+        const resp = responseWrapper(null, "No user found with the provided email ID", 204);
+        return res.status(200).json(resp);
       }
 
       if (newemail) {
@@ -174,10 +179,12 @@ module.exports = {
           .where("email", email);
       }
 
-      res.status(200).json({ message: "Data updated successfully" });
+      const resp = responseWrapper(null, "success", 200);
+      return res.status(200).json(resp);
     } catch (error) {
       console.error("Error updating user details:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const resp = responseWrapper(null, "Internal server error", 500);
+      return res.status(500).json(resp);
     }
   },
 
@@ -206,7 +213,8 @@ module.exports = {
       // Fetch user data along with organisation description
       const user = await CMSUsers.query().where("email", email).first();
       if (!user) {
-        return res.status(401).json({ message: "Invalid email or password." });
+        const resp = responseWrapper(null, "Invalid email or password", 401);
+        return res.status(401).json(resp);
       }
       let responseData;
 
@@ -219,9 +227,8 @@ module.exports = {
         // Verify password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-          return res
-            .status(401)
-            .json({ message: "Invalid email or password." });
+          const resp = responseWrapper(null, "Invalid email or password", 401);
+          return res.status(401).json(resp);
         }
 
         const campaigns_detail = [];
@@ -276,12 +283,15 @@ module.exports = {
           organization_description: null,
         };
       } else {
-        res.status(401).json({ message: "Invalid user role." });
+        const resp = responseWrapper(null, "Invalid user role", 401);
+        return res.status(401).json(resp);
       }
-      res.status(200).json(responseData);
+      const resp = responseWrapper(responseData, "success server error", 200);
+      return res.status(200).json(resp);
     } catch (error) {
       console.error("Error during login:", error);
-      res.status(500).json({ message: "Internal server error" });
+      const resp = responseWrapper(null, "Internal server error", 500);
+      return res.status(500).json(resp);
     }
   },
 };
