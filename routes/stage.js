@@ -17,7 +17,7 @@ router.put('/campaign/update-image/:content_id/:content_type', upload('image').s
 // /allsignedurls/:campaignid/:scantype
 router.get('/campaign/get-signed-url/:campaign_id/:scantype', stageController.getSignedUrl);
 // /withoutStatus/allsignedurls/:campaignid/:scantype
-router.get('/campaign/get-signed-url/no-status/:campaign_id/:scantype', stageController.getSignedUrlWithoutStatus);
+router.get('/campaign/general-product/:campaign_id/:scantype', stageController.getGeneralAndProductContent);
 
 router.get('/campaign/stages/with-level/:campaign_id',stageController.getStagesByCampaignIdWithLevels);
 // get stages by campaign id with its level

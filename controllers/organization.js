@@ -57,21 +57,27 @@ module.exports = {
         const resp = responseWrapper(null, "email and usertype both required", 400);
         return res.status(400).json(resp);
       }
-      let organizations;
+      let organizations = {};
+      let orgUser;
+      // const id = orgUser.organization_id;
       switch (usertype) {
         case "superadmin":
           organizations = await Organization.query();
           break;
         case "admin":
         case "user":
-          organizations = await CMSUsers.query()
-            .findOne({ email })
-            .withGraphFetched("organization");
+          orgUser = await CMSUsers.query().where("email", email).first();
+          console.log(orgUser);
+          organizations = await Organization.query().where(
+            "id",
+            orgUser.organization_id
+          );
+
           if (!organizations) {
             const resp = responseWrapper(null, "User not found", 204);
             return res.status(200).json(resp);
           }
-          organizations = organizations.organization;
+          organizations.organization = organizations;
           break;
         default:
           const resp = responseWrapper(null, "Invalid usertype", 400);
