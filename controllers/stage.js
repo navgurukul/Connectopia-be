@@ -284,6 +284,11 @@ module.exports = {
 
   // /withoutStatus/allsignedurls/:campaignid/:scantype
   getGeneralAndProductContent: async (req, res) => {
+    /* #swagger.tags = ['Stage/Level']
+       #swagger.summary = ' - Get general and product content by campaign'
+       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+       #swagger.parameters['scantype'] = {in: 'path', required: true, type: 'string'}
+    */
     try {
       const { campaign_id, scantype } = req.params;
       if (!campaign_id || !scantype) {
@@ -335,6 +340,10 @@ module.exports = {
   },
 
   getStagesByCampaignIdWithLevels: async (req, res) => {
+    /* #swagger.tags = ['Stage/Level']
+       #swagger.summary = ' - Get all stages & level content by campaign'
+       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+    */
     try {
       const { campaign_id } = req.params;
       const id = campaign_id;
