@@ -369,6 +369,7 @@ module.exports = {
         const levelData = await levelConfig(stage.id, stage.campaign_id);
         if (!stages.hasOwnProperty(stageKey)) {
           stages[stageKey] = levelData;
+          stages[stageKey].stage_id = stage.id;
         }
         i += 1;
       }
