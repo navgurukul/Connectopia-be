@@ -40,6 +40,29 @@ const uploadHelperTxn = async (type, req, campaign_id, level, key) => {
   return url;
 };
 
+const levelConfig = async (stageId, campaign_id) => {
+  try {
+    const levelData = await StageConfig.query()
+      .where("campaign_id", campaign_id)
+      .andWhere("stage_id", stageId)
+      .orderBy("level", "asc")
+      .orderBy("order", "asc");
+
+    const singleLevel = {};
+
+    levelData.forEach((level) => {
+      const levelKey = `level-${level.level}`;
+      if (!singleLevel.hasOwnProperty(levelKey)) {
+        singleLevel[levelKey] = [];
+      }
+      singleLevel[levelKey].push(level);
+    });
+    return singleLevel;
+  } catch (error) {
+    return { error: error.message };
+  }
+};
+
 module.exports = {
   uploadImageToCampaign: async (req, res) => {
     /* 
@@ -337,76 +360,52 @@ module.exports = {
       res.status(500).json({ error: error.message });
     }
   },
-
   getStagesByCampaignIdWithLevels: async (req, res) => {
-    /* #swagger.tags = ['Stage/Level']
-           #swagger.summary = 'Get stages by campaign id with its level'
-           #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-        */
     try {
       const { campaign_id } = req.params;
-
+      const id = campaign_id;
+  
       if (!campaign_id) {
         return res.status(400).json({ error: "campaign_id is required" });
       }
-
-      const campaign = await Campaign.query().findById(campaign_id);
+  
+      const campaign = await Campaign.query().findById(id);
+  
       if (!campaign) {
         return res.status(404).json({ error: "Campaign not found" });
       }
-
-      const stagesData = await Stage.query().where("campaign_id", campaign_id);
-
-      if (!stagesData.length) {
-        return res
-          .status(404)
-          .json({ error: "No stages found for this campaign" });
-      }
-
-      const levelData = await StageConfig.query()
-        .where("campaign_id", campaign_id)
-        .orderBy("level")
-        .orderBy("order");
-
+  
+      const stagesData = await Stage.query().where("campaign_id", campaign.id);
+  
       const stages = {};
-      const stageCounter = {}; // Counter for stage numbering
-
-      levelData.forEach((level) => {
-        // Increment the counter for each unique stage ID
-        if (!stageCounter.hasOwnProperty(level.stage_id)) {
-          stageCounter[level.stage_id] = Object.keys(stageCounter).length + 1;
-        }
-
-        const stageKey = `stage-${stageCounter[level.stage_id]}`;
-        const levelKey = `level-${level.level}`;
-
+      let i = 1;
+  
+      for (let stage of stagesData) {
+        const stageKey = `stage-${i}`;
+  
+        const levelData = await levelConfig(stage.id, stage.campaign_id);
         if (!stages.hasOwnProperty(stageKey)) {
-          stages[stageKey] = {};
+          stages[stageKey] = levelData;
         }
-
-        if (!stages[stageKey].hasOwnProperty(levelKey)) {
-          stages[stageKey][levelKey] = [];
-        }
-        stages[stageKey][levelKey].push(level);
-      });
-
-      // Attach the organized stages data to the response
-      const responseData = {
-        stages: stages,
-      };
-      if (!stages.length > 0) {
-        // responseData.message = "No stages with content have been uploaded for this campaign yet.";
-        responseData.message =
-          "No content have been uploaded for this campaign's stages yet.";
-        responseData.total_stages = stagesData.length;
+        i += 1;
       }
-      res.status(200).json(responseData);
+  
+      stages.total_stages = campaign.total_stages;
+  
+      if (Object.keys(stages).length === 0) {
+        const responseData = {
+          message: "No content have been uploaded for this campaign's stages yet.",
+          total_stages: stagesData.length,
+        };
+        return res.status(204).json(responseData);
+      }
+  
+      return res.status(200).json({ stages });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   },
-
+  
   // /compile-upload/:campaignid/:pageno/:Key/:scantype
   uploadMind: async (req, res) => {
     /* #swagger.tags = ['Stage/Level']
