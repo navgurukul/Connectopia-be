@@ -283,12 +283,7 @@ module.exports = {
   },
 
   // /withoutStatus/allsignedurls/:campaignid/:scantype
-  getSignedUrlWithoutStatus: async (req, res) => {
-    /* #swagger.tags = ['Stage/Level']
-           #swagger.summary = 'Get all signed URLs for campaign without status'
-           #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-           #swagger.parameters['scantype'] = { in: 'path', required: true, type: 'string', enum: ['qr', 'image']}           
-        */
+  getGeneralAndProductContent: async (req, res) => {
     try {
       const { campaign_id, scantype } = req.params;
       if (!campaign_id || !scantype) {
@@ -300,27 +295,23 @@ module.exports = {
       const campaign = await Campaign.query()
         .where("id", campaign_id)
         .andWhere("scantype", scantype);
+
       if (!campaign.length) {
         return res
           .status(404)
           .json({ error: "No campaign found with the provided scantype" });
       }
 
-      const campaignData = {};
+      const campaignData = {
+        general: [],
+        product: [],
+      };
       const productData = await CampaignConfig.query()
         .where({ campaign_id })
         .orderBy("order", "asc");
 
-      const levelData = await StageConfig.query()
-        .where({ campaign_id })
-        .orderBy("stage_id", "asc")
-        .orderBy("level", "asc")
-        .orderBy("order", "asc");
-
       if (!productData.length) {
-        return res
-          .status(404)
-          .json({ error: "No data found for this campaign" });
+        return res.status(204).json(campaignData);
       }
 
       const general = productData.filter(
@@ -337,75 +328,59 @@ module.exports = {
       if (product.length) {
         campaignData.product = product;
       }
-      if (levelData.length) {
-        const stages = {};
-        levelData.forEach((level) => {
-          const stageKey = `stage-${level.stage_id}`;
-          const levelKey = `level-${level.level}`;
-
-          if (!stages[stageKey]) {
-            stages[stageKey] = {};
-          }
-
-          if (!stages[stageKey].hasOwnProperty(levelKey)) {
-            stages[stageKey][levelKey] = [];
-          }
-          stages[stageKey][levelKey].push(level);
-        });
-
-        campaignData.stages = stages;
-      }
       res.status(200).json(campaignData);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   },
+
   getStagesByCampaignIdWithLevels: async (req, res) => {
     try {
       const { campaign_id } = req.params;
       const id = campaign_id;
-  
+
       if (!campaign_id) {
         return res.status(400).json({ error: "campaign_id is required" });
       }
-  
+
       const campaign = await Campaign.query().findById(id);
-  
+
       if (!campaign) {
         return res.status(404).json({ error: "Campaign not found" });
       }
-  
+
       const stagesData = await Stage.query().where("campaign_id", campaign.id);
-  
+
       const stages = {};
       let i = 1;
-  
+
       for (let stage of stagesData) {
         const stageKey = `stage-${i}`;
-  
+
         const levelData = await levelConfig(stage.id, stage.campaign_id);
         if (!stages.hasOwnProperty(stageKey)) {
           stages[stageKey] = levelData;
         }
         i += 1;
       }
-  
+
       stages.total_stages = campaign.total_stages;
-  
+
       if (Object.keys(stages).length === 0) {
         const responseData = {
-          message: "No content have been uploaded for this campaign's stages yet.",
+          message:
+            "No content have been uploaded for this campaign's stages yet.",
           total_stages: stagesData.length,
         };
         return res.status(204).json(responseData);
       }
-  
+
       return res.status(200).json({ stages });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
   },
-  
+
   // /compile-upload/:campaignid/:pageno/:Key/:scantype
   uploadMind: async (req, res) => {
     /* #swagger.tags = ['Stage/Level']
