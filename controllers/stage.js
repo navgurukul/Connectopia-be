@@ -74,7 +74,6 @@ module.exports = {
       #swagger.parameters['stage_id'] = {in: 'query', type: 'integer', default: 0}
       #swagger.parameters['order'] = {in: 'path', required: true, type: 'integer', default: 0}
       #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'level', enum: ['level', 'geenral']}
-
     */
     try {
       const { campaign_id, content_type, level, order } = req.params;
@@ -144,12 +143,12 @@ module.exports = {
   },
 
   uploadQR: async (req, res) => {
-    /*  #swagger.tags = ['Stage/Level']
-        #swagger.summary = 'Upload Campaign Main QR'
-        #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
-        #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-
-        */
+    /*  
+      #swagger.tags = ['Stage/Level']
+      #swagger.summary = 'Upload Campaign Main QR'
+      #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
+      #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+    */
     try {
       const { campaign_id, content_type, key } = req.params;
       const id = parseInt(campaign_id);
@@ -205,8 +204,7 @@ module.exports = {
       #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
       #swagger.parameters['content_id'] = {in: 'path', required: true, type: 'integer'}
       #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'level', enum: ['level', 'geenral']}
-
-        */
+    */
     try {
       const { content_id, content_type } = req.params;
       const cid = parseInt(content_id);
@@ -249,11 +247,12 @@ module.exports = {
 
   // /allsignedurls/:campaignid/:scantype
   getSignedUrl: async (req, res) => {
-    /* #swagger.tags = ['Stage/Level']
-           #swagger.summary = ' - get all signed urls for campaign with scantype'
-           #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-           #swagger.parameters['scantype'] = {in: 'path', required: true, type: 'string', enum: ['qr', 'image']}           
-        */
+    /* 
+      #swagger.tags = ['Stage/Level']
+      #swagger.summary = ' - get all signed urls for campaign with scantype'
+      #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+      #swagger.parameters['scantype'] = {in: 'path', required: true, type: 'string', enum: ['qr', 'image']}           
+   */
     try {
       const { campaign_id, scantype } = req.params;
       const id = parseInt(campaign_id);
@@ -284,10 +283,11 @@ module.exports = {
 
   // /withoutStatus/allsignedurls/:campaignid/:scantype
   getGeneralAndProductContent: async (req, res) => {
-    /* #swagger.tags = ['Stage/Level']
-       #swagger.summary = ' - Get general and product content by campaign'
-       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-       #swagger.parameters['scantype'] = {in: 'path', required: true, type: 'string'}
+    /* 
+      #swagger.tags = ['Stage/Level']
+      #swagger.summary = ' - Get general and product content by campaign'
+      #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+      #swagger.parameters['scantype'] = {in: 'path', required: true, type: 'string'}
     */
     try {
       const { campaign_id, scantype } = req.params;
@@ -340,9 +340,10 @@ module.exports = {
   },
 
   getStagesByCampaignIdWithLevels: async (req, res) => {
-    /* #swagger.tags = ['Stage/Level']
-       #swagger.summary = ' - Get all stages & level content by campaign'
-       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+    /* 
+      #swagger.tags = ['Stage/Level']
+      #swagger.summary = ' - Get all stages & level content by campaign'
+      #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
     */
     try {
       const { campaign_id } = req.params;
@@ -393,14 +394,15 @@ module.exports = {
 
   // /compile-upload/:campaignid/:pageno/:Key/:scantype
   uploadMind: async (req, res) => {
-    /* #swagger.tags = ['Stage/Level']
-           #swagger.summary = ' - upload mind file to campaign'
-           #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
-           #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-           #swagger.parameters['order'] = {in: 'path', type: 'integer'}
-           #swagger.parameters['key'] = {in: 'path', required: true, type: 'string'}
-           #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', enum: ['product', 'general']}
-        */
+    /* 
+      #swagger.tags = ['Stage/Level']
+      #swagger.summary = ' - upload mind file to campaign'
+      #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
+      #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+      #swagger.parameters['order'] = {in: 'path', type: 'integer'}
+      #swagger.parameters['key'] = {in: 'path', required: true, type: 'string'}
+      #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', enum: ['product', 'general']}
+  */
     try {
       const { campaign_id, order, key, content_type } = req.params;
       if (!campaign_id || !order || !key || !content_type) {
@@ -459,11 +461,12 @@ module.exports = {
 
   // /delete-image/:campaignid/:pageno/:key
   deleteImage: async (req, res) => {
-    /* #swagger.tags = ['Stage/Level']
-           #swagger.summary = ' - delete image from campaign'
-           #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-           #swagger.parameters['level'] = {in: 'path', required: true, type: 'integer', enum: [1, 2, 3, 4, 5]}
-        */
+    /* 
+      #swagger.tags = ['Stage/Level']
+      #swagger.summary = ' - delete image from campaign'
+      #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+      #swagger.parameters['level'] = {in: 'path', required: true, type: 'integer', enum: [1, 2, 3, 4, 5]}
+  */
     try {
       const { campaign_id, level, key } = req.params;
       if (!campaign_id || !level || !key) {

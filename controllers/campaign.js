@@ -39,26 +39,26 @@ module.exports = {
     // progress
     createCampaign: async (req, res) => {
         /*
-                 #swagger.tags = ['Campaign']
-                 #swagger.summary = 'Create a new Campaign'
-                 #swagger.parameters['body'] = {
-                   in: 'body',
-                   description: 'Create a new Campaign',
-                   schema: {
-                     $name: 'string',
-                     $description: 'string',
-                     $email: 'string',
-                     $scantype: 'qr or image',
-                     $startdate: 'YYYY-MM-DD',
-                     $enddate: 'YYYY-MM-DD',
-                     $status: 'active or inactive',
-                     $scan_sequence: 'fixed or random',
-                     $campaign_duration: 'HH:MM:SS',
-                     $total_stages: 1,
-                     $organization_id: 0
-                   }
-                 }
-                */
+            #swagger.tags = ['Campaign']
+            #swagger.summary = 'Create a new Campaign'
+            #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'Create a new Campaign',
+            schema: {
+                $name: 'string',
+                $description: 'string',
+                $email: 'string',
+                $scantype: 'qr or image',
+                $startdate: 'YYYY-MM-DD',
+                $enddate: 'YYYY-MM-DD',
+                $status: 'active or inactive',
+                $scan_sequence: 'fixed or random',
+                $campaign_duration: 'HH:MM:SS',
+                $total_stages: 1,
+                $organization_id: 0
+                }
+            }
+        */
         try {
             const { organization_id, name } = req.body;
             const stageNum = req.body.total_stages;
@@ -88,10 +88,10 @@ module.exports = {
 
     getCampaignById: async (req, res) => {
         /*
-                 #swagger.tags = ['Campaign']
-                 #swagger.summary = 'Get a Campaigns total stage by campaign ID'
-                 #swagger.parameters['id'] = { in: 'query', type: 'number' }
-                */
+            #swagger.tags = ['Campaign']
+            #swagger.summary = 'Get a Campaigns total stage by campaign ID'
+            #swagger.parameters['id'] = { in: 'query', type: 'number' }
+        */
         try {
             const { id } = req.params;
             if (!id) {
@@ -111,9 +111,9 @@ module.exports = {
 
     getCampaignByEmailUser: async (req, res) => {
         /*
-         #swagger.tags = ['Campaign']
-         #swagger.summary = 'Get all campaigns by email and usertype'
-         #swagger.parameters['usertype'] = { in: 'path', required: true, type: 'string', enum: ['superadmin', 'admin', 'user'],}
+            #swagger.tags = ['Campaign']
+            #swagger.summary = 'Get all campaigns by email and usertype'
+            #swagger.parameters['usertype'] = { in: 'path', required: true, type: 'string', enum: ['superadmin', 'admin', 'user'],}
         */
         try {
             const { email, usertype } = req.params;
@@ -152,27 +152,27 @@ module.exports = {
 
     updateCampaignById: async (req, res) => {
         /*
-                 #swagger.tags = ['Campaign']
-                 #swagger.summary = 'Update a Campaign by ID'
-                 #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
-                 #swagger.parameters['body'] = {
-                   in: 'body',
-                   description: 'Create a new Campaign',
-                   schema: {
-                     $name: 'string',
-                     $description: 'string',
-                     $email: 'string',
-                     $scantype: 'qr or image',
-                     $startdate: 'YYYY-MM-DD',
-                     $enddate: 'YYYY-MM-DD',
-                     $status: 'active or inactive',
-                     $scan_sequence: 'fixed or random',
-                     $campaign_duration: 'HH:MM:SS',
-                     $total_stages: 1,
-                     $organization_id: 0
-                   }
-                 }
-                */
+            #swagger.tags = ['Campaign']
+            #swagger.summary = 'Update a Campaign by ID'
+            #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
+            #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'Create a new Campaign',
+            schema: {
+                    $name: 'string',
+                    $description: 'string',
+                    $email: 'string',
+                    $scantype: 'qr or image',
+                    $startdate: 'YYYY-MM-DD',
+                    $enddate: 'YYYY-MM-DD',
+                    $status: 'active or inactive',
+                    $scan_sequence: 'fixed or random',
+                    $campaign_duration: 'HH:MM:SS',
+                    $total_stages: 1,
+                    $organization_id: 0
+                }
+            }
+        */
         try {
             const { id } = req.params;
             if (!id) {

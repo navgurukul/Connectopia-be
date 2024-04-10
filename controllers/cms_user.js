@@ -19,19 +19,19 @@ module.exports = {
   //create cms user
   createNewUser: async (req, res) => {
     /*
-         #swagger.tags = ['CMS User']
-         #swagger.summary = 'Create a cms user'
-         #swagger.parameters['body'] = {
-           in: 'body',
-           description: 'Create a cms user',
-           schema: {
-             $email: 'example@gmail.com',
-             $password: 'string',
-             $organization_id: 0,
-             $name: 'string',
-             $usertype: 'admin or user'
-           }
-          }
+      #swagger.tags = ['CMS User']
+      #swagger.summary = 'Create a cms user'
+      #swagger.parameters['body'] = {
+        in: 'body',
+        description: 'Create a cms user',
+        schema: {
+          $email: 'example@gmail.com',
+          $password: 'string',
+          $organization_id: 0,
+          $name: 'string',
+          $usertype: 'admin or user'
+        }
+      }
     */
     const { email, password, organization_id, name, usertype } = req.body;
 
@@ -80,14 +80,14 @@ module.exports = {
 
   deleteCmsuser: async (req, res) => {
     /*
-         #swagger.tags = ['CMS User']
-         #swagger.summary = 'Delete a cms user by email'
-         #swagger.parameters['body'] = {
-           in: 'body',
-           schema: {
-             $email: 'example@gmail.com'
-           }
-          }
+      #swagger.tags = ['CMS User']
+      #swagger.summary = 'Delete a cms user by email'
+      #swagger.parameters['body'] = {
+        in: 'body',
+        schema: {
+          $email: 'example@gmail.com'
+        }
+      }
     */
     const { email } = req.body;
 
@@ -117,18 +117,18 @@ module.exports = {
 
   updateUserDetails: async (req, res) => {
     /*
-         #swagger.tags = ['CMS User']
-         #swagger.summary = 'Update a cms user details'
-         #swagger.parameters['body'] = {
-           in: 'body',
-           schema: {
-             $name: 'string',
-             $password: 'string',
-             $usertype: 'admin or user',
-             $email: 'example@gmail.com',
-             $newemail: 'newexample@gmail.com'
-           }
-          }
+      #swagger.tags = ['CMS User']
+      #swagger.summary = 'Update a cms user details'
+      #swagger.parameters['body'] = {
+        in: 'body',
+        schema: {
+          $name: 'string',
+          $password: 'string',
+          $usertype: 'admin or user',
+          $email: 'example@gmail.com',
+          $newemail: 'newexample@gmail.com'
+        }
+      }
     */
     const { name, password, usertype, email, newemail } = req.body;
 
@@ -191,15 +191,15 @@ module.exports = {
   //login
   newLogin: async (req, res) => {
     /*
-         #swagger.tags = ['User Login']
-         #swagger.summary = 'Login to CMS Dashboard'
-         #swagger.parameters['body'] = {
-           in: 'body',
-           schema: {
-             $email: 'example@gmail.com',
-             $password: 'string'
-           }
-          }
+      #swagger.tags = ['User Login']
+      #swagger.summary = 'Login to CMS Dashboard'
+      #swagger.parameters['body'] = {
+        in: 'body',
+        schema: {
+          $email: 'example@gmail.com',
+          $password: 'string'
+        }
+      }
     */
     const { email, password } = req.body;
 

@@ -4,8 +4,8 @@ const Campaign = require("../models/campaign");
 module.exports = {
   getPlayersList: async (req, res) => {
     /*
-         #swagger.tags = ['Customer']
-         #swagger.summary = 'Get list of customers by campaign ID'
+      #swagger.tags = ['Customer']
+      #swagger.summary = 'Get list of customers by campaign ID'
     */
     const campaign_id = req.params.campaign_id;
     if (!campaign_id) {
@@ -26,19 +26,19 @@ module.exports = {
 
   addPlayer: async (req, res) => {
     /*
-          #swagger.tags = ['Customer']
-         #swagger.summary = 'Add a Player'
-         #swagger.parameters['body'] = {
-           in: 'body',
-           description: 'Create a new Campaign',
-           schema: {
-             $name: 'string',
-             $phone: 1234567890,
-             $email: 'example@gmail.com',
-             $campaign_id: 0
-           }
-         }
-        */
+      #swagger.tags = ['Customer']
+      #swagger.summary = 'Add a Player'
+      #swagger.parameters['body'] = {
+        in: 'body',
+        description: 'Create a new Campaign',
+        schema: {
+          $name: 'string',
+          $phone: 1234567890,
+          $email: 'example@gmail.com',
+          $campaign_id: 0
+        }
+      }
+    */
     const { phone, name, email, campaign_id } = req.body;
 
     if (!phone || !name || !campaign_id) {

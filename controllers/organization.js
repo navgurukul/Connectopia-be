@@ -9,18 +9,19 @@ const responseWrapper = require("../helpers/responseWrapper");
 
 module.exports = {
   createOrganization: async (req, res) => {
-    /* #swagger.tags = ['Organization']
-               #swagger.summary = ' - Create a new organization'
-               #swagger.parameters['body'] = {
-                    in: 'body',
-                    description: 'to create a new organization',
-                    schema: {
-                        $name: 'Bata',
-                        $logo: '#',
-                        $description: 'description...'
-                    }
-                }
-            */
+    /*
+       #swagger.tags = ['Organization']
+        #swagger.summary = ' - Create a new organization'
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'to create a new organization',
+            schema: {
+                $name: 'Bata',
+                $logo: '#',
+                $description: 'description...'
+            }
+        }
+    */
     try {
       const { name, logo, description } = req.body;
 
@@ -46,10 +47,11 @@ module.exports = {
   },
 
   getOrganizationsByEmailUser: async (req, res) => {
-    /* #swagger.tags = ['Organization']
-               #swagger.summary = ' - Get all organizations by email and usertype'
-               #swagger.parameters['usertype'] = {in: 'path', required: true, type: 'string', enum: ['superadmin', 'admin', 'user']}
-            */
+    /* 
+      #swagger.tags = ['Organization']
+      #swagger.summary = ' - Get all organizations by email and usertype'
+      #swagger.parameters['usertype'] = {in: 'path', required: true, type: 'string', enum: ['superadmin', 'admin', 'user']}
+  */
     try {
 
       const { email, usertype } = req.params;
@@ -218,19 +220,20 @@ module.exports = {
   // },
 
   updateOrganizationById: async (req, res) => {
-    /* #swagger.tags = ['Organization']
-               #swagger.summary = ' - update organization by organization name'
-               #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
-               #swagger.parameters['body'] = {
-                    in: 'body',
-                    description: 'to update organization',
-                    schema: {
-                        $name: 'string',
-                        $logo: 'url here',
-                        $description: 'description...'
-                    }
-                }
-            */
+    /* 
+      #swagger.tags = ['Organization']
+      #swagger.summary = ' - update organization by organization name'
+      #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
+      #swagger.parameters['body'] = {
+          in: 'body',
+          description: 'to update organization',
+          schema: {
+              $name: 'string',
+              $logo: 'url here',
+              $description: 'description...'
+          }
+      }
+  */
     try {
 
       const { id } = req.params;
@@ -256,10 +259,11 @@ module.exports = {
   },
 
   deleteOrganizationById: async (req, res) => {
-    /* #swagger.tags = ['Organization']
-               #swagger.summary = ' - delete organization by organization id'
-               #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
-            */
+    /* 
+      #swagger.tags = ['Organization']
+      #swagger.summary = ' - delete organization by organization id'
+      #swagger.parameters['id'] = {in: 'path', required: true, type: 'integer'}
+  */
     try {
       const { id } = req.params;
 
@@ -323,10 +327,11 @@ module.exports = {
   // /users_by_organization/:organization
   // need work here
   getUsersByOrganization: async (req, res) => {
-    /* #swagger.tags = ['Organization']
-               #swagger.summary = ' - Get all users with organizations and its campaign'
-               #swagger.parameters['orgid'] = {in: 'path', required: true, type: 'integer'}
-            */
+    /* 
+      #swagger.tags = ['Organization']
+      #swagger.summary = ' - Get all users with organizations and its campaign'
+      #swagger.parameters['orgid'] = {in: 'path', required: true, type: 'integer'}
+    */
     const { orgid } = req.params;
 
     try {
@@ -382,10 +387,11 @@ module.exports = {
   // /api/users_by_organization/:organization
   // need work here
   getAssociatedUserOfOrganization: async (req, res) => {
-    /* #swagger.tags = ['Organization']
-               #swagger.summary = ' - Get all users by organization name with its associated campaigns'
-               #swagger.parameters['orgid'] = {in: 'path', required: true, type: 'integer'}
-            */
+    /* 
+      #swagger.tags = ['Organization']
+      #swagger.summary = ' - Get all users by organization name with its associated campaigns'
+      #swagger.parameters['orgid'] = {in: 'path', required: true, type: 'integer'}
+  */
     const { orgid } = req.params;
 
     try {
