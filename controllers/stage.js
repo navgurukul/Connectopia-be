@@ -79,6 +79,7 @@ module.exports = {
       const { campaign_id, content_type, level, order } = req.params;
       const { stage_id, key } = req.query;
       const id = parseInt(campaign_id);
+      const stgId = parseInt(stage_id);
       // remove space from key and limit character
       const updatedKey = key.replace(/\s+/g, "-").slice(0, 50);
 
@@ -102,16 +103,20 @@ module.exports = {
         content_type,
         key: updatedKey,
       };
+      const ifStage = await Stage.query().findById(stgId);
+      if (!ifStage) {
+        return res.status(200).json({ error: "Stage not found" });
+      }
       // Check if the provided content type is 'level' and handle accordingly
       if (content_type === "level") {
         const ifDataExist = await StageConfig.query().where({
           campaign_id: id,
         });
         if (!ifDataExist) {
-          return res.status(404).json({ error: "Stage not found" });
+          return res.status(200).json({ error: "Stage not found" });
         }
         data.level = parseInt(level);
-        data.stage_id = parseInt(stage_id);
+        data.stage_id = stgId;
       } else {
         // If content type is not 'level', assume it's 'campaign' and proceed with upload
         const ifDataExist = await CampaignConfig.query().where({
