@@ -48,20 +48,45 @@ const levelConfig = async (stageId, campaign_id) => {
       .orderBy("level", "asc")
       .orderBy("order", "asc");
 
-    const singleLevel = {};
+    const stages = {};
+
+    for (let i = 1; i <= 5; i++) {
+      const levelKey = `level-${i}`;
+      stages[levelKey] = {};
+    }
 
     levelData.forEach((level) => {
-      const levelKey = `level-${level.level}`;
-      if (!singleLevel.hasOwnProperty(levelKey)) {
-        singleLevel[levelKey] = [];
+      const { level: lvl, order, ...rest } = level;
+      const levelKey = `level-${lvl}`;
+      const orderKey = `${order}`;
+      if (Object.keys(rest).length > 0) {
+        stages[levelKey][orderKey] = { ...rest, level: lvl, order };
+      } else {
+        stages[levelKey][orderKey] = {};
       }
-      singleLevel[levelKey].push(level);
     });
-    return singleLevel;
+
+    // Ensure that each level object has keys from 1 to 7
+    for (let i = 1; i <= 5; i++) {
+      const levelKey = `level-${i}`;
+      for (let j = 1; j <= 7; j++) {
+        const orderKey = `${j}`;
+        stages[levelKey][orderKey] = stages[levelKey][orderKey] || {};
+      }
+    }
+
+    return stages;
   } catch (error) {
     return { error: error.message };
   }
 };
+
+
+
+
+
+
+
 
 module.exports = {
   uploadImageToCampaign: async (req, res) => {
