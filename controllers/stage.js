@@ -103,7 +103,7 @@ module.exports = {
         content_type,
         key: updatedKey,
       };
-      const ifStage = await Stage.query().findById(stgId);
+      const ifStage = await Stage.query().where("id", stgId).andWhere("campaign_id", id).first();
       if (!ifStage) {
         return res.status(200).json({ error: "Stage not found" });
       }
