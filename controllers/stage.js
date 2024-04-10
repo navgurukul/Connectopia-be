@@ -484,7 +484,6 @@ module.exports = {
   },
 
   createStageByPasses: async (campaignId, stageNum) => {
-    console.log(campaignId, stageNum);
     try {
       for (let i = 1; i <= stageNum; i++) {
         const stageData = {

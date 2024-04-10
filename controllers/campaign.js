@@ -61,7 +61,7 @@ module.exports = {
         */
         try {
             const { organization_id, name } = req.body;
-            const stageNum = req.body.total_stages;
+            let stageNum = req.body.total_stages;
             if (!organization_id) {
                 const resp = responseWrapper(null, "fill out proper data", 400);
                 return res.status(400).json(resp);
@@ -77,6 +77,9 @@ module.exports = {
                 return res.status(200).json(resp);
             }
             const campaign = await Campaign.query().insert(req.body);
+            if (!stageNum) {
+                stageNum = 1;    
+            }
             const stageCreate = await Stage.createStageByPasses(campaign.id, stageNum)
             const resp = responseWrapper(campaign, "success", 201);
             return res.status(200).json(resp);
