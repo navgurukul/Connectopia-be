@@ -285,7 +285,7 @@ module.exports = {
   getGeneralAndProductContent: async (req, res) => {
     /* 
       #swagger.tags = ['Stage/Level']
-      #swagger.summary = ' - Get general and product content by campaign'
+      #swagger.summary = 'Get general and product content by campaign'
       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
       #swagger.parameters['scantype'] = {in: 'path', required: true, type: 'string'}
     */
@@ -342,7 +342,7 @@ module.exports = {
   getStagesByCampaignIdWithLevels: async (req, res) => {
     /* 
       #swagger.tags = ['Stage/Level']
-      #swagger.summary = ' - Get all stages & level content by campaign'
+      #swagger.summary = 'Get all stages & level content by campaign'
       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
     */
     try {
@@ -366,25 +366,16 @@ module.exports = {
 
       for (let stage of stagesData) {
         const stageKey = `stage-${i}`;
-
         const levelData = await levelConfig(stage.id, stage.campaign_id);
         if (!stages.hasOwnProperty(stageKey)) {
           stages[stageKey] = levelData;
           stages[stageKey].stage_id = stage.id;
+          stages[stageKey].campaign_id = stage.campaign_id;
         }
         i += 1;
       }
 
       stages.total_stages = campaign.total_stages;
-
-      if (Object.keys(stages).length === 0) {
-        const responseData = {
-          message:
-            "No content have been uploaded for this campaign's stages yet.",
-          total_stages: stagesData.length,
-        };
-        return res.status(204).json(responseData);
-      }
 
       return res.status(200).json({ stages });
     } catch (error) {
