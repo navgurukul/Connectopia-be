@@ -102,8 +102,8 @@ module.exports = {
       #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'level', enum: ['level', 'geenral']}
     */
     try {
-      const { campaign_id, content_type, level, order } = req.params;
-      const { stage_id, key } = req.query;
+      const { campaign_id, content_type, order } = req.params;
+      const { stage_id, key, level } = req.query;
       const id = parseInt(campaign_id);
       const stgId = parseInt(stage_id);
       // remove space from key and limit character

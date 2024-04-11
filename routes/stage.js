@@ -9,7 +9,7 @@ router.post('/campaign/upload-qr/:campaign_id/:key/:content_type', upload('image
 
 // /uploadimage/:campaignid/:pageno/:key/:scantype
 // This can handle both upload of image and gif
-router.post('/campaign/upload-image/:campaign_id/:level/:order/:content_type', upload('image').single('image'), stageController.uploadImageToCampaign);
+router.post('/campaign/upload-image/:campaign_id/:order/:content_type', upload('image').single('image'), stageController.uploadImageToCampaign);
 // /updateimage/:campaignid/:pageno/:key/:scantype
 // and this can update image and gif
 router.put('/campaign/update-image/:content_id/:content_type', upload('image').single('image'), stageController.updateImageToCampaign);
