@@ -41,46 +41,57 @@ const uploadHelperTxn = async (type, req, campaign_id, level, key) => {
   return url;
 };
 
-const levelConfig = async (stageId, campaign_id) => {
+//helper for stage's level and product data mapping
+const levelConfig = async (stageId, campaign_id, content_type) => {
   try {
-    const levelData = await StageConfig.query()
-      .where("campaign_id", campaign_id)
-      .andWhere("stage_id", stageId)
-      .orderBy("level", "asc")
-      .orderBy("order", "asc");
-
     const stages = {};
+    if (content_type === "product") {
+      console.log(true);
+      const productData = await StageConfig.query()
+        .where("campaign_id", campaign_id)
+        .andWhere("stage_id", stageId)
+        .andWhere("content_type", content_type)
+        .orderBy("level", "asc");
 
-    for (let i = 1; i <= 5; i++) {
-      const levelKey = `level-${i}`;
-      stages[levelKey] = {};
-    }
-
-    levelData.forEach((level) => {
-      const { level: lvl, order, ...rest } = level;
-      const levelKey = `level-${lvl}`;
-      const orderKey = `${order}`;
-      if (Object.keys(rest).length > 0) {
-        stages[levelKey][orderKey] = { ...rest, level: lvl, order };
-      } else {
-        stages[levelKey][orderKey] = {};
+      for (let i = 1; i <= 5; i++) {
+        stages[i] = {};
       }
-    });
 
-    // Ensure that each level object has keys from 1 to 7
-    for (let i = 1; i <= 5; i++) {
-      const levelKey = `level-${i}`;
-      for (let j = 1; j <= 7; j++) {
-        const orderKey = `${j}`;
-        stages[levelKey][orderKey] = stages[levelKey][orderKey] || {};
+      productData.forEach(({ level: lvl, ...rest }) => {
+        stages[lvl] = { ...rest, level: lvl };
+      });
+    } else {
+      const levelData = await StageConfig.query()
+        .where("campaign_id", campaign_id)
+        .andWhere("stage_id", stageId)
+        .orderBy(["level", "order"], ["asc", "asc"]);
+
+      for (let i = 1; i <= 5; i++) {
+        stages[`level-${i}`] = {};
+      }
+
+      levelData.forEach(({ level: lvl, order, ...rest }) => {
+        const levelKey = `level-${lvl}`;
+        const orderKey = `${order}`;
+        if (Object.keys(rest).length > 0) {
+          stages[levelKey][orderKey] = { ...rest, level: lvl, order };
+        }
+      });
+
+      // Ensure that each level object has keys from 1 to 7
+      for (let i = 1; i <= 5; i++) {
+        const levelKey = `level-${i}`;
+        for (let j = 1; j <= 7; j++) {
+          stages[levelKey][j] = stages[levelKey][j] || {};
+        }
       }
     }
-
     return stages;
   } catch (error) {
     return { error: error.message };
   }
 };
+
 
 module.exports = {
   uploadImageToCampaign: async (req, res) => {
@@ -318,7 +329,7 @@ module.exports = {
         const resp = responseWrapper(null, "Campaign is not active", 400);
         return res.status(400).json(resp);
       }
-      const productData = await CampaignConfig.query().where({
+      const generalData = await CampaignConfig.query().where({
         campaign_id,
         content_type: "product",
       });
@@ -350,8 +361,6 @@ module.exports = {
         .where("id", campaign_id)
         .andWhere("scantype", scantype);
 
-      const stageNum = campaign[0].total_stages;
-
       if (!campaign.length) {
         return res
           .status(404)
@@ -360,7 +369,9 @@ module.exports = {
 
       const campaignData = {
         general: {},
-        product: {},
+        product: {
+          stages: {},
+        },
       };
 
       // Initialize general object with empty objects for orders 1 to 8
@@ -368,24 +379,41 @@ module.exports = {
         campaignData.general[i] = {};
       }
 
-      const productData = await CampaignConfig.query()
+      const generalData = await CampaignConfig.query()
         .where({ campaign_id })
         .orderBy("order", "asc");
 
-      if (!productData.length) {
+      if (!generalData.length) {
         return res.status(204).json(campaignData);
       }
 
-      productData.forEach((data) => {
+      generalData.forEach((data) => {
         if (data.content_type === "general") {
-          // Populate general object with data from database
           campaignData.general[data.order] = data;
-        } else if (data.content_type === "product") {
-          campaignData.product[data.order] = data;
         }
       });
 
-      return res.status(200).json(campaignData );
+      const stagesData = await Stage.query().where("campaign_id", campaign_id);
+      let i = 1;
+
+      for (let stage of stagesData) {
+        const stageKey = `stage-${i}`;
+        const levelData = await levelConfig(
+          stage.id,
+          stage.campaign_id,
+          "product"
+        );
+        if (levelData) {
+          campaignData.product.stages[stageKey] = {
+            ...levelData,
+            stage_id: stage.id,
+            campaign_id: stage.campaign_id,
+          };
+        }
+        i++;
+      }
+
+      return res.status(200).json(campaignData);
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Internal server error" });
@@ -421,7 +449,11 @@ module.exports = {
 
       for (let stage of stagesData) {
         const stageKey = `stage-${i}`;
-        const levelData = await levelConfig(stage.id, stage.campaign_id);
+        const levelData = await levelConfig(
+          stage.id,
+          stage.campaign_id,
+          "level"
+        );
         if (!stages.hasOwnProperty(stageKey)) {
           stages[stageKey] = levelData;
           stages[stageKey].stage_id = stage.id;
