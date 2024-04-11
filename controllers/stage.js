@@ -104,7 +104,11 @@ module.exports = {
 
       // Check if required parameters are missing
       if (!campaign_id || !level || !key || !order || !content_type) {
-        const resp = responseWrapper(null, "Please provide all required details", 400);
+        const resp = responseWrapper(
+          null,
+          "Please provide all required details",
+          400
+        );
         return res.status(400).json(resp);
       }
 
@@ -122,7 +126,10 @@ module.exports = {
       };
       // Check if the provided content type is 'level' and handle accordingly
       if (content_type === "level") {
-        const ifStage = await Stage.query().where("id", stgId).andWhere("campaign_id", id).first();
+        const ifStage = await Stage.query()
+          .where("id", stgId)
+          .andWhere("campaign_id", id)
+          .first();
         if (!ifStage) {
           const resp = responseWrapper(null, "Stage not found", 404);
           return res.status(200).json(resp);
@@ -182,7 +189,11 @@ module.exports = {
 
       // Check if required parameters are missing
       if ((!campaign_id, !content_type, !key)) {
-        const resp = responseWrapper(null, "Please provide all required details", 400);
+        const resp = responseWrapper(
+          null,
+          "Please provide all required details",
+          400
+        );
         return res.status(400).json(resp);
       }
 
@@ -270,7 +281,7 @@ module.exports = {
       const resp = responseWrapper(updateData, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       const resp = responseWrapper(null, error.message, 500);
       return res.status(500).json(resp);
     }
@@ -288,7 +299,11 @@ module.exports = {
       const { campaign_id, scantype } = req.params;
       const id = parseInt(campaign_id);
       if (!campaign_id || !scantype) {
-        const resp = responseWrapper(null, "campaign_id and scantype are required", 400);
+        const resp = responseWrapper(
+          null,
+          "campaign_id and scantype are required",
+          400
+        );
         return res.status(400).json(resp);
       }
       const campaign = await Campaign.query()
@@ -326,51 +341,54 @@ module.exports = {
     try {
       const { campaign_id, scantype } = req.params;
       if (!campaign_id || !scantype) {
-        const resp = responseWrapper(null, "campaign_id and scantype are required", 400);
-        return res.status(400).json(resp);
+        return res
+          .status(400)
+          .json({ message: "campaign_id and scantype are required" });
       }
 
       const campaign = await Campaign.query()
         .where("id", campaign_id)
         .andWhere("scantype", scantype);
 
+      const stageNum = campaign[0].total_stages;
+
       if (!campaign.length) {
-        const resp = responseWrapper(null, "No campaign found with the provided scantype", 404);
-        return res.status(200).json(resp);
+        return res
+          .status(404)
+          .json({ message: "No campaign found with the provided scantype" });
       }
 
       const campaignData = {
-        general: [],
-        product: [],
+        general: {},
+        product: {},
       };
+
+      // Initialize general object with empty objects for orders 1 to 8
+      for (let i = 1; i <= 8; i++) {
+        campaignData.general[i] = {};
+      }
+
       const productData = await CampaignConfig.query()
         .where({ campaign_id })
         .orderBy("order", "asc");
 
       if (!productData.length) {
-        const resp = responseWrapper(campaignData, "No data found", 204);
-        return res.status(200).json(campaignData);
+        return res.status(204).json(campaignData);
       }
 
-      const general = productData.filter(
-        (data) => data.content_type === "general"
-      );
-      const product = productData.filter(
-        (data) => data.content_type === "product"
-      );
+      productData.forEach((data) => {
+        if (data.content_type === "general") {
+          // Populate general object with data from database
+          campaignData.general[data.order] = data;
+        } else if (data.content_type === "product") {
+          campaignData.product[data.order] = data;
+        }
+      });
 
-      if (general.length) {
-        campaignData.general = general;
-      }
-
-      if (product.length) {
-        campaignData.product = product;
-      }
-      const resp = responseWrapper(campaignData, "success", 200);
-      return res.status(200).json(resp);
+      return res.status(200).json(campaignData );
     } catch (error) {
-      const resp = responseWrapper(null, error.message, 500);
-      return res.status(500).json(resp);
+      console.error(error);
+      return res.status(500).json({ message: "Internal server error" });
     }
   },
 
@@ -436,7 +454,11 @@ module.exports = {
     try {
       const { campaign_id, order, key, content_type } = req.params;
       if (!campaign_id || !order || !key || !content_type) {
-        const resp = responseWrapper(null, "please provide all required details", 400);
+        const resp = responseWrapper(
+          null,
+          "please provide all required details",
+          400
+        );
         return res.status(400).json(resp);
       }
       const campaign = await CampaignConfig.query()
@@ -501,7 +523,11 @@ module.exports = {
     try {
       const { campaign_id, level, key } = req.params;
       if (!campaign_id || !level || !key) {
-        const resp = responseWrapper(null, "campaign_id, level and key are required", 400);
+        const resp = responseWrapper(
+          null,
+          "campaign_id, level and key are required",
+          400
+        );
         return res.status(400).json(resp);
       }
       const campaign = await CampaignConfig.query().findById({ campaign_id });
@@ -512,8 +538,8 @@ module.exports = {
       const deleteData = await StageConfig.query()
         .delete()
         .where({ campaign_id, level, key });
-        const resp = responseWrapper(null, "success", 200);
-        return res.status(200).json(resp);
+      const resp = responseWrapper(null, "success", 200);
+      return res.status(200).json(resp);
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
       return res.status(500).json(resp);
