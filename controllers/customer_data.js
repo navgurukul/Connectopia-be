@@ -91,7 +91,7 @@ module.exports = {
       #swagger.tags = ['Customer']
       #swagger.summary = 'Delete a Player by phone number and campaign ID'
       #swagger.parameters['phone'] = {in: 'path', required: true, type: 'integer'}           
-      #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'
+      #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
     */
     try {
       const { phone, campaign_id } = req.params;
