@@ -82,13 +82,6 @@ const levelConfig = async (stageId, campaign_id) => {
   }
 };
 
-
-
-
-
-
-
-
 module.exports = {
   uploadImageToCampaign: async (req, res) => {
     /* 

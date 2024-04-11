@@ -70,14 +70,48 @@ module.exports = {
         playerData.email = email;
       }
 
+      const existPlayer = await CustData.query()
+        .where("phone", phone)
+        .andWhere("campaign_id", campaign_id);
+      if (existPlayer.length > 0) {
+        return res.status(200).json({ message: "Player already exists" });
+      }
       // Insert player data into database
       await CustData.query().insert(playerData);
 
-      return res
-        .status(200)
-        .json({ message: "Player data inserted successfully." });
+      return res.status(200).json({ message: "Player added successfully." });
     } catch (error) {
       console.error("Error inserting player data:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  deletePlayer: async (req, res) => {
+    /*
+      #swagger.tags = ['Customer']
+      #swagger.summary = 'Delete a Player by phone number and campaign ID'
+      #swagger.parameters['phone'] = {in: 'path', required: true, type: 'integer'}           
+      #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'
+    */
+    try {
+      const { phone, campaign_id } = req.params;
+
+      if (!phone || !campaign_id) {
+        return res.status(400).send("Incomplete details");
+      }
+
+      const deletedCount = await CustData.query()
+        .delete()
+        .where("phone", phone)
+        .andWhere("campaign_id", campaign_id);
+
+      if (deletedCount === 0) {
+        return res.status(404).json({ message: "Player data not found" });
+      }
+
+      res.status(200).json({ message: `Player data with ${phone} deleted` });
+    } catch (error) {
+      console.error(error);
       return res.status(500).json({ message: "Internal server error" });
     }
   },
