@@ -86,6 +86,7 @@ const levelConfig = async (stageId, campaign_id, content_type) => {
         }
       }
     }
+
     return stages;
   } catch (error) {
     return { error: error.message };
@@ -114,7 +115,7 @@ module.exports = {
       const updatedKey = key.replace(/\s+/g, "-").slice(0, 50);
 
       // Check if required parameters are missing
-      if (!campaign_id || !level || !key || !order || !content_type) {
+      if (!campaign_id || !order || !content_type) {
         const resp = responseWrapper(
           null,
           "Please provide all required details",
@@ -136,30 +137,30 @@ module.exports = {
         key: updatedKey,
       };
       // Check if the provided content type is 'level' and handle accordingly
-      const ifStage = await Stage.query()
-        .where("id", stgId)
-        .andWhere("campaign_id", id)
-        .first();
-      if (!ifStage) {
-        const resp = responseWrapper(null, "Stage not found", 404);
-        return res.status(200).json(resp);
-      }
-      const ifDataExist = await StageConfig.query().where({
-        campaign_id: id,
-      });
-      if (!ifDataExist) {
-        const resp = responseWrapper(null, "Stage not found", 404);
-        return res.status(200).json(resp);
-      }
-      data.level = parseInt(level);
-      data.stage_id = stgId;
-      // If content type is not 'level', assume it's 'campaign' and proceed with upload
-      const ifDataCampExist = await CampaignConfig.query().where({
-        campaign_id: id,
-      });
-      if (!ifDataCampExist) {
-        const resp = responseWrapper(null, "Campaign not found", 404);
-        return res.status(200).json(resp);
+      if (content_type === "level") {
+        const ifStage = await Stage.query().where("id", stgId).andWhere("campaign_id", id).first();
+        if (!ifStage) {
+          const resp = responseWrapper(null, "Stage not found", 404);
+          return res.status(200).json(resp);
+        }
+        const ifDataExist = await StageConfig.query().where({
+          campaign_id: id,
+        });
+        if (!ifDataExist) {
+          const resp = responseWrapper(null, "Stage not found", 404);
+          return res.status(200).json(resp);
+        }
+        data.level = parseInt(level);
+        data.stage_id = stgId;
+      } else {
+        // If content type is not 'level', assume it's 'campaign' and proceed with upload
+        const ifDataExist = await CampaignConfig.query().where({
+          campaign_id: id,
+        });
+        if (!ifDataExist) {
+          const resp = responseWrapper(null, "Campaign not found", 404);
+          return res.status(200).json(resp);
+        }
       }
 
       // const fileExt = req.file.originalname.split('.').pop();
@@ -173,7 +174,9 @@ module.exports = {
       );
       data.image = url;
 
-      const insertedData = await StageConfig.query().insert(data);
+      const insertedData = await (content_type === "level"
+        ? StageConfig.query().insert(data)
+        : CampaignConfig.query().insert(data));
       const resp = responseWrapper(insertedData, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
@@ -195,11 +198,7 @@ module.exports = {
 
       // Check if required parameters are missing
       if ((!campaign_id, !content_type, !key)) {
-        const resp = responseWrapper(
-          null,
-          "Please provide all required details",
-          400
-        );
+        const resp = responseWrapper(null, "Please provide all required details", 400);
         return res.status(400).json(resp);
       }
 
@@ -263,27 +262,32 @@ module.exports = {
 
       let ifData;
       let level;
-      // if (content_type === "level") {
-      ifData = await StageConfig.query().where("id", cid).first();
-      if (!ifData) {
-        const resp = responseWrapper(null, "stage data not found", 404);
-        return res.status(200).json(resp);
-      }
       if (content_type === "level") {
+        ifData = await StageConfig.query().where("id", cid).first();
+        if (!ifData) {
+          const resp = responseWrapper(null, "stage not found", 404);
+          return res.status(200).json(resp);
+        }
         level = ifData.level;
-        // level = "general";
       } else {
+        ifData = await CampaignConfig.query().where("id", cid).first();
         level = "general";
       }
-      // }
       const campaign_id = ifData.campaign_id;
       const key = ifData.key;
+      if (!ifData) {
+        const resp = responseWrapper(null, "campaign data not found", 404);
+        return res.status(200).json(resp);
+      }
+
       const url = await uploadHelperTxn("image", req, campaign_id, level, key);
-      const updateData = await StageConfig.query().patchAndFetchById(cid, { image: url });
+      const updateData = await (content_type === "level"
+        ? StageConfig.query().patchAndFetchById(cid, { image: url })
+        : CampaignConfig.query().patchAndFetchById(cid, { image: url }));
       const resp = responseWrapper(updateData, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
-      console.log(error);
+      console.log(error)
       const resp = responseWrapper(null, error.message, 500);
       return res.status(500).json(resp);
     }
@@ -343,9 +347,8 @@ module.exports = {
     try {
       const { campaign_id, scantype } = req.params;
       if (!campaign_id || !scantype) {
-        return res
-          .status(400)
-          .json({ message: "campaign_id and scantype are required" });
+        const resp = responseWrapper(null, "campaign_id and scantype are required", 400);
+        return res.status(400).json(resp);
       }
 
       const campaign = await Campaign.query()
@@ -353,9 +356,8 @@ module.exports = {
         .andWhere("scantype", scantype);
 
       if (!campaign.length) {
-        return res
-          .status(404)
-          .json({ message: "No campaign found with the provided scantype" });
+        const resp = responseWrapper(null, "No campaign found with the provided scantype", 404);
+        return res.status(200).json(resp);
       }
 
       const campaignData = {
@@ -406,8 +408,8 @@ module.exports = {
 
       return res.status(200).json(campaignData);
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Internal server error" });
+      const resp = responseWrapper(null, error.message, 500);
+      return res.status(500).json(resp);
     }
   },
 
