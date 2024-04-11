@@ -19,13 +19,12 @@ module.exports = {
                 });
 
             case 'image':
-                const mimetype = file.mimetype
                 return multer({
                     storage: storage,
-                    limits: mimetype === "image/gif" ? { fileSize: 2 * 1024 * 1024 } : { fileSize: 20 * 1024 * 1024 }, // 2MB for images
+                    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB for images
                     fileFilter: function (req, file, cb) {
                         const allowedMimes = ["image/jpeg", "image/png", "image/jpg", "image/svg+xml", "image/gif"];
-                        if (allowedMimes.includes(mimetype)) {
+                        if (allowedMimes.includes(file.mimetype)) {
                             cb(null, true);
                         } else {
                             cb(new Error("Only jpeg, jpg, png, svg, and gif files are allowed"), false);
@@ -33,18 +32,18 @@ module.exports = {
                     }
                 });
 
-            // case 'gif':
-            //     return multer({
-            //         storage: storage,
-            //         limits: { fileSize: 20 * 1024 * 1024 }, // 20MB for gifs
-            //         fileFilter: function (req, file, cb) {
-            //             if (file.mimetype === "image/gif") {
-            //                 cb(null, true);
-            //             } else {
-            //                 cb(new Error("Only gif files are allowed"), false);
-            //             }
-            //         }
-            //     });
+            case 'gif':
+                return multer({
+                    storage: storage,
+                    limits: { fileSize: 20 * 1024 * 1024 }, // 20MB for gifs
+                    fileFilter: function (req, file, cb) {
+                        if (file.mimetype === "image/gif") {
+                            cb(null, true);
+                        } else {
+                            cb(new Error("Only gif files are allowed"), false);
+                        }
+                    }
+                });
 
             default:
                 throw new Error("Invalid type");

@@ -96,10 +96,10 @@ module.exports = {
       #swagger.summary = 'Upload image to campaign'
       #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer', default: 0}
-      #swagger.parameters['level'] = {in: 'path', type: 'integer', default: 0}
+      #swagger.parameters['level'] = {in: 'query', type: 'integer', default: 0}
       #swagger.parameters['stage_id'] = {in: 'query', type: 'integer', default: 0}
       #swagger.parameters['order'] = {in: 'path', required: true, type: 'integer', default: 0}
-      #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'level', enum: ['level', 'geenral']}
+      #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'level', enum: ['level', 'general']}
     */
     try {
       const { campaign_id, content_type, order } = req.params;
@@ -127,13 +127,13 @@ module.exports = {
         content_type,
         key: updatedKey,
       };
-      const ifStage = await Stage.query().where("id", stgId).andWhere("campaign_id", id).first();
-      if (!ifStage) {
-        const resp = responseWrapper(null, "Stage not found", 404);
-        return res.status(200).json(resp);
-      }
       // Check if the provided content type is 'level' and handle accordingly
       if (content_type === "level") {
+        const ifStage = await Stage.query().where("id", stgId).andWhere("campaign_id", id).first();
+        if (!ifStage) {
+          const resp = responseWrapper(null, "Stage not found", 404);
+          return res.status(200).json(resp);
+        }
         const ifDataExist = await StageConfig.query().where({
           campaign_id: id,
         });
@@ -238,7 +238,7 @@ module.exports = {
       #swagger.summary = 'Update image to campaign'
       #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
       #swagger.parameters['content_id'] = {in: 'path', required: true, type: 'integer'}
-      #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'level', enum: ['level', 'geenral']}
+      #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'level', enum: ['level', 'general']}
     */
     try {
       const { content_id, content_type } = req.params;
@@ -256,21 +256,20 @@ module.exports = {
       if (content_type === "level") {
         ifData = await StageConfig.query().where("id", cid).first();
         if (!ifData) {
-          const resp = responseWrapper(null, "stage not found", 404);
+          const resp = responseWrapper(null, "stage data not found", 404);
           return res.status(200).json(resp);
         }
         level = ifData.level;
       } else {
-        ifData = await CampaignConfig.query().findById(cid).first();
+        ifData = await CampaignConfig.query().where("id", cid).first();
+        if (!ifData) {
+          const resp = responseWrapper(null, "campaign data not found", 404);
+          return res.status(200).json(resp);
+        }
         level = "general";
       }
       const campaign_id = ifData.campaign_id;
       const key = ifData.key;
-      if (!ifData) {
-        const resp = responseWrapper(null, "campaign data not found", 404);
-        return res.status(200).json(resp);
-      }
-
       const url = await uploadHelperTxn("image", req, campaign_id, level, key);
       const updateData = await (content_type === "level"
         ? StageConfig.query().patchAndFetchById(cid, { image: url })
@@ -278,6 +277,7 @@ module.exports = {
       const resp = responseWrapper(updateData, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
+      console.log(error)
       const resp = responseWrapper(null, error.message, 500);
       return res.status(500).json(resp);
     }
