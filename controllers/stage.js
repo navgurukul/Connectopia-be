@@ -136,6 +136,13 @@ const productHelper = async (stage_id, campaign_id, content_type) => {
         .andWhere("content_type", content_type)
         .orderBy("level", "asc");
 
+      const productQR = await StageConfig.query() //campaign_id, content_type= product, key:Main-QRCode, order =0
+        .where("campaign_id", campaign_id)
+        .andWhere("order", 0)
+        .andWhere("content_type", content_type);
+
+      // console.log(productQR, "productQR");
+
       for (let i = 1; i <= 5; i++) {
         stages[i] = {};
       }
@@ -143,6 +150,10 @@ const productHelper = async (stage_id, campaign_id, content_type) => {
       productData.forEach(({ level: lvl, ...rest }) => {
         stages[lvl] = { ...rest, level: lvl };
       });
+
+      if (productQR.length > 0) {
+        stages["0"] = productQR[0];
+      }
     }
 
     return stages;
@@ -429,9 +440,7 @@ module.exports = {
         );
         return res.status(400).json(resp);
       }
-      const campaign = await Campaign.query()
-        .findById(id)
-        .first();
+      const campaign = await Campaign.query().findById(id).first();
       if (!campaign) {
         const resp = responseWrapper(null, "Campaign not found", 404);
         return res.status(200).json(resp);
@@ -478,7 +487,7 @@ module.exports = {
       #swagger.tags = ['Stage/Level']
       #swagger.summary = 'Get general and product content by campaign'
       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-      #swagger.parameters['scantype'] = {in: 'path', required: true, type: 'string'}
+      #swagger.parameters['scantype'] = {in: 'path', required: true, type: 'string', enum:['qr', 'image']}
     */
     try {
       const { campaign_id, scantype } = req.params;
@@ -547,6 +556,7 @@ module.exports = {
             campaign_id: stage.campaign_id,
           };
         }
+
         i++;
       }
 
