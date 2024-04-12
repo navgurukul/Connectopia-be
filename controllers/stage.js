@@ -141,8 +141,8 @@ const productHelper = async (stage_id, campaign_id, content_type) => {
         stages[i] = {};
       }
 
-      productData.forEach(({ level,image }) => {
-        stages[level] = {  level , image, mind:""};
+      productData.forEach(({ level,image }) => {//to be fix by mind url with expire time
+        stages[level] = {  level , image, mind:"https://connectopia.s3.ap-south-1.amazonaws.com/35/4/TextPromtAfterSuccessfulScan.png"};
       });
     }
     return stages;
