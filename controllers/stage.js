@@ -562,7 +562,7 @@ module.exports = {
 
       stages.total_stages = campaign.total_stages;
 
-      const resp = responseWrapper(general, "success", 200);
+      const resp = responseWrapper(stages, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
