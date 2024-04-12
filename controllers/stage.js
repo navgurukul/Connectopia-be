@@ -99,6 +99,7 @@ const levelHelper = async (stage_id, campaign_id) => {
     const levelData = await StageConfig.query()
       .where("campaign_id", campaign_id)
       .andWhere("stage_id", stage_id)
+      .andWhere("content_type", "level")
       .orderBy(["level", "order"], ["asc", "asc"]);
 
     for (let i = 1; i <= 5; i++) {
@@ -546,7 +547,18 @@ module.exports = {
       }
       const stagesData = await Stage.query().where("campaign_id", campaign.id);
 
-      const stages = {};
+      const productQR = await StageConfig.query() //campaign_id, content_type= product, key:Main-QRCode, order =0
+        .where("campaign_id", campaign_id)
+        .andWhere("order", 0)
+        .andWhere("content_type", "product");
+
+      const stages = {
+        mainQR: {},
+      };
+
+      if (productQR.length > 0) {
+        stages.mainQR = productQR[0];
+      }
       let i = 1;
 
       for (let stage of stagesData) {
