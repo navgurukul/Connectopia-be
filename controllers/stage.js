@@ -154,6 +154,7 @@ const productHelper = async (stage_id, campaign_id, content_type) => {
       if (productQR.length > 0) {
         stages["0"] = productQR[0];
       }
+      stages["0"] = {};
     }
 
     return stages;
@@ -528,10 +529,6 @@ module.exports = {
       const generalData = await CampaignConfig.query()
         .where({ campaign_id })
         .orderBy("order", "asc");
-
-      if (!generalData.length) {
-        return res.status(204).json(campaignData);
-      }
 
       generalData.forEach((data) => {
         if (data.content_type === "general") {
