@@ -472,13 +472,14 @@ module.exports = {
       #swagger.summary = ' - upload mind file to campaign'
       #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-      #swagger.parameters['order'] = {in: 'path', type: 'integer'}
-      #swagger.parameters['key'] = {in: 'path', required: true, type: 'string'}
-      #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', enum: ['product', 'general']}
+      #swagger.parameters['key'] = {in: 'path', required: true, type: 'string', default: 'ImageScan1'}
+      #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'product'}
+      #swagger.parameters['stage_id'] = {in: 'path', type: 'integer'}
+      #swagger.parameters['level'] = {in: 'path', type: 'integer'}
   */
     try {
-      const { campaign_id, order, key, content_type } = req.params;
-      if (!campaign_id || !order || !key || !content_type) {
+      const { campaign_id, key, content_type, stage_id, level } = req.params;
+      if (!campaign_id || !key || !content_type) {
         const resp = responseWrapper(
           null,
           "please provide all required details",
@@ -486,11 +487,9 @@ module.exports = {
         );
         return res.status(400).json(resp);
       }
-      const campaign = await CampaignConfig.query()
-        .where({ campaign_id: parseInt(campaign_id) })
-        .first();
-      if (!campaign) {
-        const resp = responseWrapper(null, "Campaign not found", 204);
+      const ifData = await Stage.query().where("id", stage_id).first();
+      if (!ifData) {
+        const resp = responseWrapper(null, "Data not found", 204);
         return res.status(400).json(resp);
       }
       if (!req.file) {
@@ -506,29 +505,32 @@ module.exports = {
       const buffer = compiler.exportData();
       const compositeKeyMind = `${key}.mind`;
 
-      const level = "product";
+      const stageLevel = `${stage_id}/${level}`;
       const imgUrl = await uploadHelperTxn(
         "image",
         req,
         campaign_id,
-        level,
+        stage_id > 0 ? stageLevel : level,
         key
       );
       const mindUrl = await uploadFile(
         buffer,
         campaign_id,
-        level,
+        stage_id > 0 ? stageLevel : level,
         compositeKeyMind
       );
       // const mindUrl = await uploadHelperTxn('mind', buffer, campaign_id, level, compositeKeyMind);
       const data = {
         campaign_id: parseInt(campaign_id),
         key,
-        order: parseInt(order),
+        order: parseInt(level),
         image: imgUrl,
         content_type,
+        stage_id: parseInt(stage_id),
+        level: parseInt(level),
       };
-      const insertData = await CampaignConfig.query().insert(data);
+
+      const insertData = await StageConfig.query().insert(data);
       const resp = responseWrapper(insertData, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
