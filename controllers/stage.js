@@ -141,8 +141,8 @@ const productHelper = async (stage_id, campaign_id, content_type) => {
         stages[i] = {};
       }
 
-      productData.forEach(({ level: lvl, ...rest }) => {
-        stages[lvl] = { ...rest, level: lvl };
+      productData.forEach(({ level,image }) => {
+        stages[level] = {  level , image, mind:""};
       });
     }
     return stages;
@@ -156,7 +156,7 @@ const generalProductHelper = async (campaign_id, scantype) => {
     const campaignData = {
       general: {},
       product: {
-        mainQR: {}, // Initialize mainQR to null
+        mainQR: {}, 
         stages: {},
       },
     };
