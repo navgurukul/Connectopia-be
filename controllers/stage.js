@@ -136,13 +136,6 @@ const productHelper = async (stage_id, campaign_id, content_type) => {
         .andWhere("content_type", content_type)
         .orderBy("level", "asc");
 
-      const productQR = await StageConfig.query() //campaign_id, content_type= product, key:Main-QRCode, order =0
-        .where("campaign_id", campaign_id)
-        .andWhere("order", 0)
-        .andWhere("content_type", content_type);
-
-      // console.log(productQR, "productQR");
-
       for (let i = 1; i <= 5; i++) {
         stages[i] = {};
       }
@@ -150,13 +143,7 @@ const productHelper = async (stage_id, campaign_id, content_type) => {
       productData.forEach(({ level: lvl, ...rest }) => {
         stages[lvl] = { ...rest, level: lvl };
       });
-
-      if (productQR.length > 0) {
-        stages["0"] = productQR[0];
-      }
-      stages["0"] = {};
     }
-
     return stages;
   } catch (error) {
     return { error: error.message };
@@ -168,10 +155,19 @@ const generalProductHelper = async (campaign_id, scantype) => {
     const campaignData = {
       general: {},
       product: {
+        mainQR: {}, // Initialize mainQR to null
         stages: {},
       },
     };
 
+    const productQR = await StageConfig.query() //campaign_id, content_type= product, key:Main-QRCode, order =0
+      .where("campaign_id", campaign_id)
+      .andWhere("order", 0)
+      .andWhere("content_type", "product");
+
+    if (productQR.length > 0) {
+      campaignData.product.mainQR = productQR[0];
+    }
     // Initialize general object with empty objects for orders 1 to 8
     for (let i = 1; i <= 8; i++) {
       campaignData.general[i] = {};
@@ -180,10 +176,6 @@ const generalProductHelper = async (campaign_id, scantype) => {
     const generalData = await CampaignConfig.query()
       .where({ campaign_id })
       .orderBy("order", "asc");
-
-    if (!generalData.length) {
-      return res.status(204).json(campaignData);
-    }
 
     generalData.forEach((data) => {
       if (data.content_type === "general") {
@@ -201,6 +193,7 @@ const generalProductHelper = async (campaign_id, scantype) => {
         stage.campaign_id,
         "product"
       );
+
       if (levelData) {
         campaignData.product.stages[stageKey] = {
           ...levelData,
@@ -210,7 +203,9 @@ const generalProductHelper = async (campaign_id, scantype) => {
       }
       i++;
     }
-
+    if (productQR.length > 0) {
+      campaignData.product.mainQR = productQR[0];
+    }
     return campaignData;
   } catch (error) {}
   return { error: error.message };
@@ -514,47 +509,11 @@ module.exports = {
         return res.status(200).json(resp);
       }
 
-      const campaignData = {
-        general: {},
-        product: {
-          stages: {},
-        },
-      };
+      const campaignData = await generalProductHelper(campaign_id, scantype);
 
-      // Initialize general object with empty objects for orders 1 to 8
-      for (let i = 1; i <= 8; i++) {
-        campaignData.general[i] = {};
-      }
-
-      const generalData = await CampaignConfig.query()
-        .where({ campaign_id })
-        .orderBy("order", "asc");
-
-      generalData.forEach((data) => {
-        if (data.content_type === "general") {
-          campaignData.general[data.order] = data;
-        }
-      });
-
-      const stagesData = await Stage.query().where("campaign_id", campaign_id);
-      let i = 1;
-
-      for (let stage of stagesData) {
-        const stageKey = `stage-${i}`;
-        const levelData = await productHelper(
-          stage.id,
-          stage.campaign_id,
-          "product"
-        );
-        if (levelData) {
-          campaignData.product.stages[stageKey] = {
-            ...levelData,
-            stage_id: stage.id,
-            campaign_id: stage.campaign_id,
-          };
-        }
-
-        i++;
+      if (!campaignData) {
+        const resp = responseWrapper(null, "No campaign data found", 404);
+        return res.status(404).json(resp);
       }
 
       return res.status(200).json(campaignData);
