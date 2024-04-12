@@ -93,6 +93,116 @@ const levelConfig = async (stageId, campaign_id, content_type) => {
   }
 };
 
+const levelHelper = async (stage_id, campaign_id) => {
+  try {
+    const stages = {};
+    const levelData = await StageConfig.query()
+      .where("campaign_id", campaign_id)
+      .andWhere("stage_id", stage_id)
+      .orderBy(["level", "order"], ["asc", "asc"]);
+
+    for (let i = 1; i <= 5; i++) {
+      stages[`level-${i}`] = {};
+    }
+
+    levelData.forEach(({ level: lvl, order, ...rest }) => {
+      const levelKey = `level-${lvl}`;
+      const orderKey = `${order}`;
+      if (Object.keys(rest).length > 0) {
+        stages[levelKey][orderKey] = { ...rest, level: lvl, order };
+      }
+    });
+
+    // Ensure that each level object has keys from 1 to 7
+    for (let i = 1; i <= 5; i++) {
+      const levelKey = `level-${i}`;
+      for (let j = 1; j <= 7; j++) {
+        stages[levelKey][j] = stages[levelKey][j] || {};
+      }
+    }
+    return stages;
+  } catch (error) {
+    return { error: error.message };
+  }
+};
+
+const productHelper = async (stage_id, campaign_id, content_type) => {
+  try {
+    const stages = {};
+    if (content_type === "product") {
+      const productData = await StageConfig.query()
+        .where("campaign_id", campaign_id)
+        .andWhere("stage_id", stage_id)
+        .andWhere("content_type", content_type)
+        .orderBy("level", "asc");
+
+      for (let i = 1; i <= 5; i++) {
+        stages[i] = {};
+      }
+
+      productData.forEach(({ level: lvl, ...rest }) => {
+        stages[lvl] = { ...rest, level: lvl };
+      });
+    }
+
+    return stages;
+  } catch (error) {
+    return { error: error.message };
+  }
+};
+
+const generalProductHelper = async (campaign_id, scantype) => {
+  try {
+    const campaignData = {
+      general: {},
+      product: {
+        stages: {},
+      },
+    };
+
+    // Initialize general object with empty objects for orders 1 to 8
+    for (let i = 1; i <= 8; i++) {
+      campaignData.general[i] = {};
+    }
+
+    const generalData = await CampaignConfig.query()
+      .where({ campaign_id })
+      .orderBy("order", "asc");
+
+    if (!generalData.length) {
+      return res.status(204).json(campaignData);
+    }
+
+    generalData.forEach((data) => {
+      if (data.content_type === "general") {
+        campaignData.general[data.order] = data;
+      }
+    });
+
+    const stagesData = await Stage.query().where("campaign_id", campaign_id);
+    let i = 1;
+
+    for (let stage of stagesData) {
+      const stageKey = `stage-${i}`;
+      const levelData = await productHelper(
+        stage.id,
+        stage.campaign_id,
+        "product"
+      );
+      if (levelData) {
+        campaignData.product.stages[stageKey] = {
+          ...levelData,
+          stage_id: stage.id,
+          campaign_id: stage.campaign_id,
+        };
+      }
+      i++;
+    }
+
+    return campaignData;
+  } catch (error) {}
+  return { error: error.message };
+};
 
 module.exports = {
   uploadImageToCampaign: async (req, res) => {
@@ -138,7 +248,10 @@ module.exports = {
       };
       // Check if the provided content type is 'level' and handle accordingly
       if (content_type === "level") {
-        const ifStage = await Stage.query().where("id", stgId).andWhere("campaign_id", id).first();
+        const ifStage = await Stage.query()
+          .where("id", stgId)
+          .andWhere("campaign_id", id)
+          .first();
         if (!ifStage) {
           const resp = responseWrapper(null, "Stage not found", 404);
           return res.status(200).json(resp);
@@ -198,7 +311,11 @@ module.exports = {
 
       // Check if required parameters are missing
       if ((!campaign_id, !content_type, !key)) {
-        const resp = responseWrapper(null, "Please provide all required details", 400);
+        const resp = responseWrapper(
+          null,
+          "Please provide all required details",
+          400
+        );
         return res.status(400).json(resp);
       }
 
@@ -287,7 +404,7 @@ module.exports = {
       const resp = responseWrapper(updateData, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       const resp = responseWrapper(null, error.message, 500);
       return res.status(500).json(resp);
     }
@@ -313,7 +430,6 @@ module.exports = {
         return res.status(400).json(resp);
       }
       const campaign = await Campaign.query()
-        .select("status")
         .findById(id)
         .first();
       if (!campaign) {
@@ -324,11 +440,31 @@ module.exports = {
         const resp = responseWrapper(null, "Campaign is not active", 400);
         return res.status(400).json(resp);
       }
-      const generalData = await CampaignConfig.query().where({
-        campaign_id,
-        content_type: "product",
-      });
-      const resp = responseWrapper(productData, "success", 200);
+      // const generalData = await CampaignConfig.query().where({
+      //   campaign_id,
+      //   content_type: "product",
+      // });
+
+      const generalData = await generalProductHelper(campaign_id, scantype);
+      const stagesData = await Stage.query().where("campaign_id", campaign.id);
+
+      const stages = {};
+      let i = 1;
+
+      for (let stage of stagesData) {
+        const stageKey = `stage-${i}`;
+        const levelData = await levelHelper(stage.id, stage.campaign_id);
+        if (!stages.hasOwnProperty(stageKey)) {
+          stages[stageKey] = levelData;
+          stages[stageKey].stage_id = stage.id;
+          stages[stageKey].campaign_id = stage.campaign_id;
+        }
+        i += 1;
+      }
+
+      stages.total_stages = campaign.total_stages;
+      generalData.stages = stages;
+      const resp = responseWrapper(generalData, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
@@ -347,7 +483,11 @@ module.exports = {
     try {
       const { campaign_id, scantype } = req.params;
       if (!campaign_id || !scantype) {
-        const resp = responseWrapper(null, "campaign_id and scantype are required", 400);
+        const resp = responseWrapper(
+          null,
+          "campaign_id and scantype are required",
+          400
+        );
         return res.status(400).json(resp);
       }
 
@@ -356,7 +496,11 @@ module.exports = {
         .andWhere("scantype", scantype);
 
       if (!campaign.length) {
-        const resp = responseWrapper(null, "No campaign found with the provided scantype", 404);
+        const resp = responseWrapper(
+          null,
+          "No campaign found with the provided scantype",
+          404
+        );
         return res.status(200).json(resp);
       }
 
@@ -391,7 +535,7 @@ module.exports = {
 
       for (let stage of stagesData) {
         const stageKey = `stage-${i}`;
-        const levelData = await levelConfig(
+        const levelData = await productHelper(
           stage.id,
           stage.campaign_id,
           "product"
@@ -434,7 +578,6 @@ module.exports = {
         const resp = responseWrapper(null, "Campaign not found", 404);
         return res.status(404).json(resp);
       }
-
       const stagesData = await Stage.query().where("campaign_id", campaign.id);
 
       const stages = {};
@@ -442,11 +585,7 @@ module.exports = {
 
       for (let stage of stagesData) {
         const stageKey = `stage-${i}`;
-        const levelData = await levelConfig(
-          stage.id,
-          stage.campaign_id,
-          "level"
-        );
+        const levelData = await levelHelper(stage.id, stage.campaign_id);
         if (!stages.hasOwnProperty(stageKey)) {
           stages[stageKey] = levelData;
           stages[stageKey].stage_id = stage.id;
@@ -457,7 +596,7 @@ module.exports = {
 
       stages.total_stages = campaign.total_stages;
 
-      const resp = responseWrapper(stages, "success", 200);
+      const resp = responseWrapper(general, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
