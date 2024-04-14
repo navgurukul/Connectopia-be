@@ -8,6 +8,7 @@ const CMSUsers = require("../models/cmsusers");
 const { uploadFile } = require("./awsS3");
 const Stage = require("../models/stage.js");
 const responseWrapper = require("../helpers/responseWrapper");
+const awsS3 = require("./awsS3");
 
 // helper function
 const uploadHelperTxn = async (type, req, campaign_id, level, key) => {
@@ -130,6 +131,7 @@ const levelHelper = async (stage_id, campaign_id) => {
 const productHelper = async (stage_id, campaign_id, content_type) => {
   try {
     const stages = {};
+
     if (content_type === "product") {
       const productData = await StageConfig.query()
         .where("campaign_id", campaign_id)
@@ -141,8 +143,30 @@ const productHelper = async (stage_id, campaign_id, content_type) => {
         stages[i] = {};
       }
 
-      productData.forEach(({ key, level,image }) => {//to be fix by mind url with expire time
-        stages[level] = {  key, level , image, mind:"https://connectopia.s3.ap-south-1.amazonaws.com/99402/0/ImageScan1.mind"};
+      // Fetching signed URLs for mind files
+      const signedUrls = await Promise.all(
+        productData.map(async ({ key, level, image }) => {
+          const { url, error } = await awsS3.getSignedUrl(
+            campaign_id,
+            stage_id,
+            level,
+            key
+          );
+          if (error) {
+            console.log(error, "error");
+            throw new Error(error);
+          }
+          return { key, level, image, url };
+        })
+      );
+
+      signedUrls.forEach(({ key, level, image, url }) => {
+        stages[level] = {
+          key,
+          level,
+          image,
+          mind: url,
+        };
       });
     }
     return stages;
@@ -156,7 +180,7 @@ const generalProductHelper = async (campaign_id, scantype) => {
     const campaignData = {
       general: {},
       product: {
-        mainQR: {}, 
+        mainQR: {},
         stages: {},
       },
     };

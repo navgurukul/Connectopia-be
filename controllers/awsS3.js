@@ -32,21 +32,21 @@ module.exports = {
         Body: fileBuffer,
       };
       const imageData = await S3.upload(params).promise();
-      return imageData.Location;;
+      return imageData.Location;
     } catch (error) {
       return { error: error.message };
     }
   },
 
   // getPresignedUrl
-  getSignedUrl: async (campaign_id, level, key) => {
+  getSignedUrl: async (campaign_id, stage_id, level, key) => {
     try {
-      if (!campaign_id || !level || !key) {
-        return { error: "campaign_id, level and key are required" };
+      if (!campaign_id || !level || !stage_id) {
+        return { error: "campaign_id, stage_id, and level are required" };
       }
       const params = {
         Bucket: bucketName,
-        Key: `${campaign_id}/${level}/${key}`,
+        Key: `${campaign_id}/${stage_id}/${level}/${key}.mind`, // Adjusted the Key format
         Expires: 3600, // 1 hour
       };
       const url = await S3.getSignedUrl("getObject", params);
