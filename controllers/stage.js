@@ -142,7 +142,7 @@ const productHelper = async (stage_id, campaign_id, content_type) => {
       }
 
       productData.forEach(({ key, level,image }) => {//to be fix by mind url with expire time
-        stages[level] = {  key, level , image, mind:"https://connectopia.s3.ap-south-1.amazonaws.com/35/4/TextPromtAfterSuccessfulScan.png"};
+        stages[level] = {  key, level , image, mind:"https://connectopia.s3.ap-south-1.amazonaws.com/35/4/TextPromtAfterSuccessfulScan.mind"};
       });
     }
     return stages;
