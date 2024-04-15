@@ -676,4 +676,40 @@ module.exports = {
       throw error;
     }
   },
+
+  // for deleting a single stage by id
+  deleteStage: async (req, res) => {
+    /* 
+      #swagger.tags = ['Stage/Level']
+      #swagger.summary = ' - delete stage from campaign'
+      #swagger.parameters['stage_id'] = {in: 'path', required: true, type: 'integer'}
+    */
+    try {
+      const { stage_id } = req.params;
+      if (!stage_id) {
+        const resp = responseWrapper(null, "stage_id is required", 400);
+        return res.status(400).json(resp);
+      }
+      const stage = await Stage.query().findById(stage_id).first();
+      const total_stages = await Campaign.query().select("total_stages").where("id", stage.campaign_id).first();
+      if (!stage) {
+        const resp = responseWrapper(null, "Stage not found", 404);
+        return res.status(404).json(resp);
+      }
+
+      const check = await Stage.transaction(async (trx) => {
+        await StageConfig.query(trx)
+            .delete()
+            .where("campaign_id", stage_id);
+        await Stage.query(trx).deleteById(stage_id);
+        await Campaign.query().update({ total_stages: total_stages.total_stages - 1 }).where("id", stage.campaign_id);
+      })
+
+      const resp = responseWrapper(null, "success", 200);
+      return res.status(200).json(resp);
+    } catch (error) {
+      const resp = responseWrapper(null, error.message, 500);
+      return res.status(500).json(resp);
+    }
+  }
 };

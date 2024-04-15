@@ -12,13 +12,14 @@ const S3 = new AWS.S3(awsConfig);
 
 module.exports = {
   // uploadS3 and uploadToS3, loadS3, handleUpload and handleUploadAndInsert
-  uploadFile: async (fileBuffer, campaign_id, level = null, key) => {
+  // if key includes mind then stageLevel and if not then stageLevel is just level
+  uploadFile: async (fileBuffer, campaign_id, stageLevel = null, key) => {
     try {
       // const fileExtension = key.split(".").pop();
       if (key.includes(".mind")) {
         const params = {
           Bucket: bucketName,
-          Key: `${campaign_id}/${level}/${key}`,
+          Key: `${campaign_id}/${stageLevel}/${key}`,
           Body: fileBuffer,
           ContentType: "application/octet-stream",
         };
@@ -28,7 +29,7 @@ module.exports = {
 
       const params = {
         Bucket: bucketName,
-        Key: `${campaign_id}/${level ? level : ""}/${key}`,
+        Key: `${campaign_id}/${stageLevel ? stageLevel : ""}/${key}`,
         Body: fileBuffer,
       };
       const imageData = await S3.upload(params).promise();
@@ -39,6 +40,7 @@ module.exports = {
   },
 
   // getPresignedUrl
+  // for getting mind files urls with expiration time
   getSignedUrl: async (campaign_id, stage_id, level, key, expire) => {
     try {
       if (!campaign_id || !level || !stage_id || !expire) {

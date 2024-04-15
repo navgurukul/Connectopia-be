@@ -31,5 +31,8 @@ router.post('/campaign/upload-mind/:campaign_id/:stage_id/:level/:key/:content_t
 // /delete-image/:campaignid/:pageno/:key
 router.delete('/campaign/delete-image/:campaign_id/:level/:key', stageController.deleteImage);
 
+// delete stage
+router.delete('/campaign/delete-stage/:stage_id', stageController.deleteStage);
+
 
 module.exports = router;

@@ -6,6 +6,7 @@ const CampaignUsers = require("../models/campaign_users");
 const CMSUsers = require("../models/cmsusers");
 const StageConfig = require("../models/stage_config");
 const responseWrapper = require("../helpers/responseWrapper");
+const Stage = require("../models/stage");
 
 module.exports = {
   createOrganization: async (req, res) => {
@@ -297,6 +298,11 @@ module.exports = {
               .from("campaign")
               .where("organization_id", id);
           });
+        await Stage.query(trx).delete().whereIn("campaign_id", function () {
+          this.select("campaign_id")
+            .from("campaign")
+            .where("organization_id", id);
+        });
         await CustData.query(trx)
           .delete()
           .whereIn("campaign_id", function () {

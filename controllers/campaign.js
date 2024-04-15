@@ -4,8 +4,9 @@ const CampaignUsers = require("../models/campaign_users");
 const StageConfig = require("../models/stage_config");
 const CMSUsers = require("../models/cmsusers");
 const Organization = require("../models/organization");
-const Stage = require("../controllers/stage");
+const StageController = require("../controllers/stage");
 const responseWrapper = require("../helpers/responseWrapper");
+const Stage = require("../models/stage");
 
 // helper function
 const getCampaignTxn = async (usertype, email) => {
@@ -78,9 +79,9 @@ module.exports = {
             }
             const campaign = await Campaign.query().insert(req.body);
             if (!stageNum) {
-                stageNum = 1;    
+                stageNum = 1;
             }
-            const stageCreate = await Stage.createStageByPasses(campaign.id, stageNum)
+            const stageCreate = await StageController.createStageByPasses(campaign.id, stageNum)
             const resp = responseWrapper(campaign, "success", 201);
             return res.status(200).json(resp);
         } catch (error) {
@@ -265,7 +266,9 @@ module.exports = {
                 await StageConfig.query(trx)
                     .delete()
                     .where("campaign_id", campaignData.id);
+                await Stage.query(trx).delete().where("campaign_id", campaignData.id);
                 await Campaign.query(trx).delete().where("id", campaignData.id);
+
             });
             const resp = responseWrapper(null, "success", 200);
             return res.status(200).json(resp);

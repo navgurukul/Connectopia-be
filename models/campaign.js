@@ -4,6 +4,7 @@ const organization = require('./organization');
 const CampaignConfig = require('./campaign_config');
 const StageConfig = require('./stage_config');
 const CampaignUser = require('./campaign_users');
+const Stage = require('./stage');
 
 class Campaign extends Model {
   static get tableName() {
@@ -62,6 +63,14 @@ class Campaign extends Model {
         join: {
           from: 'campaign.id',
           to: 'campaign_users.campaign_id',
+        },
+      },
+      stages: {
+        relation: Model.HasManyRelation,
+        modelClass: Stage,
+        join: {
+          from: 'campaign.id',
+          to: 'stage.campaign_id',
         },
       },
     };
