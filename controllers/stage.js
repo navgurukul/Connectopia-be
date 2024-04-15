@@ -590,6 +590,11 @@ module.exports = {
         const resp = responseWrapper(null, "Data not found", 204);
         return res.status(400).json(resp);
       }
+      const stageLevelOrder = await StageConfig.query().where('campaign_id', campaign_id).andWhere('level', level).first();
+      if (stageLevelOrder) {
+        const resp = responseWrapper(null, "Level content already exist", 400);
+        return res.status(400).json(resp);
+      }
       if (!req.file) {
         const resp = responseWrapper(null, "No file provided for upload.", 400);
         return res.status(200).json(resp);
