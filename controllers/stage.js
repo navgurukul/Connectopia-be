@@ -598,7 +598,7 @@ module.exports = {
       #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
       #swagger.parameters['key'] = {in: 'path', required: true, type: 'string', default: 'ImageScan1'}
-      #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'product'}
+      #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'product', enum: ['product', 'product-qr']}
       #swagger.parameters['stage_id'] = {in: 'path', type: 'integer'}
       #swagger.parameters['level'] = {in: 'path', type: 'integer'}
   */
@@ -646,13 +646,15 @@ module.exports = {
         stage_id > 0 ? stageLevel : level,
         key
       );
-      const mindUrl = await uploadFile(
-        buffer,
-        campaign_id,
-        stage_id > 0 ? stageLevel : level,
-        compositeKeyMind
-      );
-      // const mindUrl = await uploadHelperTxn('mind', buffer, campaign_id, level, compositeKeyMind);
+      if (content_type === "product") {
+        const mindUrl = await uploadFile(
+          buffer,
+          campaign_id,
+          stage_id > 0 ? stageLevel : level,
+          compositeKeyMind
+        );
+        // const mindUrl = await uploadHelperTxn('mind', buffer, campaign_id, level, compositeKeyMind);
+      }
       const data = {
         campaign_id: parseInt(campaign_id),
         key,
