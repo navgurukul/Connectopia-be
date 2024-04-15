@@ -39,23 +39,30 @@ module.exports = {
   },
 
   // getPresignedUrl
-  getSignedUrl: async (campaign_id, stage_id, level, key) => {
+  getSignedUrl: async (campaign_id, stage_id, level, key, expire) => {
     try {
-      if (!campaign_id || !level || !stage_id) {
-        return { error: "campaign_id, stage_id, and level are required" };
+      if (!campaign_id || !level || !stage_id || !expire) {
+        return {
+          error: "campaign_id, stage_id, level, and expire are required",
+        };
       }
+
+      const [hours, minutes, seconds] = expire.split(":").map(Number);
+
+      const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
       const params = {
         Bucket: bucketName,
-        Key: `${campaign_id}/${stage_id}/${level}/${key}.mind`, // Adjusted the Key format
-        Expires: 3600, // 1 hour
+        Key: `${campaign_id}/${stage_id}/${level}/${key}.mind`,
+        Expires: totalSeconds, // Use the calculated total seconds as expiration time
       };
+
       const url = await S3.getSignedUrl("getObject", params);
       return { url };
     } catch (error) {
       return { error: error.message };
     }
   },
-
   deleteFile: async (req, res) => {
     try {
       const { name } = req.body;

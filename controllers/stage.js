@@ -9,6 +9,7 @@ const { uploadFile } = require("./awsS3");
 const Stage = require("../models/stage.js");
 const responseWrapper = require("../helpers/responseWrapper");
 const awsS3 = require("./awsS3");
+const { exp } = require("mathjs");
 
 // helper function
 const uploadHelperTxn = async (type, req, campaign_id, level, key) => {
@@ -43,57 +44,6 @@ const uploadHelperTxn = async (type, req, campaign_id, level, key) => {
 };
 
 //helper for stage's level and product data mapping
-const levelConfig = async (stageId, campaign_id, content_type) => {
-  try {
-    const stages = {};
-    if (content_type === "product") {
-      console.log(true);
-      const productData = await StageConfig.query()
-        .where("campaign_id", campaign_id)
-        .andWhere("stage_id", stageId)
-        .andWhere("content_type", content_type)
-        .orderBy("level", "asc");
-
-      for (let i = 1; i <= 5; i++) {
-        stages[i] = {};
-      }
-
-      productData.forEach(({ level: lvl, ...rest }) => {
-        stages[lvl] = { ...rest, level: lvl };
-      });
-    } else {
-      const levelData = await StageConfig.query()
-        .where("campaign_id", campaign_id)
-        .andWhere("stage_id", stageId)
-        .orderBy(["level", "order"], ["asc", "asc"]);
-
-      for (let i = 1; i <= 5; i++) {
-        stages[`level-${i}`] = {};
-      }
-
-      levelData.forEach(({ level: lvl, order, ...rest }) => {
-        const levelKey = `level-${lvl}`;
-        const orderKey = `${order}`;
-        if (Object.keys(rest).length > 0) {
-          stages[levelKey][orderKey] = { ...rest, level: lvl, order };
-        }
-      });
-
-      // Ensure that each level object has keys from 1 to 7
-      for (let i = 1; i <= 5; i++) {
-        const levelKey = `level-${i}`;
-        for (let j = 1; j <= 7; j++) {
-          stages[levelKey][j] = stages[levelKey][j] || {};
-        }
-      }
-    }
-
-    return stages;
-  } catch (error) {
-    return { error: error.message };
-  }
-};
-
 const levelHelper = async (stage_id, campaign_id) => {
   try {
     const stages = {};
@@ -128,7 +78,7 @@ const levelHelper = async (stage_id, campaign_id) => {
   }
 };
 
-const productHelper = async (stage_id, campaign_id, content_type) => {
+const productHelper = async (stage_id, campaign_id, content_type, expire) => {
   try {
     const stages = {};
 
@@ -150,7 +100,8 @@ const productHelper = async (stage_id, campaign_id, content_type) => {
             campaign_id,
             stage_id,
             level,
-            key
+            key,
+            expire
           );
           if (error) {
             console.log(error, "error");
@@ -175,7 +126,7 @@ const productHelper = async (stage_id, campaign_id, content_type) => {
   }
 };
 
-const generalProductHelper = async (campaign_id, scantype) => {
+const generalProductHelper = async (campaign_id, scantype, expire) => {
   try {
     const campaignData = {
       general: {},
@@ -216,7 +167,8 @@ const generalProductHelper = async (campaign_id, scantype) => {
       const levelData = await productHelper(
         stage.id,
         stage.campaign_id,
-        "product"
+        "product",
+        expire
       );
 
       if (levelData) {
@@ -470,12 +422,8 @@ module.exports = {
         const resp = responseWrapper(null, "Campaign is not active", 400);
         return res.status(400).json(resp);
       }
-      // const generalData = await CampaignConfig.query().where({
-      //   campaign_id,
-      //   content_type: "product",
-      // });
-
-      const generalData = await generalProductHelper(campaign_id, scantype);
+      const expire = campaign.campaign_duration;
+      const generalData = await generalProductHelper(campaign_id, scantype, expire);
       const stagesData = await Stage.query().where("campaign_id", campaign.id);
 
       const stages = {};
@@ -493,6 +441,7 @@ module.exports = {
       }
 
       stages.total_stages = campaign.total_stages;
+      stages.campaign_duration = campaign.campaign_duration;
       generalData.stages = stages;
       const resp = responseWrapper(generalData, "success", 200);
       return res.status(200).json(resp);
