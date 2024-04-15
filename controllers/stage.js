@@ -78,47 +78,73 @@ const levelHelper = async (stage_id, campaign_id) => {
   }
 };
 
-const productHelper = async (stage_id, campaign_id, content_type, expire) => {
+const productHelper = async (
+  stage_id,
+  campaign_id,
+  scantype,
+  content_type,
+  expire
+) => {
   try {
     const stages = {};
-
     if (content_type === "product") {
-      const productData = await StageConfig.query()
-        .where("campaign_id", campaign_id)
-        .andWhere("stage_id", stage_id)
-        .andWhere("content_type", content_type)
-        .orderBy("level", "asc");
+      if (scantype === "image") {
+        const productData = await StageConfig.query()
+          .where("campaign_id", campaign_id)
+          .andWhere("stage_id", stage_id)
+          .andWhere("content_type", content_type)
+          .orderBy("level", "asc");
 
-      for (let i = 1; i <= 5; i++) {
-        stages[i] = {};
-      }
+        for (let i = 1; i <= 5; i++) {
+          stages[i] = {};
+        }
 
-      // Fetching signed URLs for mind files
-      const signedUrls = await Promise.all(
-        productData.map(async ({ key, level, image }) => {
-          const { url, error } = await awsS3.getSignedUrl(
-            campaign_id,
-            stage_id,
-            level,
+        // Fetching signed URLs for mind files
+        const signedUrls = await Promise.all(
+          productData.map(async ({ key, level, image }) => {
+            const { url, error } = await awsS3.getSignedUrl(
+              campaign_id,
+              stage_id,
+              level,
+              key,
+              expire
+            );
+            if (error) {
+              console.log(error, "error");
+              throw new Error(error);
+            }
+            return { key, level, image, url };
+          })
+        );
+
+        signedUrls.forEach(({ key, level, image, url }) => {
+          stages[level] = {
             key,
-            expire
-          );
-          if (error) {
-            console.log(error, "error");
-            throw new Error(error);
-          }
-          return { key, level, image, url };
-        })
-      );
+            level,
+            image,
+            mind: url,
+          };
+        });
+      } else {
+        const productData = await CampaignConfig.query()
+          .where("campaign_id", campaign_id)
+          .andWhere("content_type", content_type)
+          .andWhere("order", "<>", 0) // Exclude order 0
 
-      signedUrls.forEach(({ key, level, image, url }) => {
-        stages[level] = {
-          key,
-          level,
-          image,
-          mind: url,
-        };
-      });
+          .orderBy("order", "asc");
+
+        for (let i = 1; i <= 5; i++) {
+          stages[i] = {};
+        }
+
+        productData.forEach(({ key, image, order }) => {
+          stages[order] = {
+            key,
+            image,
+            order,
+          };
+        });
+      }
     }
     return stages;
   } catch (error) {
@@ -167,6 +193,7 @@ const generalProductHelper = async (campaign_id, scantype, expire) => {
       const levelData = await productHelper(
         stage.id,
         stage.campaign_id,
+        scantype,
         "product",
         expire
       );
@@ -590,7 +617,10 @@ module.exports = {
         const resp = responseWrapper(null, "Data not found", 204);
         return res.status(400).json(resp);
       }
-      const stageLevelOrder = await StageConfig.query().where('campaign_id', campaign_id).andWhere('level', level).first();
+      const stageLevelOrder = await StageConfig.query()
+        .where("campaign_id", campaign_id)
+        .andWhere("level", level)
+        .first();
       if (stageLevelOrder) {
         const resp = responseWrapper(null, "Level content already exist", 400);
         return res.status(400).json(resp);
