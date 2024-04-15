@@ -78,7 +78,12 @@ const levelHelper = async (stage_id, campaign_id) => {
   }
 };
 
-const productHelper = async (stage_id, campaign_id, content_type, expire) => {
+const productHelper = async (
+  stage_id,
+  campaign_id,
+  content_type,
+  expire = null
+) => {
   try {
     const stages = {};
 
@@ -423,7 +428,11 @@ module.exports = {
         return res.status(400).json(resp);
       }
       const expire = campaign.campaign_duration;
-      const generalData = await generalProductHelper(campaign_id, scantype, expire);
+      const generalData = await generalProductHelper(
+        campaign_id,
+        scantype,
+        expire
+      );
       const stagesData = await Stage.query().where("campaign_id", campaign.id);
 
       const stages = {};
@@ -482,14 +491,19 @@ module.exports = {
         );
         return res.status(200).json(resp);
       }
+      const expire = campaign[0].campaign_duration;
 
-      const campaignData = await generalProductHelper(campaign_id, scantype);
+      const campaignData = await generalProductHelper(
+        campaign_id,
+        scantype,
+        expire
+      );
 
       if (!campaignData) {
         const resp = responseWrapper(null, "No campaign data found", 404);
         return res.status(404).json(resp);
       }
-
+      campaignData.campaign_duration = expire;
       return res.status(200).json(campaignData);
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
@@ -691,19 +705,22 @@ module.exports = {
         return res.status(400).json(resp);
       }
       const stage = await Stage.query().findById(stage_id).first();
-      const total_stages = await Campaign.query().select("total_stages").where("id", stage.campaign_id).first();
+      const total_stages = await Campaign.query()
+        .select("total_stages")
+        .where("id", stage.campaign_id)
+        .first();
       if (!stage) {
         const resp = responseWrapper(null, "Stage not found", 404);
         return res.status(404).json(resp);
       }
 
       const check = await Stage.transaction(async (trx) => {
-        await StageConfig.query(trx)
-            .delete()
-            .where("campaign_id", stage_id);
+        await StageConfig.query(trx).delete().where("campaign_id", stage_id);
         await Stage.query(trx).deleteById(stage_id);
-        await Campaign.query().update({ total_stages: total_stages.total_stages - 1 }).where("id", stage.campaign_id);
-      })
+        await Campaign.query()
+          .update({ total_stages: total_stages.total_stages - 1 })
+          .where("id", stage.campaign_id);
+      });
 
       const resp = responseWrapper(null, "success", 200);
       return res.status(200).json(resp);
@@ -711,5 +728,5 @@ module.exports = {
       const resp = responseWrapper(null, error.message, 500);
       return res.status(500).json(resp);
     }
-  }
+  },
 };
