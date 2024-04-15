@@ -78,12 +78,7 @@ const levelHelper = async (stage_id, campaign_id) => {
   }
 };
 
-const productHelper = async (
-  stage_id,
-  campaign_id,
-  content_type,
-  expire = null
-) => {
+const productHelper = async (stage_id, campaign_id, content_type, expire) => {
   try {
     const stages = {};
 
@@ -141,7 +136,7 @@ const generalProductHelper = async (campaign_id, scantype, expire) => {
       },
     };
 
-    const productQR = await StageConfig.query() //campaign_id, content_type= product, key:Main-QRCode, order =0
+    const productQR = await CampaignConfig.query() //campaign_id, content_type= product, key:Main-QRCode, order =0
       .where("campaign_id", campaign_id)
       .andWhere("order", 0)
       .andWhere("content_type", "product");
@@ -175,7 +170,6 @@ const generalProductHelper = async (campaign_id, scantype, expire) => {
         "product",
         expire
       );
-
       if (levelData) {
         campaignData.product.stages[stageKey] = {
           ...levelData,
