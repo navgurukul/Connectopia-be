@@ -441,8 +441,8 @@ module.exports = {
       }
 
       stages.total_stages = campaign.total_stages;
-      stages.campaign_duration = campaign.campaign_duration;
       generalData.stages = stages;
+      generalData.campaign_duration = campaign.campaign_duration;
       const resp = responseWrapper(generalData, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
