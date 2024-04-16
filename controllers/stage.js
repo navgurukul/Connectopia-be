@@ -617,6 +617,7 @@ module.exports = {
       }
       const stageLevelOrder = await StageConfig.query()
         .where("campaign_id", campaign_id)
+        .andWhere("stage_id", stage_id)
         .andWhere("content_type", content_type)
         .andWhere("level", level)
         .first();
@@ -628,15 +629,7 @@ module.exports = {
         const resp = responseWrapper(null, "No file provided for upload.", 400);
         return res.status(200).json(resp);
       }
-      const image = await loadImage(req.file.buffer);
-      const { OfflineCompiler } = await import(
-        "../mind-ar-js-master/src/image-target/offline-compiler.js"
-      );
-      const compiler = new OfflineCompiler();
-      await compiler.compileImageTargets([image], console.log);
-      const buffer = compiler.exportData();
-      const compositeKeyMind = `${key}.mind`;
-
+      
       const stageLevel = `${stage_id}/${level}`;
       const imgUrl = await uploadHelperTxn(
         "image",
@@ -646,6 +639,14 @@ module.exports = {
         key
       );
       if (content_type === "product") {
+        const image = await loadImage(req.file.buffer);
+        const { OfflineCompiler } = await import(
+          "../mind-ar-js-master/src/image-target/offline-compiler.js"
+        );
+        const compiler = new OfflineCompiler();
+        await compiler.compileImageTargets([image], console.log);
+        const buffer = compiler.exportData();
+        const compositeKeyMind = `${key}.mind`;
         const mindUrl = await uploadFile(
           buffer,
           campaign_id,
