@@ -617,6 +617,7 @@ module.exports = {
       }
       const stageLevelOrder = await StageConfig.query()
         .where("campaign_id", campaign_id)
+        .andWhere("content_type", content_type)
         .andWhere("level", level)
         .first();
       if (stageLevelOrder) {
