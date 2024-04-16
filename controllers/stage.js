@@ -125,22 +125,20 @@ const productHelper = async (
         };
       });
     } else {
-      const productData = await CampaignConfig.query()
-        .where("campaign_id", campaign_id)
-        .andWhere("content_type", content_type)
-        .andWhere("order", "<>", 0) // Exclude order 0
-
-        .orderBy("order", "asc");
-
+      const productData = await StageConfig.query()
+      .where("campaign_id", campaign_id)
+      .andWhere("stage_id", stage_id)
+      .andWhere("content_type", "product-qr")
+      .orderBy("level", "asc");
       for (let i = 1; i <= 5; i++) {
         stages[i] = {};
       }
 
-      productData.forEach(({ key, image, order }) => {
-        stages[order] = {
+      productData.forEach(({ key, level, image  }) => {
+        stages[level] = {
           key,
+          level,
           image,
-          order,
         };
       });
     }
@@ -196,6 +194,7 @@ const generalProductHelper = async (campaign_id, scantype, expire) => {
         "product",
         expire
       );
+
       if (levelData) {
         campaignData.product.stages[stageKey] = {
           ...levelData,
