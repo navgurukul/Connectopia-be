@@ -87,65 +87,64 @@ const productHelper = async (
 ) => {
   try {
     const stages = {};
-    if (content_type === "product") {
-      if (scantype === "image") {
-        const productData = await StageConfig.query()
-          .where("campaign_id", campaign_id)
-          .andWhere("stage_id", stage_id)
-          .andWhere("content_type", content_type)
-          .orderBy("level", "asc");
+    if (scantype === "image") {
+      const productData = await StageConfig.query()
+        .where("campaign_id", campaign_id)
+        .andWhere("stage_id", stage_id)
+        .andWhere("content_type", content_type)
+        .orderBy("level", "asc");
 
-        for (let i = 1; i <= 5; i++) {
-          stages[i] = {};
-        }
-
-        // Fetching signed URLs for mind files
-        const signedUrls = await Promise.all(
-          productData.map(async ({ key, level, image }) => {
-            const { url, error } = await awsS3.getSignedUrl(
-              campaign_id,
-              stage_id,
-              level,
-              key,
-              expire
-            );
-            if (error) {
-              console.log(error, "error");
-              throw new Error(error);
-            }
-            return { key, level, image, url };
-          })
-        );
-
-        signedUrls.forEach(({ key, level, image, url }) => {
-          stages[level] = {
-            key,
-            level,
-            image,
-            mind: url,
-          };
-        });
-      } else {
-        const productData = await CampaignConfig.query()
-          .where("campaign_id", campaign_id)
-          .andWhere("content_type", content_type)
-          .andWhere("order", "<>", 0) // Exclude order 0
-
-          .orderBy("order", "asc");
-
-        for (let i = 1; i <= 5; i++) {
-          stages[i] = {};
-        }
-
-        productData.forEach(({ key, image, order }) => {
-          stages[order] = {
-            key,
-            image,
-            order,
-          };
-        });
+      for (let i = 1; i <= 5; i++) {
+        stages[i] = {};
       }
+
+      // Fetching signed URLs for mind files
+      const signedUrls = await Promise.all(
+        productData.map(async ({ key, level, image }) => {
+          const { url, error } = await awsS3.getSignedUrl(
+            campaign_id,
+            stage_id,
+            level,
+            key,
+            expire
+          );
+          if (error) {
+            console.log(error, "error");
+            throw new Error(error);
+          }
+          return { key, level, image, url };
+        })
+      );
+
+      signedUrls.forEach(({ key, level, image, url }) => {
+        stages[level] = {
+          key,
+          level,
+          image,
+          mind: url,
+        };
+      });
+    } else {
+      const productData = await CampaignConfig.query()
+        .where("campaign_id", campaign_id)
+        .andWhere("content_type", content_type)
+        .andWhere("order", "<>", 0) // Exclude order 0
+
+        .orderBy("order", "asc");
+
+      for (let i = 1; i <= 5; i++) {
+        stages[i] = {};
+      }
+
+      productData.forEach(({ key, image, order }) => {
+        stages[order] = {
+          key,
+          image,
+          order,
+        };
+      });
     }
+
     return stages;
   } catch (error) {
     return { error: error.message };
@@ -555,7 +554,7 @@ module.exports = {
       }
       const stagesData = await Stage.query().where("campaign_id", campaign.id);
 
-      const productQR = await StageConfig.query() //campaign_id, content_type= product, key:Main-QRCode, order =0
+      const productQR = await CampaignConfig.query() //campaign_id, content_type= product, key:Main-QRCode, order =0
         .where("campaign_id", campaign_id)
         .andWhere("order", 0)
         .andWhere("content_type", "product");
