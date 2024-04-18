@@ -126,15 +126,15 @@ const productHelper = async (
       });
     } else {
       const productData = await StageConfig.query()
-      .where("campaign_id", campaign_id)
-      .andWhere("stage_id", stage_id)
-      .andWhere("content_type", "product-qr")
-      .orderBy("level", "asc");
+        .where("campaign_id", campaign_id)
+        .andWhere("stage_id", stage_id)
+        .andWhere("content_type", "product-qr")
+        .orderBy("level", "asc");
       for (let i = 1; i <= 5; i++) {
         stages[i] = {};
       }
 
-      productData.forEach(({ key, level, image  }) => {
+      productData.forEach(({ key, level, image }) => {
         stages[level] = {
           key,
           level,
@@ -593,7 +593,14 @@ module.exports = {
     /* 
       #swagger.tags = ['Stage/Level']
       #swagger.summary = ' - upload mind file to campaign'
-      #swagger.parameters['image'] = {in: 'formData', description: 'The image file to upload.', required: true, type: 'file'}
+      #swagger.parameters['multFiles'] = {
+        in: 'formData', 
+        description: 'The image file to upload.', 
+        required: true, 
+        type: 'array',
+        collectionFormat: 'multi',
+        items: { type: 'file' }
+      }
       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
       #swagger.parameters['key'] = {in: 'path', required: true, type: 'string', default: 'ImageScan1'}
       #swagger.parameters['content_type'] = {in: 'path', required: true, type: 'string', default: 'product', enum: ['product', 'product-qr']}
@@ -625,28 +632,40 @@ module.exports = {
         const resp = responseWrapper(null, "Level content already exist", 400);
         return res.status(400).json(resp);
       }
-      if (!req.file) {
+      if (!req.files) {
         const resp = responseWrapper(null, "No file provided for upload.", 400);
         return res.status(200).json(resp);
       }
-      
-      const stageLevel = `${stage_id}/${level}`;
-      const imgUrl = await uploadHelperTxn(
-        "image",
-        req,
-        campaign_id,
-        stage_id > 0 ? stageLevel : level,
-        key
+      const bufferData = await Promise.all(
+        req.files.map(async (file) => {
+          const image = await loadImage(file.buffer);
+          return image;
+        })
       );
-      if (content_type === "product") {
-        const image = await loadImage(req.file.buffer);
-        const { OfflineCompiler } = await import(
-          "../mind-ar-js-master/src/image-target/offline-compiler.js"
+      const image = await loadImage(req.file.buffer);
+      const { OfflineCompiler } = await import(
+        "../mind-ar-js-master/src/image-target/offline-compiler.js"
+      );
+      const compiler = new OfflineCompiler();
+      await compiler.compileImageTargets(bufferData, console.log);
+      const buffer = compiler.exportData();
+      const compositeKeyMind = `${key}.mind`;
+
+      const stageLevel = `${stage_id}/${level}`;
+      const imagesUrls = await  Promise.all( req.files.map(async(file) => {
+
+        const imgUrl = await uploadHelperTxn(
+          "image",
+          {
+            file:file
+          },
+          campaign_id,
+          stage_id > 0 ? stageLevel : level,
+          file.originalname.split(".")[0]
         );
-        const compiler = new OfflineCompiler();
-        await compiler.compileImageTargets([image], console.log);
-        const buffer = compiler.exportData();
-        const compositeKeyMind = `${key}.mind`;
+        return imgUrl;
+      }));
+      if (content_type === "product") {
         const mindUrl = await uploadFile(
           buffer,
           campaign_id,

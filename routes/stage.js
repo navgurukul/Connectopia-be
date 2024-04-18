@@ -28,6 +28,8 @@ router.get('/campaign/stages/with-level/:campaign_id',stageController.getStagesB
 // /compile-upload/:campaignid/:pageno/:Key/:scantype
 router.post('/campaign/upload-mind/:campaign_id/:stage_id/:level/:key/:content_type', upload('mind').single('image'), stageController.uploadMind);
 
+router.post('/campaign/upload-mind/bulk/:campaign_id/:stage_id/:level/:key/:content_type', upload('mind').array('image', 5), stageController.uploadMind);
+
 // /delete-image/:campaignid/:pageno/:key
 router.delete('/campaign/delete-image/:campaign_id/:level/:key', stageController.deleteImage);
 

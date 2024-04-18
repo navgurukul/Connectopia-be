@@ -21,7 +21,7 @@ module.exports = {
             case 'image':
                 return multer({
                     storage: storage,
-                    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB for images
+                    limits: { fileSize: 15 * 1024 * 1024 }, // 2MB for images
                     fileFilter: function (req, file, cb) {
                         const allowedMimes = ["image/jpeg", "image/png", "image/jpg", "image/svg+xml", "image/gif"];
                         if (allowedMimes.includes(file.mimetype)) {
