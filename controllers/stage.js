@@ -642,7 +642,7 @@ module.exports = {
           return image;
         })
       );
-      const image = await loadImage(req.file.buffer);
+      // const image = await loadImage(req.files.buffer);
       const { OfflineCompiler } = await import(
         "../mind-ar-js-master/src/image-target/offline-compiler.js"
       );
