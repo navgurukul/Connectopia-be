@@ -83,7 +83,8 @@ const productHelper = async (
   campaign_id,
   scantype,
   content_type,
-  expire
+  expire,
+  scan_sequence
 ) => {
   try {
     const stages = {};
@@ -106,7 +107,8 @@ const productHelper = async (
             stage_id,
             level,
             key,
-            expire
+            expire,
+            scan_sequence
           );
           if (error) {
             console.log(error, "error");
@@ -116,14 +118,25 @@ const productHelper = async (
         })
       );
 
-      signedUrls.forEach(({ key, level, image, url }) => {
-        stages[level] = {
-          key,
-          level,
-          image,
-          mind: url,
-        };
-      });
+      if (scan_sequence === "fixed") {
+        signedUrls.forEach(({ key, level, image, url }) => {
+          stages[level] = {
+            key,
+            level,
+            image,
+            mind: url,
+          };
+        });
+      } else {
+        signedUrls.forEach(({ key, level, image, url }) => {
+          stages[level] = {
+            key,
+            level,
+            image,
+          };
+          stages.mind = url;
+        });
+      }
     } else {
       const productData = await StageConfig.query()
         .where("campaign_id", campaign_id)
@@ -149,7 +162,12 @@ const productHelper = async (
   }
 };
 
-const generalProductHelper = async (campaign_id, scantype, expire) => {
+const generalProductHelper = async (
+  campaign_id,
+  scantype,
+  expire,
+  scan_sequence
+) => {
   try {
     const campaignData = {
       general: {},
@@ -192,7 +210,8 @@ const generalProductHelper = async (campaign_id, scantype, expire) => {
         stage.campaign_id,
         scantype,
         "product",
-        expire
+        expire,
+        scan_sequence
       );
 
       if (levelData) {
@@ -421,7 +440,7 @@ module.exports = {
   // /allsignedurls/:campaignid/:scantype
   getSignedUrl: async (req, res) => {
     /* 
-      #swagger.tags = ['Stage/Level']
+      #swagger.tags = ['Stage/Level'] 
       #swagger.summary = ' - get all signed urls for campaign with scantype'
       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
       #swagger.parameters['scantype'] = {in: 'path', required: true, type: 'string', enum: ['qr', 'image']}           
@@ -447,10 +466,12 @@ module.exports = {
         return res.status(400).json(resp);
       }
       const expire = campaign.campaign_duration;
+      const scanSequence = campaign.scan_sequence;
       const generalData = await generalProductHelper(
         campaign_id,
         scantype,
-        expire
+        expire,
+        scanSequence
       );
       const stagesData = await Stage.query().where("campaign_id", campaign.id);
 
@@ -471,6 +492,7 @@ module.exports = {
       stages.total_stages = campaign.total_stages;
       generalData.stages = stages;
       generalData.campaign_duration = campaign.campaign_duration;
+      generalData.scan_sequence = campaign.scan_sequence;
       const resp = responseWrapper(generalData, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
@@ -511,11 +533,13 @@ module.exports = {
         return res.status(200).json(resp);
       }
       const expire = campaign[0].campaign_duration;
+      const scanSequence = campaign[0].scan_sequence;
 
       const campaignData = await generalProductHelper(
         campaign_id,
         scantype,
-        expire
+        expire,
+        scanSequence
       );
 
       if (!campaignData) {
@@ -523,6 +547,7 @@ module.exports = {
         return res.status(404).json(resp);
       }
       campaignData.campaign_duration = expire;
+      campaignData.scan_sequence = scanSequence;
       return res.status(200).json(campaignData);
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
@@ -652,19 +677,20 @@ module.exports = {
       const compositeKeyMind = `${key}.mind`;
 
       const stageLevel = `${stage_id}/${level}`;
-      const imagesUrls = await  Promise.all( req.files.map(async(file) => {
-
-        const imgUrl = await uploadHelperTxn(
-          "image",
-          {
-            file:file
-          },
-          campaign_id,
-          stage_id > 0 ? stageLevel : level,
-          file.originalname.split(".")[0]
-        );
-        return imgUrl;
-      }));
+      const imagesUrls = await Promise.all(
+        req.files.map(async (file) => {
+          const imgUrl = await uploadHelperTxn(
+            "image",
+            {
+              file: file,
+            },
+            campaign_id,
+            stage_id > 0 ? stageLevel : level,
+            file.originalname.split(".")[0]
+          );
+          return imgUrl;
+        })
+      );
       if (content_type === "product") {
         const mindUrl = await uploadFile(
           buffer,

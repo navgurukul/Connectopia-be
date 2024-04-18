@@ -19,6 +19,7 @@ router.put('/campaign/update-gif/:content_id/:content_type', upload('gif').singl
 
 // /allsignedurls/:campaignid/:scantype
 router.get('/campaign/get-signed-url/:campaign_id/:scantype', stageController.getSignedUrl);
+
 // /withoutStatus/allsignedurls/:campaignid/:scantype
 router.get('/campaign/general-product/:campaign_id/:scantype', stageController.getGeneralAndProductContent);
 

@@ -41,7 +41,14 @@ module.exports = {
 
   // getPresignedUrl
   // for getting mind files urls with expiration time
-  getSignedUrl: async (campaign_id, stage_id, level, key, expire) => {
+  getSignedUrl: async (
+    campaign_id,
+    stage_id,
+    level,
+    key,
+    expire,
+    scan_sequence
+  ) => {
     try {
       if (!campaign_id || !level || !stage_id || !expire) {
         return {
@@ -49,18 +56,26 @@ module.exports = {
         };
       }
 
-      const [hours, minutes, seconds] = expire.split(":").map(Number);
+      const [hours, minutes, seconds] = expire.split(":").map(Number); // Use the calculated total seconds as expiration time
 
       const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-
-      const params = {
-        Bucket: bucketName,
-        Key: `${campaign_id}/${stage_id}/${level}/${key}.mind`,
-        Expires: totalSeconds, // Use the calculated total seconds as expiration time
-      };
-
-      const url = await S3.getSignedUrl("getObject", params);
-      return { url };
+      if (scan_sequence === "fixed") {
+        const params = {
+          Bucket: bucketName,
+          Key: `${campaign_id}/${stage_id}/${level}/${key}.mind`,
+          Expires: totalSeconds,
+        };
+        const url = await S3.getSignedUrl("getObject", params);
+        return { url };
+      } else {
+        const params = {
+          Bucket: bucketName,
+          Key: `${campaign_id}/${stage_id}/${level}/mind.mind`,
+          Expires: totalSeconds,
+        };
+        const url = await S3.getSignedUrl("getObject", params);
+        return { url };
+      }
     } catch (error) {
       return { error: error.message };
     }
