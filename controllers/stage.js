@@ -437,13 +437,67 @@ module.exports = {
     }
   },
 
-  // /allsignedurls/:campaignid/:scantype
-  getSignedUrl: async (req, res) => {
+    // /withoutStatus/allsignedurls/:campaignid/:scantype
+  getGeneralAndProductContent: async (req, res) => {
     /* 
-      #swagger.tags = ['Stage/Level'] 
-      #swagger.summary = ' - get all signed urls for campaign with scantype'
+      #swagger.tags = ['Stage/Level']
+      #swagger.summary = 'Get general and product content by campaign'
       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-      #swagger.parameters['scantype'] = {in: 'path', required: true, type: 'string', enum: ['qr', 'image']}           
+      #swagger.parameters['scantype'] = {in: 'path', required: true, type: 'string', enum:['qr', 'image']}
+    */
+    try {
+      const { campaign_id, scantype } = req.params;
+      if (!campaign_id || !scantype) {
+        const resp = responseWrapper(
+          null,
+          "campaign_id and scantype are required",
+          400
+        );
+        return res.status(400).json(resp);
+      }
+
+      const campaign = await Campaign.query()
+        .where("id", campaign_id)
+        .andWhere("scantype", scantype);
+
+      if (!campaign.length) {
+        const resp = responseWrapper(
+          null,
+          "No campaign found with the provided scantype",
+          404
+        );
+        return res.status(200).json(resp);
+      }
+      const expire = campaign[0].campaign_duration;
+      const scanSequence = campaign[0].scan_sequence;
+
+      const campaignData = await generalProductHelper(
+        campaign_id,
+        scantype,
+        expire,
+        scanSequence
+      );
+
+      if (!campaignData) {
+        const resp = responseWrapper(null, "No campaign data found", 404);
+        return res.status(404).json(resp);
+      }
+      campaignData.campaign_duration = expire;
+      campaignData.scan_sequence = scanSequence;
+      return res.status(200).json(campaignData);
+    } catch (error) {
+      const resp = responseWrapper(null, error.message, 500);
+      return res.status(500).json(resp);
+    }
+  },
+
+  // /allsignedurls/:campaignid/:scantype
+  getSignedUrls: async (req, res) => {
+    /* 
+      #swagger.tags = ['Game'] 
+      #swagger.summary = 'Get all signed urls for campaign with scantype'
+      #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+      #swagger.parameters['scantype'] = {in: 'path', required: true, type: 'string', enum: ['qr', 'image'], default: 'qr'}           
    */
     try {
       const { campaign_id, scantype } = req.params;
@@ -495,60 +549,6 @@ module.exports = {
       generalData.scan_sequence = campaign.scan_sequence;
       const resp = responseWrapper(generalData, "success", 200);
       return res.status(200).json(resp);
-    } catch (error) {
-      const resp = responseWrapper(null, error.message, 500);
-      return res.status(500).json(resp);
-    }
-  },
-
-  // /withoutStatus/allsignedurls/:campaignid/:scantype
-  getGeneralAndProductContent: async (req, res) => {
-    /* 
-      #swagger.tags = ['Stage/Level']
-      #swagger.summary = 'Get general and product content by campaign'
-      #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
-      #swagger.parameters['scantype'] = {in: 'path', required: true, type: 'string', enum:['qr', 'image']}
-    */
-    try {
-      const { campaign_id, scantype } = req.params;
-      if (!campaign_id || !scantype) {
-        const resp = responseWrapper(
-          null,
-          "campaign_id and scantype are required",
-          400
-        );
-        return res.status(400).json(resp);
-      }
-
-      const campaign = await Campaign.query()
-        .where("id", campaign_id)
-        .andWhere("scantype", scantype);
-
-      if (!campaign.length) {
-        const resp = responseWrapper(
-          null,
-          "No campaign found with the provided scantype",
-          404
-        );
-        return res.status(200).json(resp);
-      }
-      const expire = campaign[0].campaign_duration;
-      const scanSequence = campaign[0].scan_sequence;
-
-      const campaignData = await generalProductHelper(
-        campaign_id,
-        scantype,
-        expire,
-        scanSequence
-      );
-
-      if (!campaignData) {
-        const resp = responseWrapper(null, "No campaign data found", 404);
-        return res.status(404).json(resp);
-      }
-      campaignData.campaign_duration = expire;
-      campaignData.scan_sequence = scanSequence;
-      return res.status(200).json(campaignData);
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
       return res.status(500).json(resp);
@@ -691,6 +691,7 @@ module.exports = {
           return imgUrl;
         })
       );
+      console.log(imagesUrls,"imagesUrls");
       if (content_type === "product") {
         const mindUrl = await uploadFile(
           buffer,
