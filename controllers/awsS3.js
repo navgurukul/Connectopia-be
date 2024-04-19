@@ -70,7 +70,7 @@ module.exports = {
       } else {
         const params = {
           Bucket: bucketName,
-          Key: `${campaign_id}/${stage_id}/${level}/target.mind`,
+          Key: `${campaign_id}/${stage_id}/targets.mind`,
           Expires: totalSeconds,
         };
         const url = await S3.getSignedUrl("getObject", params);
