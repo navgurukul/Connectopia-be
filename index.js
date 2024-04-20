@@ -13,13 +13,7 @@ const app = express();
 const environment = process.env.NODE_ENV || "development";
 
 // routes import
-const organization = require("./routes/organization.js");
-const campaignUser = require("./routes/campaign_user.js");
-const customer = require("./routes/customer_data.js");
-const campaign = require("./routes/campaign.js");
-const cmsUser = require("./routes/cms_user.js");
-const stage = require("./routes/stage.js");
-const sms = require("./routes/sms.js");
+const routes = require("./routes/index.js");
 
 // Knex connection
 const knex = require("knex")(
@@ -38,13 +32,7 @@ app.use(logOut); // Log to terminal
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Routes
-app.use("/cms", organization);
-app.use("/cms", campaignUser);
-app.use("/cms", customer);
-app.use("/cms", campaign);
-app.use("/cms", cmsUser);
-app.use("/cms", stage);
-app.use("/cms", sms);
+app.use("/cms", routes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -57,6 +45,7 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
+const SERVER_URL = process.env.SERVER_URL;
 app.listen(PORT, () => {
-  console.log(`🌎 Server is running at http://localhost:${PORT} 🚀`);
+  console.log(`🌎 Server is running at ${SERVER_URL ? SERVER_URL : `http://127.0.0.1:${PORT}`} 🚀`);
 });
