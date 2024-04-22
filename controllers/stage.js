@@ -886,7 +886,7 @@ module.exports = {
       }
 
       const check = await Stage.transaction(async (trx) => {
-        await StageConfig.query(trx).delete().where("campaign_id", stage_id);
+        await StageConfig.query(trx).delete().where("stage_id", stage_id);
         await Stage.query(trx).deleteById(stage_id);
         await Campaign.query()
           .update({ total_stages: total_stages.total_stages - 1 })
