@@ -227,7 +227,7 @@ const generalProductHelper = async (
       campaignData.product.mainQR = productQR[0];
     }
     return campaignData;
-  } catch (error) {}
+  } catch (error) { }
   return { error: error.message };
 };
 
@@ -312,8 +312,11 @@ module.exports = {
         level,
         updatedKey
       );
-      data.image = url;
-
+      if (order === 9) {
+        data.button_img = url;
+      } else {
+        data.image = url;
+      }
       const insertedData = await (content_type === "level"
         ? StageConfig.query().insert(data)
         : CampaignConfig.query().insert(data));
@@ -437,7 +440,7 @@ module.exports = {
     }
   },
 
-    // /withoutStatus/allsignedurls/:campaignid/:scantype
+  // /withoutStatus/allsignedurls/:campaignid/:scantype
   getGeneralAndProductContent: async (req, res) => {
     /* 
       #swagger.tags = ['Stage/Level']
@@ -654,7 +657,7 @@ module.exports = {
         const resp = responseWrapper(null, "No file provided for upload.", 400);
         return res.status(200).json(resp);
       }
-      
+
       const stageLevel = `${stage_id}/${level}`;
       const imgUrl = await uploadHelperTxn(
         "image",
@@ -736,7 +739,7 @@ module.exports = {
         const resp = responseWrapper(null, "Data not found", 204);
         return res.status(400).json(resp);
       }
-      const levels = [1, 2, 3, 4, 5]; 
+      const levels = [1, 2, 3, 4, 5];
       const stageLevelOrder = await StageConfig.query()
         .where("campaign_id", campaign_id)
         .andWhere("stage_id", stage_id)
@@ -796,12 +799,12 @@ module.exports = {
       imagesUrls.forEach(async (url, index) => {
         const data = {
           campaign_id: parseInt(campaign_id),
-          key: `${key}${index+1}`,
-          order: index+1,
+          key: `${key}${index + 1}`,
+          order: index + 1,
           image: url,
           content_type,
           stage_id: parseInt(stage_id),
-          level: index+1,
+          level: index + 1,
         };
         await StageConfig.query().insert(data);
       }
