@@ -693,8 +693,18 @@ module.exports = {
       const resp = responseWrapper(insertData, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
-      const resp = responseWrapper(null, error.message, 500);
-      return res.status(500).json(resp);
+      let errorMessage;
+      if (error instanceof multer.MulterError) {
+          // Multer errors
+          if (error.code === 'LIMIT_FILE_SIZE') {
+              errorMessage = "File size exceeds the allowed of limit 2 MB";
+          } else {
+              errorMessage = error.message;
+          }
+      } else {
+          errorMessage = error.message;
+      }
+      const resp = responseWrapper(null, errorMessage, 500);      return res.status(500).json(resp);
     }
   },
 
@@ -808,7 +818,18 @@ module.exports = {
       const resp = responseWrapper(null, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
-      const resp = responseWrapper(null, error.message, 500);
+      let errorMessage;
+      if (error instanceof multer.MulterError) {
+          // Multer errors
+          if (error.code === 'LIMIT_FILE_SIZE') {
+              errorMessage = "File size exceeds the allowed of limit 2 MB";
+          } else {
+              errorMessage = error.message;
+          }
+      } else {
+          errorMessage = error.message;
+      }
+      const resp = responseWrapper(null, errorMessage, 500);
       return res.status(500).json(resp);
     }
   },

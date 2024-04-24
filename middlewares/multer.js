@@ -8,20 +8,13 @@ module.exports = {
             case 'mind':
                 return multer({
                     storage: storage,
-                    limits: { fileSize: 10 * 1024 * 1024 }, // 30MB for .mind files
-                    // fileFilter: function (req, file, cb) {
-                    //     if (file.mimetype === "application/x-mind") {
-                    //         cb(null, true);
-                    //     } else {
-                    //         cb(new Error("Only .mind files are allowed"), false);
-                    //     }
-                    // }
+                    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB for .mind files
                 });
-
+    
             case 'image':
                 return multer({
                     storage: storage,
-                    limits: { fileSize: 15 * 1024 * 1024 }, // 2MB for images
+                    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB for images
                     fileFilter: function (req, file, cb) {
                         const allowedMimes = ["image/jpeg", "image/png", "image/jpg", "image/svg+xml", "image/gif"];
                         if (allowedMimes.includes(file.mimetype)) {
@@ -31,7 +24,7 @@ module.exports = {
                         }
                     }
                 });
-
+    
             case 'gif':
                 return multer({
                     storage: storage,
@@ -44,9 +37,10 @@ module.exports = {
                         }
                     }
                 });
-
+    
             default:
                 throw new Error("Invalid type");
         }
     }
+    
 };
