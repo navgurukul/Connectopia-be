@@ -312,11 +312,7 @@ module.exports = {
         level,
         updatedKey
       );
-      if (order === 9 || order === '9') {
-        data.button_img = url;
-      } else {
-        data.image = url;
-      }
+      data.image = url;
       const insertedData = await (content_type === "level"
         ? StageConfig.query().insert(data)
         : CampaignConfig.query().insert(data));
