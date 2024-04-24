@@ -312,7 +312,7 @@ module.exports = {
         level,
         updatedKey
       );
-      if (order === 9) {
+      if (order === 9 || order === '9') {
         data.button_img = url;
       } else {
         data.image = url;
