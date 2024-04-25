@@ -113,4 +113,38 @@ module.exports = {
       res.status(500).json({ error: error.message });
     }
   },
+
+  deleteObjectsFromS3: async (prefix) => {
+    const params = {
+      Bucket: bucketName,
+      Prefix: prefix,
+    };
+
+    try {
+      const listedObjects = await S3.listObjectsV2(params).promise();
+
+      if (listedObjects.Contents.length > 0) {
+        const deleteParams = {
+          Bucket: bucketName,
+          Delete: { Objects: [] },
+        };
+
+        listedObjects.Contents.forEach(({ Key }) => {
+          deleteParams.Delete.Objects.push({ Key });
+        });
+
+        await S3.deleteObjects(deleteParams).promise();
+      }
+
+      // Delete the folder itself
+      await S3.deleteObject({
+        Bucket: bucketName,
+        Key: prefix,
+      }).promise();
+
+      return { message: "Folder and its contents deleted successfully" };
+    } catch (error) {
+      return { error: error.message };
+    }
+  },
 };

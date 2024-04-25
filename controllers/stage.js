@@ -227,8 +227,9 @@ const generalProductHelper = async (
       campaignData.product.mainQR = productQR[0];
     }
     return campaignData;
-  } catch (error) { }
-  return { error: error.message };
+  } catch (error) {
+    return { error: error.message };
+  }
 };
 
 module.exports = {
@@ -695,16 +696,17 @@ module.exports = {
     } catch (error) {
       let errorMessage;
       if (error instanceof multer.MulterError) {
-          // Multer errors
-          if (error.code === 'LIMIT_FILE_SIZE') {
-              errorMessage = "File size exceeds the allowed of limit 2 MB";
-          } else {
-              errorMessage = error.message;
-          }
-      } else {
+        // Multer errors
+        if (error.code === "LIMIT_FILE_SIZE") {
+          errorMessage = "File size exceeds the allowed of limit 2 MB";
+        } else {
           errorMessage = error.message;
+        }
+      } else {
+        errorMessage = error.message;
       }
-      const resp = responseWrapper(null, errorMessage, 500);      return res.status(500).json(resp);
+      const resp = responseWrapper(null, errorMessage, 500);
+      return res.status(500).json(resp);
     }
   },
 
@@ -735,10 +737,17 @@ module.exports = {
         );
         return res.status(400).json(resp);
       }
-      const camp = await Campaign.query().select('scan_sequence').where("id", campaign_id).first();
-      if (camp.scan_sequence !== 'random') {
-        const resp = responseWrapper(null, "Only random scan sequence campaign is allowed to upload bulk data", 400)
-        return res.status(400).json(resp)
+      const camp = await Campaign.query()
+        .select("scan_sequence")
+        .where("id", campaign_id)
+        .first();
+      if (camp.scan_sequence !== "random") {
+        const resp = responseWrapper(
+          null,
+          "Only random scan sequence campaign is allowed to upload bulk data",
+          400
+        );
+        return res.status(400).json(resp);
       }
       const ifData = await Stage.query().where("id", stage_id).first();
       if (!ifData) {
@@ -776,7 +785,7 @@ module.exports = {
       const compositeKeyMind = `targets.mind`;
 
       // const stageLevel = `${stage_id}/${level}`;
-      const key = 'ImageScan'
+      const key = "ImageScan";
       const imagesUrls = await Promise.all(
         req.files.map(async (file, index) => {
           const imgUrl = await uploadHelperTxn(
@@ -813,21 +822,20 @@ module.exports = {
           level: index + 1,
         };
         await StageConfig.query().insert(data);
-      }
-      );
+      });
       const resp = responseWrapper(null, "success", 200);
       return res.status(200).json(resp);
     } catch (error) {
       let errorMessage;
       if (error instanceof multer.MulterError) {
-          // Multer errors
-          if (error.code === 'LIMIT_FILE_SIZE') {
-              errorMessage = "File size exceeds the allowed of limit 2 MB";
-          } else {
-              errorMessage = error.message;
-          }
-      } else {
+        // Multer errors
+        if (error.code === "LIMIT_FILE_SIZE") {
+          errorMessage = "File size exceeds the allowed of limit 2 MB";
+        } else {
           errorMessage = error.message;
+        }
+      } else {
+        errorMessage = error.message;
       }
       const resp = responseWrapper(null, errorMessage, 500);
       return res.status(500).json(resp);
@@ -841,7 +849,7 @@ module.exports = {
       #swagger.summary = ' - delete image from campaign'
       #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
       #swagger.parameters['level'] = {in: 'path', required: true, type: 'integer', enum: [1, 2, 3, 4, 5]}
-  */
+    */
     try {
       const { campaign_id, level, key } = req.params;
       if (!campaign_id || !level || !key) {
@@ -865,6 +873,56 @@ module.exports = {
     } catch (error) {
       const resp = responseWrapper(null, error.message, 500);
       return res.status(500).json(resp);
+    }
+  },
+
+  deleteProduct: async (req, res) => {
+    /* 
+      #swagger.tags = ['Stage/Level']
+      #swagger.summary = 'Delete product image from campaign'
+      #swagger.parameters['campaign_id'] = {in: 'path', required: true, type: 'integer'}
+      #swagger.parameters['stage_id'] = {in: 'path', required: true, type: 'integer'}
+  */
+    try {
+      const { campaign_id, stage_id } = req.params;
+      if (!campaign_id || !stage_id) {
+        const resp = responseWrapper(
+          null,
+          "campaign_id and stage_id are required",
+          400
+        );
+        return res.status(400).json(resp);
+      }
+      // Construct the prefix (folder path) to delete
+      const prefix = `${campaign_id}/${stage_id}/`;
+
+      // Fetch the campaign from the database to verify its existence
+      const campaign = await Campaign.query().where("id", campaign_id).first();
+      if (!campaign) {
+        const resp = responseWrapper(null, "Campaign not found", 404);
+        return res.status(404).json(resp);
+      }
+
+      const imagesToDelete = await StageConfig.query()
+        .where("campaign_id", campaign_id)
+        .andWhere("stage_id", stage_id)
+        .andWhere("content_type", "product");
+
+      if (!imagesToDelete) {
+        const resp = responseWrapper(null, "No product image found", 404);
+        return res.status(404).json(resp);
+      }
+      await awsS3.deleteObjectsFromS3(prefix);
+      const deleteImages = await StageConfig.query()
+        .delete()
+        .where("campaign_id", campaign_id)
+        .andWhere("stage_id", stage_id)
+        .andWhere("content_type", "product");
+
+      const resp = responseWrapper(null, "success", 200);
+      return res.status(200).json(resp);
+    } catch (error) {
+      const resp = responseWrapper(null, error.message, 500);
     }
   },
 

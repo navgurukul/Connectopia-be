@@ -34,6 +34,9 @@ router.post('/campaign/upload-bulk/:campaign_id/:stage_id/:content_type', upload
 // /delete-image/:campaignid/:pageno/:key
 router.delete('/campaign/delete-image/:campaign_id/:level/:key', stageController.deleteImage);
 
+//delete product images from s3 and db
+router.delete('/campaign/delete-product/:campaign_id/:stage_id', stageController.deleteProduct);
+
 // delete stage
 router.delete('/campaign/delete-stage/:stage_id', stageController.deleteStage);
 
