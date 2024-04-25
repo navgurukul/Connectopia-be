@@ -136,13 +136,7 @@ module.exports = {
         await S3.deleteObjects(deleteParams).promise();
       }
 
-      // Delete the folder itself
-      await S3.deleteObject({
-        Bucket: bucketName,
-        Key: prefix,
-      }).promise();
-
-      return { message: "Folder and its contents deleted successfully" };
+      return { message: "Product contents deleted successfully" };
     } catch (error) {
       return { error: error.message };
     }
