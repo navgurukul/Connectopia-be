@@ -31,14 +31,14 @@ router.post('/campaign/upload-mind/:campaign_id/:stage_id/:level/:key/:content_t
 
 router.post('/campaign/upload-bulk/:campaign_id/:stage_id/:content_type', upload('mind').array('image', 5), stageController.bulkUpload);
 
-// /delete-image/:campaignid/:pageno/:key
-router.delete('/campaign/delete-image/:campaign_id/:level/:key', stageController.deleteImage);
+// // /delete-image/:campaignid/:pageno/:key
+// router.delete('/campaign/delete-image/:campaign_id/:level/:key', stageController.deleteImage);
 
-//delete product images from s3 and db
-router.delete('/campaign/delete-product/:campaign_id/:stage_id', stageController.deleteProduct);
+// //delete product images from s3 and db
+// router.delete('/campaign/delete-product/:campaign_id/:stage_id', stageController.deleteProduct);
 
-// delete stage
-router.delete('/campaign/delete-stage/:stage_id', stageController.deleteStage);
+// // delete stage
+// router.delete('/campaign/delete-stage/:stage_id', stageController.deleteStage);
 
 
 module.exports = router;
