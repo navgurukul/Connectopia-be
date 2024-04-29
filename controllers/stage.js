@@ -469,7 +469,8 @@ module.exports = {
         return res.status(200).json(resp);
       }
       const expire = campaign[0].campaign_duration;
-      const scanSequence = campaign[0].scantype === "qr" && campaign[0].scan_sequence === "random" ? "qr-random" : "random";
+      // const scanSequence = campaign[0].scantype === "qr" && campaign[0].scan_sequence === "random" ? "qr-random" : "random";
+      const scanSequence = campaign[0].scan_sequence;
 
       const campaignData = await generalProductHelper(
         campaign_id,
