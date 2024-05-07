@@ -115,30 +115,56 @@ module.exports = {
   },
 
   deleteObjectsFromS3: async (prefix) => {
-    const params = {
+    const deleteParams = {
+      Bucket: bucketName,
+      Delete: { Objects: [] },
+    };
+
+    try {
+      const listedObjects = await S3.listObjectsV2({
+        Bucket: bucketName,
+        Prefix: prefix,
+      }).promise();
+
+      if (listedObjects.Contents.length > 0) {
+        listedObjects.Contents.forEach(({ Key }) => {
+          deleteParams.Delete.Objects.push({ Key });
+        });
+
+        const deletionResponse = await S3.deleteObjects(deleteParams).promise();
+      }
+
+      return { message: "Objects deleted successfully" };
+    } catch (error) {
+      return { error: error.message };
+    }
+  },
+
+  deleteObjectsFromS3ForCampAndOrg: async (prefix) => {
+    const deleteParams = {
       Bucket: bucketName,
       Prefix: prefix,
     };
 
     try {
-      const listedObjects = await S3.listObjectsV2(params).promise();
+      const listedObjects = await S3.listObjectsV2(deleteParams).promise();
 
       if (listedObjects.Contents.length > 0) {
+        const deleteObjects = listedObjects.Contents.map(({ Key }) => ({
+          Key,
+        }));
+
         const deleteParams = {
           Bucket: bucketName,
-          Delete: { Objects: [] },
+          Delete: { Objects: deleteObjects },
         };
-
-        listedObjects.Contents.forEach(({ Key }) => {
-          deleteParams.Delete.Objects.push({ Key });
-        });
 
         await S3.deleteObjects(deleteParams).promise();
       }
 
-      return { message: "Product contents deleted successfully" };
+      return { message: "Objects deleted successfully" };
     } catch (error) {
-      return { error: error.message };
+      throw new Error(`Failed to delete objects from S3: ${error.message}`);
     }
   },
 };

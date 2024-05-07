@@ -7,6 +7,7 @@ const Organization = require("../models/organization");
 const StageController = require("../controllers/stage");
 const responseWrapper = require("../helpers/responseWrapper");
 const Stage = require("../models/stage");
+const awsS3 = require("../controllers/awsS3");
 
 // helper function
 const getCampaignTxn = async (usertype, email) => {
@@ -256,6 +257,9 @@ module.exports = {
                 const resp = responseWrapper(null, "Campaign not found", 204);
                 return res.status(200).json(resp);
             }
+
+            await awsS3.deleteObjectsFromS3ForCampAndOrg(campaignData.id);
+
             const check = await Campaign.transaction(async (trx) => {
                 await CampaignConfig.query(trx)
                     .delete()

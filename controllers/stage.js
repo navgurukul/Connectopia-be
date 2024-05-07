@@ -913,7 +913,9 @@ module.exports = {
         const resp = responseWrapper(null, "No product image found", 404);
         return res.status(404).json(resp);
       }
+      
       await awsS3.deleteObjectsFromS3(prefix);
+      
       const deleteImages = await StageConfig.query()
         .delete()
         .where("campaign_id", campaign_id)

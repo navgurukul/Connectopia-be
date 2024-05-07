@@ -7,6 +7,7 @@ const CMSUsers = require("../models/cmsusers");
 const StageConfig = require("../models/stage_config");
 const responseWrapper = require("../helpers/responseWrapper");
 const Stage = require("../models/stage");
+const awsS3 = require("../controllers/awsS3");
 
 module.exports = {
   createOrganization: async (req, res) => {
@@ -27,7 +28,11 @@ module.exports = {
       const { name, logo, description } = req.body;
 
       if (!name || !logo || !description) {
-        const resp = responseWrapper(null, "Name, logo, and description are required", 400);
+        const resp = responseWrapper(
+          null,
+          "Name, logo, and description are required",
+          400
+        );
         return res.status(400).json(resp);
       }
 
@@ -54,10 +59,13 @@ module.exports = {
       #swagger.parameters['usertype'] = {in: 'path', required: true, type: 'string', enum: ['superadmin', 'admin', 'user']}
   */
     try {
-
       const { email, usertype } = req.params;
       if (!email || !usertype) {
-        const resp = responseWrapper(null, "email and usertype both required", 400);
+        const resp = responseWrapper(
+          null,
+          "email and usertype both required",
+          400
+        );
         return res.status(400).json(resp);
       }
       let organizations = {};
@@ -115,7 +123,11 @@ module.exports = {
       // Retrieve campaigns by organization ID
       const campaigns = await Campaign.query().where("organization_id", id);
       if (!campaigns || campaigns.length === 0) {
-        const resp = responseWrapper(null, "No campaigns found for the organization", 204);
+        const resp = responseWrapper(
+          null,
+          "No campaigns found for the organization",
+          204
+        );
         return res.status(200).json(resp);
       }
 
@@ -236,11 +248,14 @@ module.exports = {
       }
   */
     try {
-
       const { id } = req.params;
       const { name, logo, description } = req.body;
       if (!name || !logo || !description) {
-        const resp = responseWrapper(null, "name, logo and description are required", 400);
+        const resp = responseWrapper(
+          null,
+          "name, logo and description are required",
+          400
+        );
         return res.status(400).json(resp);
       }
       const organization = await Organization.query().findById(id);
@@ -280,45 +295,27 @@ module.exports = {
         const resp = responseWrapper(null, "Organization not found", 204);
         return res.status(200).json(resp);
       }
+      const campaigns = await Campaign.query().where("organization_id", id);
 
       // Begin transaction
+      await Promise.all(
+        campaigns.map(async (campaign) => {
+          // Delete campaign data and related records
+          await CampaignConfig.query().delete().where("campaign_id", campaign.id);
+          await StageConfig.query().delete().where("campaign_id", campaign.id);
+          await Stage.query().delete().where("campaign_id", campaign.id);
+          await CustData.query().delete().where("campaign_id", campaign.id);
+          await CampaignUsers.query().delete().where("campaign_id", campaign.id);
+          await Campaign.query().delete().where("id", campaign.id);
+
+          // Delete objects from S3 bucket associated with the campaign ID
+          await awsS3.deleteObjectsFromS3ForCampAndOrg(campaign.id);
+        })
+      );
+
+      // Begin transaction to delete organization
       await Organization.transaction(async (trx) => {
-        // Delete organization and related data
-        await CampaignConfig.query(trx)
-          .delete()
-          .whereIn("campaign_id", function () {
-            this.select("campaign_id")
-              .from("campaign")
-              .where("organization_id", id);
-          });
-        await StageConfig.query(trx)
-          .delete()
-          .whereIn("campaign_id", function () {
-            this.select("campaign_id")
-              .from("campaign")
-              .where("organization_id", id);
-          });
-        await Stage.query(trx).delete().whereIn("campaign_id", function () {
-          this.select("campaign_id")
-            .from("campaign")
-            .where("organization_id", id);
-        });
-        await CustData.query(trx)
-          .delete()
-          .whereIn("campaign_id", function () {
-            this.select("campaign_id")
-              .from("campaign")
-              .where("organization_id", id);
-          });
-        await CampaignUsers.query(trx)
-          .delete()
-          .whereIn("campaign_id", function () {
-            this.select("campaign_id")
-              .from("campaign")
-              .where("organization_id", id);
-          });
         await CMSUsers.query(trx).delete().where("organization_id", id);
-        await Campaign.query(trx).delete().where("organization_id", id);
         await Organization.query(trx).deleteById(id);
       });
 
@@ -348,7 +345,11 @@ module.exports = {
 
       const users = await CMSUsers.query().where("organization_id", orgid);
       if (!users || users.length === 0) {
-        const resp = responseWrapper(null, "No users found for the organization", 204);
+        const resp = responseWrapper(
+          null,
+          "No users found for the organization",
+          204
+        );
         return res.status(200).json(resp);
       }
       const userEmails = users.map((user) => user.email);
