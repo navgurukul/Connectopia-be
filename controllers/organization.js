@@ -300,16 +300,15 @@ module.exports = {
       // Begin transaction
       await Promise.all(
         campaigns.map(async (campaign) => {
-          // Delete campaign data and related records
           await CampaignConfig.query().delete().where("campaign_id", campaign.id);
           await StageConfig.query().delete().where("campaign_id", campaign.id);
-          await Stage.query().delete().where("campaign_id", campaign.id);
           await CustData.query().delete().where("campaign_id", campaign.id);
           await CampaignUsers.query().delete().where("campaign_id", campaign.id);
+          await Stage.query().delete().where("campaign_id", campaign.id);
           await Campaign.query().delete().where("id", campaign.id);
 
           // Delete objects from S3 bucket associated with the campaign ID
-          await awsS3.deleteObjectsFromS3ForCampAndOrg(campaign.id);
+          await awsS3.deleteObjectsFromS3ForCampAndOrg(campaign.id.toString());
         })
       );
 
@@ -328,8 +327,7 @@ module.exports = {
   },
 
   // /users_by_organization/:organization
-  // need work here
-  getUsersByOrganization: async (req, res) => {
+   getUsersByOrganization: async (req, res) => {
     /* 
       #swagger.tags = ['Organization']
       #swagger.summary = ' - Get all users with organizations and its campaign'
