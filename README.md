@@ -43,7 +43,7 @@ This repository contains the backend codebase for a Content Management System (C
 5. Enjoy playing the game during the campaign duration.
 
 ## Getting Started
-1. Clone the repository: `git clone https://github.com/yourusername/yourrepository.git`
+1. Clone the repository: `git clone https://github.com/navgurukul/Connectopia-be.git`
 2. Install dependencies: `npm install`
 3. Set up environment variables: Create a `.env` file and add necessary environment variables.
 4. Start the server: `npm start`
