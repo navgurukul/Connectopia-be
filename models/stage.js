@@ -1,74 +1,43 @@
-const { DataTypes, Model } = require('sequelize');
-const sequelize = require('../config/database');
-const Campaign = require('./campaign'); // Import campaign model
-const Organisation = require('./organisation');
-const Customer = require('./customerData');
-const StageConfig = require('./stageConfig');
+const { Model } = require("objection");
+const Joi = require("joi");
+const Campaign = require("./campaign"); // Assuming Campaign model is defined in campaign.js
+const StageConfig = require("./stage_config");
 
-class Stage extends Model { }
+class Stage extends Model {
+  static get tableName() {
+    return "stage";
+  }
 
-Stage.init({
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true
-    },
-    description: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    scanner_type: {
-        type: DataTypes.ENUM('qr', 'image'), // Define ENUM values
-        allowNull: false
-    },
-    scan_sequence_type: {
-        type: DataTypes.ENUM('fixed', 'random'), // Define ENUM values
-        allowNull: false
-    },
-    start_date: {
-        type: DataTypes.DATE,
-        allowNull: false
-    },
-    end_date: {
-        type: DataTypes.DATE,
-        allowNull: false
-    },
-    stage_type: {
-        type: DataTypes.ENUM('single', 'multi'), // Define ENUM values
-        allowNull: false
-    },
-    campaign_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        // references: {
-        //     model: Campaign,
-        //     key: 'id'
-        // }
-    },
-    created_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW
-    },
-    updated_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW
-    }
-}, {
-    sequelize,
-    modelName: 'Stage',
-    tableName: 'stages',
-    timestamps: false
+  static get joiSchema() {
+    return Joi.object({
+      id: Joi.number().integer().greater(0),
+      campaign_id: Joi.number().integer().greater(0).required(), // Foreign key referencing campaign table
+      created_at: Joi.date().iso().required(),
+      updated_at: Joi.date().iso().required(),
+    });
+  }
 
-});
+  static get relationMappings() {
+    return {
+      campaign: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: Campaign,
+        join: {
+          from: "stage.campaign_id",
+          to: "campaign.id",
+        },
 
-Stage.hasMany(Customer, { foreignKey: 'stage_id' });
-Stage.hasMany(StageConfig, { foreignKey: 'stage_id' });
+        stageConfig: {
+          relation: Model.BelongsToOneRelation,
+          modelClass: StageConfig,
+          join: {
+            from: "stage.campaign_id",
+            to: "stage_config.id",
+          },
+        },
+      },
+    };
+  }
+}
 
 module.exports = Stage;
